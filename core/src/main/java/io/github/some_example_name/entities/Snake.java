@@ -21,7 +21,7 @@ public class Snake implements Disposable {
     private final Map<Direction, Texture> headTextures = new EnumMap<>(Direction.class);
 
     // Textura base del cuerpo (Jugador 1)
-    private final Texture bodyTexture;
+    private final Map<Direction, Texture> bodyTextures = new EnumMap<>(Direction.class);
 
     // Texturas de la cola en las 4 direcciones (Jugador 1)
     private final Map<Direction, Texture> tailTextures = new EnumMap<>(Direction.class);
@@ -41,7 +41,10 @@ public class Snake implements Disposable {
         headTextures.put(Direction.RIGHT, new Texture("snake/head/CabezaP1_Right.png"));
 
         // Carga de textura del cuerpo
-        bodyTexture = new Texture("snake/Body/BodyP1.png");
+        bodyTextures.put(Direction.UP, new Texture("snake/Body/BodyP1.png"));
+        bodyTextures.put(Direction.DOWN, new Texture("snake/Body/BodyP1.png"));
+        bodyTextures.put(Direction.LEFT, new Texture("snake/Body/BodyP1_1.png"));
+        bodyTextures.put(Direction.RIGHT, new Texture("snake/Body/BodyP1_1.png"));
 
         // Carga de texturas de cola
         tailTextures.put(Direction.UP, new Texture("snake/tail/ColaP1_Up.png"));
@@ -85,9 +88,8 @@ public class Snake implements Disposable {
                 return headTextures.get(segment.getDirection());
             case TAIL:
                 return tailTextures.get(segment.getDirection());
-            case BODY:
             default:
-                return bodyTexture;
+                return bodyTextures.get(segment.getDirection());
         }
     }
 
@@ -105,9 +107,10 @@ public class Snake implements Disposable {
         }
         headTextures.clear();
 
-        if (bodyTexture != null) {
-            bodyTexture.dispose();
+        for (Texture texture : bodyTextures.values()) {
+            texture.dispose();
         }
+        bodyTextures.clear();
 
         for (Texture texture : tailTextures.values()) {
             texture.dispose();
