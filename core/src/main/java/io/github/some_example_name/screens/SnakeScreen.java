@@ -9,13 +9,16 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.some_example_name.entities.Snake;
+import io.github.some_example_name.entities.Direction;
+import io.github.some_example_name.utils.InputHandler;
 
 /**
  * Pantalla principal del minijuego Snake.
  * Gestiona el viewport, el renderizado del tablero con baldosas verdes y las entidades del juego.
  */
 public class SnakeScreen implements Screen {
-
+    private final InputHandler inputHandler = new InputHandler();
+    private Direction currentDirection = Direction.RIGHT;
     public static final float VIRTUAL_WIDTH = 640f;
     public static final float VIRTUAL_HEIGHT = 480f;
     public static final int GRID_WIDTH = (int) (VIRTUAL_WIDTH / Snake.TILE_SIZE);   // 40 columnas
@@ -82,7 +85,8 @@ public class SnakeScreen implements Screen {
 
         // 2. Dibujar la serpiente estática sobre el tablero
         snake.render(batch);
-
+        // Actualizar la dirección según las teclas presionadas
+        currentDirection = inputHandler.getNewDirection(currentDirection);
         batch.end();
     }
 
