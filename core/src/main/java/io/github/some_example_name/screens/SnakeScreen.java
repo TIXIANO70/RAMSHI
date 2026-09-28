@@ -19,6 +19,12 @@ import io.github.some_example_name.utils.InputHandler;
 public class SnakeScreen implements Screen {
     private final InputHandler inputHandler = new InputHandler();
     private Direction currentDirection = Direction.RIGHT;
+    private Direction nextDirection = Direction.RIGHT;
+
+    // Intervalo de tiempo en segundos entre cada paso de la serpiente
+    private static final float MOVE_INTERVAL = 0.12f;
+    private float moveTimer = 0f;
+
     public static final float VIRTUAL_WIDTH = 640f;
     public static final float VIRTUAL_HEIGHT = 480f;
     public static final int GRID_WIDTH = (int) (VIRTUAL_WIDTH / Snake.TILE_SIZE);   // 40 columnas
@@ -66,6 +72,24 @@ public class SnakeScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        // 1. Capturar entrada de dirección del usuario en cada frame
+        nextDirection = inputHandler.getNewDirection(currentDirection);
+
+        // 2. Acumular tiempo para el paso de simulación (tick)
+        moveTimer += delta;
+        if (moveTimer >= MOVE_INTERVAL) {
+            moveTimer -= MOVE_INTERVAL;
+            currentDirection = nextDirection;
+            snake.step(currentDirection);
+
+            // Verificación de choque contra bordes o auto-mordedura
+            if (snake.checkOutOfBounds(GRID_WIDTH, GRID_HEIGHT) || snake.checkSelfCollision()) {
+                snake.reset(21, 14, Direction.RIGHT);
+                currentDirection = Direction.RIGHT;
+                nextDirection = Direction.RIGHT;
+            }
+        }
+
         // Limpieza de pantalla con un tono verde oscuro base
         ScreenUtils.clear(0.12f, 0.35f, 0.12f, 1f);
 
@@ -75,7 +99,7 @@ public class SnakeScreen implements Screen {
 
         batch.begin();
 
-        // 1. Dibujar el fondo del tablero con baldosas alternadas
+        // 3. Dibujar el fondo del tablero con baldosas alternadas
         for (int x = 0; x < GRID_WIDTH; x++) {
             for (int y = 0; y < GRID_HEIGHT; y++) {
                 Texture currentTile = ((x + y) % 2 == 0) ? tile1 : tile2;
@@ -83,10 +107,8 @@ public class SnakeScreen implements Screen {
             }
         }
 
-        // 2. Dibujar la serpiente estática sobre el tablero
+        // 4. Dibujar la serpiente en su posición actual
         snake.render(batch);
-        // Actualizar la dirección según las teclas presionadas
-        currentDirection = inputHandler.getNewDirection(currentDirection);
         batch.end();
     }
 
