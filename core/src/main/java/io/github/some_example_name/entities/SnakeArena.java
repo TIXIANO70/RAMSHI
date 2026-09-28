@@ -78,6 +78,15 @@ public class SnakeArena implements Disposable {
         }
     }
 
+    public Direction getCurrentDirection() {
+        return currentDirection;
+    }
+
+    public Direction getNextDirection() {
+        return nextDirection;
+    }
+
+
     /**
      * Ejecuta un paso de simulación (tick) para la arena:
      * avanza la serpiente, comprueba recolección de comida y gestiona colisiones/respawn.

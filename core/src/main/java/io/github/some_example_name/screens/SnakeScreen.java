@@ -102,7 +102,9 @@ public class SnakeScreen implements Screen {
     }
 
     @Override
-    public void show() {}
+    public void show() {
+        com.badlogic.gdx.Gdx.input.setInputProcessor(inputHandler);
+    }
 
     @Override
     public void render(float delta) {
@@ -120,9 +122,16 @@ public class SnakeScreen implements Screen {
                 timeRemaining = 0f;
                 finishRound();
             } else {
-                // Capturar entradas de ambos jugadores
-                arenaP1.setNextDirection(inputHandler.getP1Direction(arenaP1.getSnake().getHead().getDirection()));
-                arenaP2.setNextDirection(inputHandler.getP2Direction(arenaP2.getSnake().getHead().getDirection()));
+                // Capturar entradas de ambos jugadores (solo si se presionó una tecla válida)
+                io.github.some_example_name.entities.Direction p1Dir = inputHandler.getP1Direction(arenaP1.getCurrentDirection());
+                if (p1Dir != null) {
+                    arenaP1.setNextDirection(p1Dir);
+                }
+
+                io.github.some_example_name.entities.Direction p2Dir = inputHandler.getP2Direction(arenaP2.getCurrentDirection());
+                if (p2Dir != null) {
+                    arenaP2.setNextDirection(p2Dir);
+                }
 
                 // Acumular tiempo para el tick de simulación
                 moveTimer += delta;
@@ -139,6 +148,7 @@ public class SnakeScreen implements Screen {
                 startNewRound();
             }
         }
+
 
 
         // Limpieza de pantalla con tono oscuro
@@ -192,9 +202,11 @@ public class SnakeScreen implements Screen {
         timeRemaining = ROUND_DURATION;
         roundOver = false;
         roundWinnerMessage = "";
+        inputHandler.reset();
         arenaP1.resetForNewRound();
         arenaP2.resetForNewRound();
     }
+
 
     /**
      * Dibuja los marcos delimitadores de cada arena y la línea divisoria central.
@@ -310,10 +322,17 @@ public class SnakeScreen implements Screen {
     public void resume() {}
 
     @Override
-    public void hide() {}
+    public void hide() {
+        if (com.badlogic.gdx.Gdx.input.getInputProcessor() == inputHandler) {
+            com.badlogic.gdx.Gdx.input.setInputProcessor(null);
+        }
+    }
 
     @Override
     public void dispose() {
+        if (com.badlogic.gdx.Gdx.input.getInputProcessor() == inputHandler) {
+            com.badlogic.gdx.Gdx.input.setInputProcessor(null);
+        }
         batch.dispose();
         shapeRenderer.dispose();
         font.dispose();
@@ -322,5 +341,6 @@ public class SnakeScreen implements Screen {
         arenaP1.dispose();
         arenaP2.dispose();
     }
+
 }
 
