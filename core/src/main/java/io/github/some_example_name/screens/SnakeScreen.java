@@ -8,8 +8,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import io.github.some_example_name.entities.Snake;
 import io.github.some_example_name.entities.Direction;
+import io.github.some_example_name.entities.Food;
+import io.github.some_example_name.entities.Snake;
+
 import io.github.some_example_name.utils.InputHandler;
 
 /**
@@ -39,8 +41,12 @@ public class SnakeScreen implements Screen {
     private final Texture tile1;
     private final Texture tile2;
 
-    // Entidad de la serpiente
+    // Entidad de la serpiente y comida
     private final Snake snake;
+    private final Food food;
+
+    // Marcador de la ronda actual
+    private int roundScore = 0;
 
     /**
      * Constructor de SnakeScreen.
@@ -61,8 +67,10 @@ public class SnakeScreen implements Screen {
         this.tile1 = new Texture("snake/tiles/Tile1.png");
         this.tile2 = new Texture("snake/tiles/Tile2.png");
 
-        // Inicialización de la serpiente
+        // Inicialización de la serpiente y la comida en casillas libres
         this.snake = new Snake();
+        this.food = new Food();
+        this.food.respawn(GRID_WIDTH, GRID_HEIGHT, this.snake);
     }
 
     @Override
@@ -82,11 +90,20 @@ public class SnakeScreen implements Screen {
             currentDirection = nextDirection;
             snake.step(currentDirection);
 
+            // Verificación de recolección de comida (la cabeza alcanza el huevo/manzana)
+            if (snake.getHead().getGridX() == food.getGridX() && snake.getHead().getGridY() == food.getGridY()) {
+                snake.grow();
+                roundScore++;
+                food.respawn(GRID_WIDTH, GRID_HEIGHT, snake);
+            }
+
             // Verificación de choque contra bordes o auto-mordedura
             if (snake.checkOutOfBounds(GRID_WIDTH, GRID_HEIGHT) || snake.checkSelfCollision()) {
                 snake.reset(21, 14, Direction.RIGHT);
                 currentDirection = Direction.RIGHT;
                 nextDirection = Direction.RIGHT;
+                roundScore = 0; // Al morir, se reinicia el marcador de la ronda
+                food.respawn(GRID_WIDTH, GRID_HEIGHT, snake);
             }
         }
 
@@ -107,8 +124,10 @@ public class SnakeScreen implements Screen {
             }
         }
 
-        // 4. Dibujar la serpiente en su posición actual
+        // 4. Dibujar la comida y la serpiente en sus posiciones actuales
+        food.render(batch, Snake.TILE_SIZE);
         snake.render(batch);
+
         batch.end();
     }
 
@@ -134,5 +153,6 @@ public class SnakeScreen implements Screen {
         tile1.dispose();
         tile2.dispose();
         snake.dispose();
+        food.dispose();
     }
 }
