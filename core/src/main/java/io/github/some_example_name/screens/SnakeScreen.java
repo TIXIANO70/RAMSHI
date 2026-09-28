@@ -49,6 +49,12 @@ public class SnakeScreen implements Screen {
     private final SnakeArena arenaP1;
     private final SnakeArena arenaP2;
 
+    // Duración de la ronda en segundos y tiempo restante
+    private static final float ROUND_DURATION = 30f;
+    private float timeRemaining = ROUND_DURATION;
+    private boolean roundOver = false;
+    private String roundWinnerMessage = "";
+
     /**
      * Constructor de SnakeScreen en modo 1v1 Split-Screen.
      *
@@ -83,16 +89,31 @@ public class SnakeScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        // 1. Capturar entradas de ambos jugadores de forma desacoplada
-        arenaP1.setNextDirection(inputHandler.getP1Direction(arenaP1.getSnake().getHead().getDirection()));
-        arenaP2.setNextDirection(inputHandler.getP2Direction(arenaP2.getSnake().getHead().getDirection()));
+        // 1. Control del temporizador de la ronda
+        if (!roundOver) {
+            timeRemaining -= delta;
+            if (timeRemaining <= 0f) {
+                timeRemaining = 0f;
+                finishRound();
+            } else {
+                // Capturar entradas de ambos jugadores
+                arenaP1.setNextDirection(inputHandler.getP1Direction(arenaP1.getSnake().getHead().getDirection()));
+                arenaP2.setNextDirection(inputHandler.getP2Direction(arenaP2.getSnake().getHead().getDirection()));
 
-        // 2. Acumular tiempo para el tick de simulación
-        moveTimer += delta;
-        if (moveTimer >= MOVE_INTERVAL) {
-            moveTimer -= MOVE_INTERVAL;
-            arenaP1.tick();
-            arenaP2.tick();
+                // Acumular tiempo para el tick de simulación
+                moveTimer += delta;
+                if (moveTimer >= MOVE_INTERVAL) {
+                    moveTimer -= MOVE_INTERVAL;
+                    arenaP1.tick();
+                    arenaP2.tick();
+                }
+            }
+        } else {
+            // Si la ronda terminó, esperar confirmación para la siguiente
+            if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)
+                || com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ENTER)) {
+                startNewRound();
+            }
         }
 
         // Limpieza de pantalla con tono oscuro
@@ -102,17 +123,50 @@ public class SnakeScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // 3. Dibujar arenas (baldosas, comida y serpiente de cada jugador)
+        // 2. Dibujar arenas (baldosas, comida y serpientes)
         batch.begin();
         arenaP1.render(batch);
         arenaP2.render(batch);
         batch.end();
 
-        // 4. Dibujar líneas divisorias y bordes estéticos
+        // 3. Dibujar líneas divisorias y bordes estéticos
         drawBordersAndDivider();
 
-        // 5. Dibujar HUD superior con puntajes
+        // 4. Dibujar HUD superior con puntajes y tiempo
         drawHUD();
+
+        // 5. Si la ronda finalizó, dibujar el banner con el resultado
+        if (roundOver) {
+            drawRoundOverOverlay();
+        }
+    }
+
+    /**
+     * Evalúa los puntajes finales de la ronda y define el mensaje de victoria.
+     */
+    private void finishRound() {
+        roundOver = true;
+        int s1 = arenaP1.getScore();
+        int s2 = arenaP2.getScore();
+
+        if (s1 > s2) {
+            roundWinnerMessage = "¡JUGADOR 1 GANA LA RONDA!";
+        } else if (s2 > s1) {
+            roundWinnerMessage = "¡JUGADOR 2 GANA LA RONDA!";
+        } else {
+            roundWinnerMessage = "¡EMPATE EN LA RONDA!";
+        }
+    }
+
+    /**
+     * Reinicia las variables de tiempo y arenas para dar inicio a una nueva ronda de 30 segundos.
+     */
+    private void startNewRound() {
+        timeRemaining = ROUND_DURATION;
+        roundOver = false;
+        roundWinnerMessage = "";
+        arenaP1.resetForNewRound();
+        arenaP2.resetForNewRound();
     }
 
     /**
@@ -138,28 +192,72 @@ public class SnakeScreen implements Screen {
     }
 
     /**
-     * Dibuja las etiquetas de los jugadores y sus marcadores actuales en el área superior.
+     * Dibuja las etiquetas de los jugadores, los marcadores y el cronómetro de 30s en el HUD.
      */
     private void drawHUD() {
         batch.begin();
 
         // Marcador P1 (Verde)
         font.setColor(0.3f, 0.9f, 0.3f, 1f);
-        font.getData().setScale(1.4f);
-        font.draw(batch, "P1 (WASD): " + arenaP1.getScore(), 24f, 462f);
+        font.getData().setScale(1.3f);
+        font.draw(batch, "P1: " + arenaP1.getScore() + " pts", 24f, 462f);
 
-        // Indicador central 1v1
-        font.setColor(Color.WHITE);
-        font.getData().setScale(1.2f);
-        font.draw(batch, "SPLIT 1v1", 360f, 462f);
+        // Cronómetro de 30s central
+        int seconds = (int) Math.ceil(timeRemaining);
+        if (timeRemaining <= 5f && !roundOver) {
+            font.setColor(1f, 0.3f, 0.3f, 1f); // Alerta roja en los últimos 5s
+        } else {
+            font.setColor(1f, 0.9f, 0.2f, 1f); // Amarillo normal
+        }
+        font.getData().setScale(1.4f);
+        font.draw(batch, "TIEMPO: " + seconds + "s", 340f, 462f);
 
         // Marcador P2 (Azul/Celeste)
         font.setColor(0.3f, 0.7f, 1f, 1f);
-        font.getData().setScale(1.4f);
-        font.draw(batch, "P2 (FLECHAS): " + arenaP2.getScore(), 570f, 462f);
+        font.getData().setScale(1.3f);
+        font.draw(batch, "P2: " + arenaP2.getScore() + " pts", 660f, 462f);
 
         batch.end();
     }
+
+    /**
+     * Dibuja el cartel central al expirar los 30 segundos con el ganador y la opción de continuar.
+     */
+    private void drawRoundOverOverlay() {
+        // Marco oscuro de fondo
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.05f, 0.05f, 0.05f, 0.9f);
+        shapeRenderer.rect(180f, 150f, 440f, 180f);
+        shapeRenderer.end();
+
+        // Borde dorado
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(1f, 0.84f, 0f, 1f);
+        shapeRenderer.rect(180f, 150f, 440f, 180f);
+        shapeRenderer.end();
+
+        // Textos del resultado
+        batch.begin();
+
+        font.setColor(Color.WHITE);
+        font.getData().setScale(1.4f);
+        com.badlogic.gdx.graphics.g2d.GlyphLayout titleLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout(font, roundWinnerMessage);
+        font.draw(batch, titleLayout, (VIRTUAL_WIDTH - titleLayout.width) / 2f, 290f);
+
+        font.setColor(0.85f, 0.85f, 0.85f, 1f);
+        font.getData().setScale(1.1f);
+        String scoreSummary = "Resultado: P1 (" + arenaP1.getScore() + ") - P2 (" + arenaP2.getScore() + ")";
+        com.badlogic.gdx.graphics.g2d.GlyphLayout scoreLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout(font, scoreSummary);
+        font.draw(batch, scoreLayout, (VIRTUAL_WIDTH - scoreLayout.width) / 2f, 245f);
+
+        font.setColor(1f, 0.9f, 0.3f, 1f);
+        String instruction = "Presiona [ ESPACIO ] para siguiente ronda";
+        com.badlogic.gdx.graphics.g2d.GlyphLayout instrLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout(font, instruction);
+        font.draw(batch, instrLayout, (VIRTUAL_WIDTH - instrLayout.width) / 2f, 195f);
+
+        batch.end();
+    }
+
 
     @Override
     public void resize(int width, int height) {
