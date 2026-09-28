@@ -61,14 +61,27 @@ public class Food implements Disposable {
     }
 
     /**
-     * Dibuja la comida en la cuadrícula usando el tamaño de baldosa indicado.
+     * Dibuja la comida en la cuadrícula usando el tamaño de baldosa indicado y desplazamiento de arena.
+     *
+     * @param batch    SpriteBatch para renderizado 2D.
+     * @param tileSize Tamaño en píxeles de cada casilla.
+     * @param offsetX  Desplazamiento horizontal en píxeles para la arena.
+     * @param offsetY  Desplazamiento vertical en píxeles para la arena.
+     */
+    public void render(SpriteBatch batch, float tileSize, float offsetX, float offsetY) {
+        batch.draw(texture, offsetX + gridX * tileSize, offsetY + gridY * tileSize, tileSize, tileSize);
+    }
+
+    /**
+     * Dibuja la comida en la cuadrícula usando el tamaño de baldosa indicado en el origen base.
      *
      * @param batch    SpriteBatch para renderizado 2D.
      * @param tileSize Tamaño en píxeles de cada casilla.
      */
     public void render(SpriteBatch batch, float tileSize) {
-        batch.draw(texture, gridX * tileSize, gridY * tileSize, tileSize, tileSize);
+        render(batch, tileSize, 0, 0);
     }
+
 
     public int getGridX() {
         return gridX;

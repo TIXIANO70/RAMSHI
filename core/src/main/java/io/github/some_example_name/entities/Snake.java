@@ -224,20 +224,32 @@ public class Snake implements Disposable {
     }
 
     /**
-     * Dibuja todos los segmentos de la serpiente en las posiciones correspondientes de la cuadrícula.
+     * Dibuja todos los segmentos de la serpiente aplicando un desplazamiento en píxeles.
      *
-     * @param batch SpriteBatch utilizado para el dibujado 2D.
+     * @param batch   SpriteBatch utilizado para el dibujado 2D.
+     * @param offsetX Desplazamiento horizontal en píxeles para la arena correspondiente.
+     * @param offsetY Desplazamiento vertical en píxeles para la arena correspondiente.
      */
-    public void render(SpriteBatch batch) {
+    public void render(SpriteBatch batch, float offsetX, float offsetY) {
         for (SnakeSegment segment : segments) {
             Texture textureToDraw = getTextureForSegment(segment);
             if (textureToDraw != null) {
-                float posX = segment.getGridX() * TILE_SIZE;
-                float posY = segment.getGridY() * TILE_SIZE;
+                float posX = offsetX + segment.getGridX() * TILE_SIZE;
+                float posY = offsetY + segment.getGridY() * TILE_SIZE;
                 batch.draw(textureToDraw, posX, posY, TILE_SIZE, TILE_SIZE);
             }
         }
     }
+
+    /**
+     * Dibuja todos los segmentos de la serpiente en las posiciones correspondientes de la cuadrícula base.
+     *
+     * @param batch SpriteBatch utilizado para el dibujado 2D.
+     */
+    public void render(SpriteBatch batch) {
+        render(batch, 0, 0);
+    }
+
 
     /**
      * Obtiene la textura correcta según el tipo de segmento y su orientación.
