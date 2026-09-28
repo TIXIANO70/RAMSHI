@@ -15,7 +15,6 @@ public class InputHandler {
     public Direction getNewDirection(Direction currentDirection) {
         if ((Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W))
             && currentDirection != Direction.DOWN) {
-            System.out.println("w");
             return Direction.UP;
         }
         if ((Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S))
