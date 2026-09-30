@@ -26,10 +26,10 @@ public enum Direction {
     }
 
     /**
-     * Comprueba si otra dirección es opuesta a la actual para evitar giros de 180 grados.
-     *
-     * @param other Dirección a comparar.
-     * @return true si es la dirección opuesta, false en caso contrario.
+      Comprueba si otra dirección es opuesta a la actual para evitar giros de 180 grados.
+     
+     * @param other Direccióna a comparar.
+     * @return true si es la direccion opuesta, false en caso contrario.
      */
     public boolean isOpposite(Direction other) {
         return other != null && this.dx + other.dx == 0 && this.dy + other.dy == 0;

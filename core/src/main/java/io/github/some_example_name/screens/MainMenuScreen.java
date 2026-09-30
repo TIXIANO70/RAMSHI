@@ -16,9 +16,9 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 /**
- * Menú principal de RAMSHI.
- * Presenta el título del proyecto, la información del modo 1v1 y los botones interactivos
- * adaptados al viewport panorámico de 800x480 con efectos visuales de selección.
+  Menú principal de RAMSHI.
+  Presenta el título del proyecto, la información del modo 1v1 y los botones interactivos
+  adaptados al viewport panorámico de 800x480 con efectos visuales de selección.
  */
 public class MainMenuScreen implements Screen {
 
@@ -38,10 +38,10 @@ public class MainMenuScreen implements Screen {
     private final Vector3 mousePos = new Vector3();
 
     /**
-     * Constructor del menú principal.
-     * Configura el viewport, fuentes, renderers y la disposición de los botones centrados.
-     *
-     * @param game Instancia principal del juego.
+      Constructor del menú principal.
+      Configura el viewport, fuentes, renderers y la disposición de los botones centrados.
+     
+     parametro game Instancia principal del juego.
      */
     public MainMenuScreen(Game game) {
         this.game = game;
@@ -59,7 +59,7 @@ public class MainMenuScreen implements Screen {
         // Botones centrados horizontalmente en 800px (ancho 260px)
         float buttonWidth = 260f;
         float buttonHeight = 55f;
-        float buttonX = (VIRTUAL_WIDTH - buttonWidth) / 2f; // 270f
+        float buttonX = (VIRTUAL_WIDTH - buttonWidth) / 2f; 
 
         this.jugarButton = new Rectangle(buttonX, 210f, buttonWidth, buttonHeight);
         this.salirButton = new Rectangle(buttonX, 130f, buttonWidth, buttonHeight);
@@ -81,9 +81,9 @@ public class MainMenuScreen implements Screen {
         boolean hoverJugar = jugarButton.contains(mousePos.x, mousePos.y);
         boolean hoverSalir = salirButton.contains(mousePos.x, mousePos.y);
 
-        // -------------------------
+        
         // 1. DIBUJAR FONDOS DE BOTONES
-        // -------------------------
+      
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         // Botón Jugar (fondo resaltado si tiene hover)
@@ -104,9 +104,7 @@ public class MainMenuScreen implements Screen {
 
         shapeRenderer.end();
 
-        // -------------------------
-        // 2. DIBUJAR BORDES DE BOTONES
-        // -------------------------
+        //Bordes de botones
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
         if (hoverJugar) {
@@ -125,9 +123,7 @@ public class MainMenuScreen implements Screen {
 
         shapeRenderer.end();
 
-        // -------------------------
-        // 3. DIBUJAR TEXTO Y TÍTULOS
-        // -------------------------
+        //Dibujato de texto y 
         batch.begin();
 
         // Título del juego RAMSHI
@@ -155,9 +151,7 @@ public class MainMenuScreen implements Screen {
 
         batch.end();
 
-        // -------------------------
-        // 4. GESTIÓN DE CLICKS
-        // -------------------------
+        // Gestion de clicks
         if (Gdx.input.justTouched()) {
             if (hoverJugar) {
                 game.setScreen(new SnakeScreen(game));
@@ -168,9 +162,9 @@ public class MainMenuScreen implements Screen {
         }
     }
 
-    /**
-     * Dibuja un texto centrado horizontalmente en la pantalla a la altura Y especificada.
-     */
+    
+     //Dibuja un texto centrado horizontalmente en la pantalla a la altura Y especificada.
+     
     private void drawCenteredText(String text, float y) {
         GlyphLayout layout = new GlyphLayout(font, text);
         float x = (VIRTUAL_WIDTH - layout.width) / 2f;

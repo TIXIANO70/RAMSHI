@@ -1,12 +1,12 @@
 package io.github.some_example_name.entities;
 
 /**
- * Representa un segmento individual de la serpiente dentro de la cuadrícula del juego.
+  Representa un segmento individual de la serpiente dentro de la cuadrícula del juego.
  */
 public class SnakeSegment {
 
     /**
-     * Tipo de segmento que compone el cuerpo de la serpiente.
+      Tipo de segmento que compone el cuerpo de la serpiente.
      */
     public enum Type {
         HEAD,
@@ -21,11 +21,11 @@ public class SnakeSegment {
 
     /**
      * Constructor para un segmento de serpiente.
-     *
-     * @param gridX     Posición X en casillas dentro de la cuadrícula.
-     * @param gridY     Posición Y en casillas dentro de la cuadrícula.
-     * @param type      Tipo de segmento (cabeza, cuerpo o cola).
-     * @param direction Dirección hacia la que está orientado el segmento.
+     
+         Posición X en casillas dentro de la cuadrícula.
+         Posición Y en casillas dentro de la cuadrícula.
+      	 type      Tipo de segmento (cabeza, cuerpo o cola).
+      	 direction Dirección hacia la que está orientado el segmento.
      */
     public SnakeSegment(int gridX, int gridY, Type type, Direction direction) {
         this.gridX = gridX;

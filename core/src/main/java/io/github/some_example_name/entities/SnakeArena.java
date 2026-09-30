@@ -5,8 +5,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Disposable;
 
 /**
- * Representa la arena o campo de juego independiente para un jugador en el modo Split-Screen.
- * Encapsula la cuadrícula de baldosas, la serpiente correspondiente, la comida y el marcador de la ronda.
+  Representa la arena del snake
+  Encapsula la cuadrícula de baldosas, la serpiente correspondiente, la comida y el marcador de la ronda.
  */
 public class SnakeArena implements Disposable {
 
@@ -31,14 +31,14 @@ public class SnakeArena implements Disposable {
 
     /**
      * Construye una nueva arena de juego para el jugador indicado.
-     *
-     * @param playerNumber Identificador del jugador (1 o 2).
-     * @param originPixelX Coordenada X en píxeles donde inicia el tablero.
-     * @param originPixelY Coordenada Y en píxeles donde inicia el tablero.
-     * @param gridWidth    Ancho de la arena en casillas.
-     * @param gridHeight   Alto de la arena en casillas.
-     * @param tile1        Textura de baldosa clara/alternada.
-     * @param tile2        Textura de baldosa oscura/alternada.
+     
+      playerNumber Identificador del jugador (1 o 2).
+      originPixelX Coordenada X en píxeles donde inicia el tablero.
+      originPixelY Coordenada Y en píxeles donde inicia el tablero.
+      gridWidth    Ancho de la arena en casillas.
+      gridHeight   Alto de la arena en casillas.
+      tile1        Textura de baldosa clara/alternada.
+      tile2        Textura de baldosa oscura/alternada.
      */
     public SnakeArena(int playerNumber, float originPixelX, float originPixelY, int gridWidth, int gridHeight, Texture tile1, Texture tile2) {
         this.playerNumber = playerNumber;
@@ -52,7 +52,7 @@ public class SnakeArena implements Disposable {
         // Configuración de punto de aparición simétrico
         this.initialSpawnY = gridHeight / 2;
         if (playerNumber == 1) {
-            this.initialSpawnX = 4;
+            this.initialSpawnX = 4; //Cuando vuelven Mada y Adrian?
             this.initialDirection = Direction.RIGHT;
         } else {
             this.initialSpawnX = gridWidth - 5;
@@ -68,9 +68,9 @@ public class SnakeArena implements Disposable {
     }
 
     /**
-     * Actualiza la dirección deseada para el próximo paso evitando giros directos de 180°.
-     *
-     * @param dir Nueva dirección solicitada por el usuario.
+     Actualiza la dirección deseada para el próximo paso evitando giros directos de 180°.
+     
+     dir Nueva dirección solicitada por el usuario.
      */
     public void setNextDirection(Direction dir) {
         if (dir != null && !dir.isOpposite(currentDirection)) {
@@ -88,8 +88,8 @@ public class SnakeArena implements Disposable {
 
 
     /**
-     * Ejecuta un paso de simulación (tick) para la arena:
-     * avanza la serpiente, comprueba recolección de comida y gestiona colisiones/respawn.
+     Ejecuta un tick() para la arena:
+     avanza la serpiente, comprueba si habia comida y gestiona colisiones/respawn.
      */
     public void tick() {
         currentDirection = nextDirection;
@@ -120,7 +120,7 @@ public class SnakeArena implements Disposable {
     }
 
     /**
-     * Reinicia por completo la arena para una nueva ronda (score a 0 y posición inicial).
+      Reinicia por completo la arena para una nueva ronda (score a 0 y posición inicial).
      */
     public void resetForNewRound() {
         respawnSnake();
@@ -129,10 +129,10 @@ public class SnakeArena implements Disposable {
     /**
      * Dibuja el fondo de la arena, la comida y la serpiente con sus desplazamientos en pantalla.
      *
-     * @param batch SpriteBatch para renderizado 2D.
+     * parametro batch SpriteBatch para renderizado 2D.
      */
     public void render(SpriteBatch batch) {
-        // 1. Dibujar baldosas alternadas del tablero
+        // 1. Dibujarn baldosas alternadas del tablero
         for (int x = 0; x < gridWidth; x++) {
             for (int y = 0; y < gridHeight; y++) {
                 Texture currentTile = ((x + y) % 2 == 0) ? tile1 : tile2;

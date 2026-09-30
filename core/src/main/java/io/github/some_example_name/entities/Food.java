@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.Disposable;
 import java.util.Collection;
 
 /**
- * Representa el ítem de comida (huevo/manzana) que aparece en la cuadrícula.
+ * Representa el ítem de comida (huevo).
  * Gestiona su posición, textura y lógica de reaparición aleatoria evitando superposiciones con la serpiente.
  */
 public class Food implements Disposable {
@@ -27,12 +27,6 @@ public class Food implements Disposable {
     /**
      * Reaparece la comida en una coordenada aleatoria dentro de los límites dados,
      * garantizando que no coincida con ninguna casilla ocupada por la serpiente.
-     *
-     * @param minX  Límite mínimo en X (inclusivo).
-     * @param minY  Límite mínimo en Y (inclusivo).
-     * @param maxX  Límite máximo en X (inclusivo).
-     * @param maxY  Límite máximo en Y (inclusivo).
-     * @param snake Serpiente a verificar para no superponerse.
      */
     public void respawn(int minX, int minY, int maxX, int maxY, Snake snake) {
         int attempts = 0;

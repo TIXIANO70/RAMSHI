@@ -16,9 +16,9 @@ import io.github.some_example_name.entities.SnakeArena;
 import io.github.some_example_name.utils.InputHandler;
 
 /**
- * Pantalla principal del minijuego Snake en modo local 1v1 (Split-Screen).
- * Gestiona la resolución panorámica, dos arenas independientes para P1 y P2,
- * la captura de entradas por teclado y el renderizado del HUD y divisores.
+ Pantalla principal del minijuego Snake en modo local 1v1 (Split-Screen).
+ Gestiona la resolución panorámica, dos arenas independientes para P1 y P2,
+ la captura de entradas por teclado y el renderizado del HUD y divisores.
  */
 public class SnakeScreen implements Screen {
 
@@ -62,7 +62,7 @@ public class SnakeScreen implements Screen {
     /**
      * Constructor por defecto de SnakeScreen que inicia el contador global en cero.
      *
-     * @param game Instancia principal del juego.
+     * parametro game Instancia principal del juego.
      */
     public SnakeScreen(Game game) {
         this(game, 0, 0);
@@ -70,10 +70,10 @@ public class SnakeScreen implements Screen {
 
     /**
      * Constructor parametrizado con victorias globales acumuladas.
-     *
-     * @param game        Instancia principal del juego.
-     * @param p1Wins      Victorias globales acumuladas del Jugador 1.
-     * @param p2Wins      Victorias globales acumuladas del Jugador 2.
+     
+      parametro game        Instancia principal del juego.
+      parametro p1Wins      Victorias globales acumuladas del Jugador 1.
+      parametro p2Wins      Victorias globales acumuladas del Jugador 2.
      */
     public SnakeScreen(Game game, int p1Wins, int p2Wins) {
         this.game = game;
@@ -176,9 +176,9 @@ public class SnakeScreen implements Screen {
         }
     }
 
-    /**
-     * Evalúa los puntajes finales de la ronda y define el mensaje de victoria, sumando al contador global.
-     */
+   
+     // Evalúa los puntajes finales de la ronda y define el mensaje de victoria, sumando al contador global.
+     
     private void finishRound() {
         roundOver = true;
         int s1 = arenaP1.getScore();
@@ -194,10 +194,8 @@ public class SnakeScreen implements Screen {
             roundWinnerMessage = "¡EMPATE EN LA RONDA!";
         }
     }
-
-    /**
-     * Reinicia las variables de tiempo y arenas para dar inicio a una nueva ronda de 30 segundos.
-     */
+      // Reinicia las variables de tiempo y arenas para dar inicio a una nueva ronda de 30 segundos.
+      
     private void startNewRound() {
         timeRemaining = ROUND_DURATION;
         roundOver = false;
@@ -208,9 +206,9 @@ public class SnakeScreen implements Screen {
     }
 
 
-    /**
-     * Dibuja los marcos delimitadores de cada arena y la línea divisoria central.
-     */
+    
+     // Dibuja los marcos delimitadores de cada arena y la línea divisoria central.
+     
     private void drawBordersAndDivider() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.25f, 0.25f, 0.25f, 1f);
@@ -260,7 +258,8 @@ public class SnakeScreen implements Screen {
     }
 
     /**
-     * Dibuja el cartel central al expirar los 30 segundos con el ganador, puntajes y victorias globales.
+     * Dibuja el cartel central al expirar los 30 segundos con el ganador,
+     *  puntajes y victorias globales.
      */
     private void drawRoundOverOverlay() {
         // Marco oscuro de fondo

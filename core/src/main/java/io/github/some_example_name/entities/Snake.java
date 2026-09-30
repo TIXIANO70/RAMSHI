@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Representa a la serpiente en el juego.
- * Administra sus segmentos corporales, las texturas asociadas y el renderizado en pantalla.
+ Representa a la serpiente en el juego.
+ Administra sus segmentos corporales, las texturas asociadas y el renderizado en pantalla.
  */
 public class Snake implements Disposable {
 
@@ -30,8 +30,8 @@ public class Snake implements Disposable {
     private final List<SnakeSegment> segments = new ArrayList<>();
 
     /**
-     * Constructor de la serpiente.
-     * Carga los assets de texturas e inicializa un cuerpo estático de prueba.
+     Constructor de la serpiente.
+     Carga los assets de texturas e inicializa un cuerpo estático de prueba.
      */
     // Número de jugador (1 o 2)
     private final int playerNumber;
@@ -40,7 +40,7 @@ public class Snake implements Disposable {
     private int growPending = 0;
 
     /**
-     * Constructor por defecto para el Jugador 1 en la posición clásica.
+    Constructor por defecto para el Jugador 1 en la posición clásica.
      */
     public Snake() {
         this(1, 21, 14, Direction.RIGHT);
@@ -48,11 +48,11 @@ public class Snake implements Disposable {
 
     /**
      * Constructor parametrizado para instanciar a la serpiente del Jugador 1 o Jugador 2.
-     *
-     * @param playerNumber     1 para Jugador 1 (verde), 2 para Jugador 2 (azul/naranja).
-     * @param startX           Coordenada X inicial de la cabeza.
-     * @param startY           Coordenada Y inicial de la cabeza.
-     * @param initialDirection Dirección inicial de avance.
+     
+      playerNumber     1 para Jugador 1 (verde), 2 para Jugador 2 (azul/naranja).
+      startX           Coordenada X inicial de la cabeza.
+      startY           Coordenada Y inicial de la cabeza.
+      initialDirection Dirección inicial de avance.
      */
     public Snake(int playerNumber, int startX, int startY, Direction initialDirection) {
         this.playerNumber = playerNumber;
@@ -61,9 +61,9 @@ public class Snake implements Disposable {
     }
 
     /**
-     * Carga las texturas correspondientes en memoria según el número de jugador.
-     *
-     * @param player Identificador del jugador (1 o 2).
+      Carga las texturas correspondientes en memoria según el número de jugador.
+     
+     player Identificador del jugador (1 o 2).
      */
     private void loadTextures(int player) {
         String p = "P" + player;
@@ -89,10 +89,10 @@ public class Snake implements Disposable {
 
     /**
      * Reinicia la serpiente a su estado base con 3 segmentos alineados en la dirección inicial.
-     *
-     * @param startX   Coordenada X de la cabeza.
-     * @param startY   Coordenada Y de la cabeza.
-     * @param startDir Dirección hacia la que apunta.
+     
+       startX   Coordenada X de la cabeza.
+        Coordenada Y de la cabeza.
+      Dirección hacia la que apunta.
      */
     public void reset(int startX, int startY, Direction startDir) {
         segments.clear();
@@ -109,8 +109,8 @@ public class Snake implements Disposable {
 
     /**
      * Ejecuta un paso de simulación (tick) avanzando la serpiente en la dirección indicada.
-     *
-     * @param direction Dirección hacia la que debe moverse la cabeza.
+     
+     direction Dirección hacia la que debe moverse la cabeza.
      */
     public void step(Direction direction) {
         SnakeSegment currentHead = getHead();
@@ -143,7 +143,7 @@ public class Snake implements Disposable {
     }
 
     /**
-     * Calcula la orientación visual de la cola basándose en la posición del segmento que le sigue.
+     Calcula la orientación visual de la cola basándose en la posición del segmento que le sigue.
      */
     private void updateTailOrientation() {
         if (segments.isEmpty()) return;
@@ -164,7 +164,7 @@ public class Snake implements Disposable {
     }
 
     /**
-     * Marca un crecimiento pendiente para el próximo paso.
+     Marca un crecimiento pendiente para el próximo paso.
      */
     public void grow() {
         this.growPending++;
@@ -179,8 +179,7 @@ public class Snake implements Disposable {
 
     /**
      * Comprueba si la cabeza ha chocado contra alguna parte de su propio cuerpo o cola.
-     *
-     * @return true si hay auto-colisión, false si el camino está libre.
+      return true si hay auto-colisión, false si el camino está libre.
      */
     public boolean checkSelfCollision() {
         SnakeSegment head = getHead();
@@ -188,7 +187,7 @@ public class Snake implements Disposable {
         for (int i = 0; i < segments.size() - 1; i++) {
             SnakeSegment segment = segments.get(i);
             if (segment.getGridX() == head.getGridX() && segment.getGridY() == head.getGridY()) {
-                return true;
+                return true; //
             }
         }
         return false;
@@ -197,9 +196,9 @@ public class Snake implements Disposable {
     /**
      * Comprueba si la cabeza se encuentra fuera de los límites de la cuadrícula.
      *
-     * @param gridWidth  Ancho total de la cuadrícula en baldosas.
-     * @param gridHeight Alto total de la cuadrícula en baldosas.
-     * @return true si la cabeza está fuera de los límites, false si está adentro.
+      gridWidth  Ancho total de la cuadrícula en baldosas.
+      gridHeight Alto total de la cuadrícula en baldosas.
+      true si la cabeza está fuera de los límites, false si está adentro.
      */
     public boolean checkOutOfBounds(int gridWidth, int gridHeight) {
         SnakeSegment head = getHead();
@@ -209,10 +208,10 @@ public class Snake implements Disposable {
 
     /**
      * Verifica si alguna casilla de la serpiente ocupa las coordenadas dadas.
-     *
-     * @param x Coordenada X de la casilla.
-     * @param y Coordenada Y de la casilla.
-     * @return true si coincide con algún segmento.
+     
+      x Coordenada X de la casilla.
+      y Coordenada Y de la casilla.
+      true si coincide con algún segmento.
      */
     public boolean occupies(int x, int y) {
         for (SnakeSegment segment : segments) {
@@ -226,9 +225,9 @@ public class Snake implements Disposable {
     /**
      * Dibuja todos los segmentos de la serpiente aplicando un desplazamiento en píxeles.
      *
-     * @param batch   SpriteBatch utilizado para el dibujado 2D.
-     * @param offsetX Desplazamiento horizontal en píxeles para la arena correspondiente.
-     * @param offsetY Desplazamiento vertical en píxeles para la arena correspondiente.
+      batch   SpriteBatch utilizado para el dibujado 2D.
+      offsetX Desplazamiento horizontal en píxeles para la arena correspondiente.
+     offsetY Desplazamiento vertical en píxeles para la arena correspondiente.
      */
     public void render(SpriteBatch batch, float offsetX, float offsetY) {
         for (SnakeSegment segment : segments) {
@@ -253,9 +252,9 @@ public class Snake implements Disposable {
 
     /**
      * Obtiene la textura correcta según el tipo de segmento y su orientación.
-     *
-     * @param segment Segmento a evaluar.
-     * @return Textura correspondiente.
+     
+      segment Segmento a evaluar.
+     return Textura correspondiente.
      */
     private Texture getTextureForSegment(SnakeSegment segment) {
         switch (segment.getType()) {
@@ -277,7 +276,7 @@ public class Snake implements Disposable {
     }
 
     /**
-     * Libera de la memoria de la GPU todas las texturas cargadas.
+      Libera de la memoria de la GPU todas las texturas cargadas.
      */
     @Override
     public void dispose() {
