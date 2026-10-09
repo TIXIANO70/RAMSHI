@@ -30,15 +30,15 @@ public class SnakeArena implements Disposable {
     private final Direction initialDirection;
 
     /**
+     * Constructor SnakeArena (playerNumber, originPixelX, originPixelY, gridWidth, gridHeight, tile1, tile2)
      * Construye una nueva arena de juego para el jugador indicado.
-     *
-     * @param playerNumber Identificador del jugador (1 o 2).
-     * @param originPixelX Coordenada X en píxeles donde inicia el tablero.
-     * @param originPixelY Coordenada Y en píxeles donde inicia el tablero.
-     * @param gridWidth    Ancho de la arena en casillas.
-     * @param gridHeight   Alto de la arena en casillas.
-     * @param tile1        Textura de baldosa clara/alternada.
-     * @param tile2        Textura de baldosa oscura/alternada.
+     * Parámetro int playerNumber Identificador del jugador (1 o 2).
+     * Parámetro float originPixelX Coordenada X en píxeles donde inicia el tablero.
+     * Parámetro float originPixelY Coordenada Y en píxeles donde inicia el tablero.
+     * Parámetro int gridWidth Ancho de la arena en casillas.
+     * Parámetro int gridHeight Alto de la arena en casillas.
+     * Parámetro Texture tile1 Textura de baldosa clara/alternada.
+     * Parámetro Texture tile2 Textura de baldosa oscura/alternada.
      */
     public SnakeArena(int playerNumber, float originPixelX, float originPixelY, int gridWidth, int gridHeight, Texture tile1, Texture tile2) {
         this.playerNumber = playerNumber;
@@ -68,9 +68,9 @@ public class SnakeArena implements Disposable {
     }
 
     /**
+     * Metodo setNextDirection (dir)
      * Actualiza la dirección deseada para el próximo paso evitando giros directos de 180°.
-     *
-     * @param dir Nueva dirección solicitada por el usuario.
+     * Parámetro Direction dir Nueva dirección solicitada por el usuario.
      */
     public void setNextDirection(Direction dir) {
         if (dir != null && !dir.isOpposite(currentDirection)) {
@@ -88,8 +88,8 @@ public class SnakeArena implements Disposable {
 
 
     /**
-     * Ejecuta un paso de simulación (tick) para la arena:
-     * avanza la serpiente, comprueba recolección de comida y gestiona colisiones/respawn.
+     * Metodo tick ()
+     * Ejecuta un paso de simulación para la arena avanzando la serpiente, comprobando comida y gestionando colisiones.
      */
     public void tick() {
         currentDirection = nextDirection;
@@ -109,6 +109,7 @@ public class SnakeArena implements Disposable {
     }
 
     /**
+     * Metodo respawnSnake ()
      * Reaparece a la serpiente en su posición base y reinicia el marcador de la ronda a 0.
      */
     public void respawnSnake() {
@@ -120,6 +121,7 @@ public class SnakeArena implements Disposable {
     }
 
     /**
+     * Metodo resetForNewRound ()
      * Reinicia por completo la arena para una nueva ronda (score a 0 y posición inicial).
      */
     public void resetForNewRound() {
@@ -127,9 +129,9 @@ public class SnakeArena implements Disposable {
     }
 
     /**
+     * Metodo render (batch)
      * Dibuja el fondo de la arena, la comida y la serpiente con sus desplazamientos en pantalla.
-     *
-     * @param batch SpriteBatch para renderizado 2D.
+     * Parámetro SpriteBatch batch SpriteBatch para renderizado 2D.
      */
     public void render(SpriteBatch batch) {
         // 1. Dibujar baldosas alternadas del tablero

@@ -57,11 +57,10 @@ public class InputHandler extends InputAdapter {
     }
 
     /**
-     * Obtiene la nueva dirección solicitada para el Jugador 1 (WASD).
-     * Devuelve null si no hubo ninguna pulsación de cambio de dirección válida en este ciclo.
-     *
-     * @param currentDirection Dirección actual en la que se mueve la serpiente de P1.
-     * @return La nueva dirección a tomar, o null si no se debe alterar la dirección previa.
+     * Metodo getP1Direction (currentDirection)
+     * Obtiene la nueva dirección solicitada para el Jugador 1 (WASD), o null si no hubo pulsación válida.
+     * Parámetro Direction currentDirection Dirección actual en la que se mueve la serpiente de P1.
+     * devolvera dir La nueva dirección a tomar, o null si no se debe alterar la dirección previa.
      */
     public Direction getP1Direction(Direction currentDirection) {
         Direction dir = p1BufferedDirection;
@@ -88,11 +87,10 @@ public class InputHandler extends InputAdapter {
     }
 
     /**
-     * Obtiene la nueva dirección solicitada para el Jugador 2 (Flechas).
-     * Devuelve null si no hubo ninguna pulsación de cambio de dirección válida en este ciclo.
-     *
-     * @param currentDirection Dirección actual en la que se mueve la serpiente de P2.
-     * @return La nueva dirección a tomar, o null si no se debe alterar la dirección previa.
+     * Metodo getP2Direction (currentDirection)
+     * Obtiene la nueva dirección solicitada para el Jugador 2 (Flechas), o null si no hubo pulsación válida.
+     * Parámetro Direction currentDirection Dirección actual en la que se mueve la serpiente de P2.
+     * devolvera dir La nueva dirección a tomar, o null si no se debe alterar la dirección previa.
      */
     public Direction getP2Direction(Direction currentDirection) {
         Direction dir = p2BufferedDirection;
@@ -119,6 +117,7 @@ public class InputHandler extends InputAdapter {
     }
 
     /**
+     * Metodo reset ()
      * Limpia los buffers pendientes de dirección (útil al iniciar o reiniciar rondas).
      */
     public void reset() {
@@ -127,7 +126,10 @@ public class InputHandler extends InputAdapter {
     }
 
     /**
+     * Metodo getNewDirection (currentDirection)
      * Compatibilidad: delega en el Jugador 1 devolviendo la dirección actual si no hubo cambios.
+     * Parámetro Direction currentDirection Dirección actual de la serpiente.
+     * devolvera dir Dirección resultante para el avance del Jugador 1.
      */
     public Direction getNewDirection(Direction currentDirection) {
         Direction dir = getP1Direction(currentDirection);

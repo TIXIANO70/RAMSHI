@@ -20,12 +20,12 @@ public class SnakeSegment {
     private Direction direction;
 
     /**
+     * Constructor SnakeSegment (gridX, gridY, type, direction)
      * Constructor para un segmento de serpiente.
-     *
-     * @param gridX     Posición X en casillas dentro de la cuadrícula.
-     * @param gridY     Posición Y en casillas dentro de la cuadrícula.
-     * @param type      Tipo de segmento (cabeza, cuerpo o cola).
-     * @param direction Dirección hacia la que está orientado el segmento.
+     * Parámetro int gridX Posición X en casillas dentro de la cuadrícula.
+     * Parámetro int gridY Posición Y en casillas dentro de la cuadrícula.
+     * Parámetro Type type Tipo de segmento (cabeza, cuerpo o cola).
+     * Parámetro Direction direction Dirección hacia la que está orientado el segmento.
      */
     public SnakeSegment(int gridX, int gridY, Type type, Direction direction) {
         this.gridX = gridX;

@@ -60,20 +60,20 @@ public class SnakeScreen implements Screen {
     private int p2GlobalWins;
 
     /**
+     * Constructor SnakeScreen (game)
      * Constructor por defecto de SnakeScreen que inicia el contador global en cero.
-     *
-     * @param game Instancia principal del juego.
+     * Parámetro Game game Instancia principal del juego.
      */
     public SnakeScreen(Game game) {
         this(game, 0, 0);
     }
 
     /**
+     * Constructor SnakeScreen (game, p1Wins, p2Wins)
      * Constructor parametrizado con victorias globales acumuladas.
-     *
-     * @param game        Instancia principal del juego.
-     * @param p1Wins      Victorias globales acumuladas del Jugador 1.
-     * @param p2Wins      Victorias globales acumuladas del Jugador 2.
+     * Parámetro Game game Instancia principal del juego.
+     * Parámetro int p1Wins Victorias globales acumuladas del Jugador 1.
+     * Parámetro int p2Wins Victorias globales acumuladas del Jugador 2.
      */
     public SnakeScreen(Game game, int p1Wins, int p2Wins) {
         this.game = game;
@@ -177,6 +177,7 @@ public class SnakeScreen implements Screen {
     }
 
     /**
+     * Metodo finishRound ()
      * Evalúa los puntajes finales de la ronda y define el mensaje de victoria, sumando al contador global.
      */
     private void finishRound() {
@@ -196,6 +197,7 @@ public class SnakeScreen implements Screen {
     }
 
     /**
+     * Metodo startNewRound ()
      * Reinicia las variables de tiempo y arenas para dar inicio a una nueva ronda de 30 segundos.
      */
     private void startNewRound() {
@@ -209,6 +211,7 @@ public class SnakeScreen implements Screen {
 
 
     /**
+     * Metodo drawBordersAndDivider ()
      * Dibuja los marcos delimitadores de cada arena y la línea divisoria central.
      */
     private void drawBordersAndDivider() {
@@ -231,6 +234,7 @@ public class SnakeScreen implements Screen {
     }
 
     /**
+     * Metodo drawHUD ()
      * Dibuja las etiquetas de los jugadores, marcadores y victorias globales junto al cronómetro en el HUD.
      */
     private void drawHUD() {
@@ -260,6 +264,7 @@ public class SnakeScreen implements Screen {
     }
 
     /**
+     * Metodo drawRoundOverOverlay ()
      * Dibuja el cartel central al expirar los 30 segundos con el ganador, puntajes y victorias globales.
      */
     private void drawRoundOverOverlay() {

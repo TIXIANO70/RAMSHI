@@ -38,10 +38,9 @@ public class MainMenuScreen implements Screen {
     private final Vector3 mousePos = new Vector3();
 
     /**
-     * Constructor del menú principal.
+     * Constructor MainMenuScreen (game)
      * Configura el viewport, fuentes, renderers y la disposición de los botones centrados.
-     *
-     * @param game Instancia principal del juego.
+     * Parámetro Game game Instancia principal del juego.
      */
     public MainMenuScreen(Game game) {
         this.game = game;
@@ -169,7 +168,10 @@ public class MainMenuScreen implements Screen {
     }
 
     /**
+     * Metodo drawCenteredText (text, y)
      * Dibuja un texto centrado horizontalmente en la pantalla a la altura Y especificada.
+     * Parámetro String text Cadena de texto a renderizar.
+     * Parámetro float y Coordenada vertical Y de renderizado.
      */
     private void drawCenteredText(String text, float y) {
         GlyphLayout layout = new GlyphLayout(font, text);

@@ -18,6 +18,7 @@ public class Food implements Disposable {
     private final Texture texture;
 
     /**
+     * Constructor Food ()
      * Constructor que carga la textura de la comida.
      */
     public Food() {
@@ -25,14 +26,13 @@ public class Food implements Disposable {
     }
 
     /**
-     * Reaparece la comida en una coordenada aleatoria dentro de los límites dados,
-     * garantizando que no coincida con ninguna casilla ocupada por la serpiente.
-     *
-     * @param minX  Límite mínimo en X (inclusivo).
-     * @param minY  Límite mínimo en Y (inclusivo).
-     * @param maxX  Límite máximo en X (inclusivo).
-     * @param maxY  Límite máximo en Y (inclusivo).
-     * @param snake Serpiente a verificar para no superponerse.
+     * Metodo respawn (minX, minY, maxX, maxY, snake)
+     * Reaparece la comida en una coordenada aleatoria dentro de los límites dados garantizando que no coincida con la serpiente.
+     * Parámetro int minX Límite mínimo en X (inclusivo).
+     * Parámetro int minY Límite mínimo en Y (inclusivo).
+     * Parámetro int maxX Límite máximo en X (inclusivo).
+     * Parámetro int maxY Límite máximo en Y (inclusivo).
+     * Parámetro Snake snake Serpiente a verificar para no superponerse.
      */
     public void respawn(int minX, int minY, int maxX, int maxY, Snake snake) {
         int attempts = 0;
@@ -50,33 +50,33 @@ public class Food implements Disposable {
     }
 
     /**
+     * Metodo respawn (gridWidth, gridHeight, snake)
      * Sobrecarga de reaparición para tableros que inician en (0, 0).
-     *
-     * @param gridWidth  Ancho del tablero en casillas.
-     * @param gridHeight Alto del tablero en casillas.
-     * @param snake      Serpiente a verificar.
+     * Parámetro int gridWidth Ancho del tablero en casillas.
+     * Parámetro int gridHeight Alto del tablero en casillas.
+     * Parámetro Snake snake Serpiente a verificar.
      */
     public void respawn(int gridWidth, int gridHeight, Snake snake) {
         respawn(0, 0, gridWidth - 1, gridHeight - 1, snake);
     }
 
     /**
+     * Metodo render (batch, tileSize, offsetX, offsetY)
      * Dibuja la comida en la cuadrícula usando el tamaño de baldosa indicado y desplazamiento de arena.
-     *
-     * @param batch    SpriteBatch para renderizado 2D.
-     * @param tileSize Tamaño en píxeles de cada casilla.
-     * @param offsetX  Desplazamiento horizontal en píxeles para la arena.
-     * @param offsetY  Desplazamiento vertical en píxeles para la arena.
+     * Parámetro SpriteBatch batch SpriteBatch para renderizado 2D.
+     * Parámetro float tileSize Tamaño en píxeles de cada casilla.
+     * Parámetro float offsetX Desplazamiento horizontal en píxeles para la arena.
+     * Parámetro float offsetY Desplazamiento vertical en píxeles para la arena.
      */
     public void render(SpriteBatch batch, float tileSize, float offsetX, float offsetY) {
         batch.draw(texture, offsetX + gridX * tileSize, offsetY + gridY * tileSize, tileSize, tileSize);
     }
 
     /**
+     * Metodo render (batch, tileSize)
      * Dibuja la comida en la cuadrícula usando el tamaño de baldosa indicado en el origen base.
-     *
-     * @param batch    SpriteBatch para renderizado 2D.
-     * @param tileSize Tamaño en píxeles de cada casilla.
+     * Parámetro SpriteBatch batch SpriteBatch para renderizado 2D.
+     * Parámetro float tileSize Tamaño en píxeles de cada casilla.
      */
     public void render(SpriteBatch batch, float tileSize) {
         render(batch, tileSize, 0, 0);
