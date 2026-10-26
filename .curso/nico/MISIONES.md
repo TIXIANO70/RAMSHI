@@ -121,7 +121,7 @@ Reglas fijas:
 - Criterio de aprobación: build OK; se entra a Race y con ESC vuelve al menú; overlay de fin de ronda funciona.
 - Preguntas de defensa oral: ¿qué hooks implementás y por qué? ¿cómo se conecta el menú?
 
-### Misión 12 — El camino: fondo y 3 carriles
+### ✅ Misión 12 — El camino: fondo y 3 carriles
 - Objetivo: dibujar la pista con 3 carriles por jugador.
 - Conceptos nuevos: `pgista.png` (128×128) como carril repetido 3× horizontal y tileado vertical, filtro `Nearest` para pixel art.
 - Archivos a leer/tocar: `RaceScreen.java`, `assets/race/pista.png`.

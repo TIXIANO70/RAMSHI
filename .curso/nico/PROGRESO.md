@@ -1,8 +1,8 @@
 # PROGRESO — Nico
 
 ## Estado actual
-- **Misión en curso:** ninguna (Misión 11 completada).
-- **Próxima misión:** Misión 12 — El camino: fondo y 3 carriles.
+- **Misión en curso:** ninguna (Misión 12 completada).
+- **Próxima misión:** Misión 13 — Los autos y el cambio de carril.
 - **Rama activa:** `practica/nico`.
 - **Minijuego propio:** Race (se desarrolla en el Bloque C, rama `feature/Race`).
 
@@ -41,3 +41,4 @@ IDE preferido: IntelliJ. No requiere misiones introductorias de Java: el foco va
 - Bloque C: `feature/Race` desde `main` actualizado; se trae `.curso/nico` (y `BaseMinigameScreen`) desde `practica/nico`; PR a `main` al final.
 - Un commit por misión: `course(nico): complete mission N - <topic>`.
 | 11 | Esqueleto de `RaceScreen` + acceso al menú | Herencia de `BaseMinigameScreen`, hooks mínimos, navegación en menú, Template Method con segundo minijuego | 2026-10-25 |
+| 12 | El camino: fondo y 3 carriles | Tileado de `pista.png`, `TextureFilter.Nearest`, split-screen P1/P2 con 3 carriles, dibujo en `drawGame()` | 2026-10-25 |
