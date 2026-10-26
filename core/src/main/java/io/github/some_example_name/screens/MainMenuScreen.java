@@ -34,6 +34,8 @@ public class MainMenuScreen implements Screen {
     private final Viewport viewport;
 
     private final Rectangle jugarButton;
+    private final Rectangle wipButton;
+
     private final Rectangle salirButton;
     private final Vector3 mousePos = new Vector3();
 
@@ -61,6 +63,7 @@ public class MainMenuScreen implements Screen {
         float buttonX = (VIRTUAL_WIDTH - buttonWidth) / 2f; // 270f
 
         this.jugarButton = new Rectangle(buttonX, 210f, buttonWidth, buttonHeight);
+        this.wipButton = new Rectangle(buttonX, 50f, buttonWidth, buttonHeight);
         this.salirButton = new Rectangle(buttonX, 130f, buttonWidth, buttonHeight);
     }
 
@@ -78,6 +81,7 @@ public class MainMenuScreen implements Screen {
         viewport.unproject(mousePos);
 
         boolean hoverJugar = jugarButton.contains(mousePos.x, mousePos.y);
+        boolean hoverWIP = wipButton.contains(mousePos.x, mousePos.y);
         boolean hoverSalir = salirButton.contains(mousePos.x, mousePos.y);
 
         // -------------------------
@@ -92,6 +96,14 @@ public class MainMenuScreen implements Screen {
             shapeRenderer.setColor(0.12f, 0.16f, 0.14f, 1f);
         }
         shapeRenderer.rect(jugarButton.x, jugarButton.y, jugarButton.width, jugarButton.height);
+
+        // Botón wip
+        if(hoverWIP){
+            shapeRenderer.setColor(0.12f, 0.35f, 0.18f, 1f);
+        }else{
+            shapeRenderer.setColor(0.12f, 0.16f, 0.14f, 1f);
+        }
+        shapeRenderer.rect(wipButton.x, wipButton.y, wipButton.width, wipButton.height);
 
         // Botón Salir (fondo resaltado si tiene hover)
         if (hoverSalir) {
@@ -144,13 +156,16 @@ public class MainMenuScreen implements Screen {
         font.setColor(hoverJugar ? Color.WHITE : Color.LIGHT_GRAY);
         drawCenteredText("JUGAR 1v1", jugarButton.y + 38f);
 
+        font.setColor(hoverWIP ? Color.WHITE : Color.LIGHT_GRAY);
+        drawCenteredText("WIP", wipButton.y + 38f);
+
         font.setColor(hoverSalir ? Color.WHITE : Color.LIGHT_GRAY);
         drawCenteredText("SALIR", salirButton.y + 38f);
 
         // Leyenda de controles al pie
         font.setColor(0.6f, 0.6f, 0.65f, 1f);
         font.getData().setScale(1.0f);
-        drawCenteredText("P1: WASD  |  P2: FLECHAS  |  RONDAS DE 30 SEGUNDOS", 55f);
+        drawCenteredText("P1: WASD  |  P2: FLECHAS  |  RONDAS DE 30 SEGUNDOS", 0f);
 
         batch.end();
 
