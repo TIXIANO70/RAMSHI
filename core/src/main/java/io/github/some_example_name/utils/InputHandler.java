@@ -5,11 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import io.github.some_example_name.entities.Direction;
 
-/**
- * Gestiona y desacopla la entrada de teclado para el Jugador 1 (WASD) y Jugador 2 (Flechas).
- * Extiende InputAdapter para capturar eventos directos de teclas (keyDown) garantizando que no
- * se pierda ninguna pulsación entre cuadros de animación, complementado con polling en tiempo real.
- */
+
 public class InputHandler extends InputAdapter {
 
     private Direction p1BufferedDirection = null;
@@ -17,7 +13,6 @@ public class InputHandler extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
-        // --- Jugador 1: Controles WASD ---
         if (keycode == Input.Keys.W) {
             p1BufferedDirection = Direction.UP;
             return true;
@@ -35,7 +30,6 @@ public class InputHandler extends InputAdapter {
             return true;
         }
 
-        // --- Jugador 2: Teclas de Flechas ---
         if (keycode == Input.Keys.UP || keycode == Input.Keys.NUMPAD_8) {
             p2BufferedDirection = Direction.UP;
             return true;
@@ -56,17 +50,11 @@ public class InputHandler extends InputAdapter {
         return false;
     }
 
-    /**
-     * Metodo getP1Direction (currentDirection)
-     * Obtiene la nueva dirección solicitada para el Jugador 1 (WASD), o null si no hubo pulsación válida.
-     * Parámetro Direction currentDirection Dirección actual en la que se mueve la serpiente de P1.
-     * devolvera dir La nueva dirección a tomar, o null si no se debe alterar la dirección previa.
-     */
+
     public Direction getP1Direction(Direction currentDirection) {
         Direction dir = p1BufferedDirection;
-        p1BufferedDirection = null; // Consumir el evento registrado
+        p1BufferedDirection = null;
 
-        // Respaldo por polling en tiempo real si el evento no fue capturado
         if (dir == null) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.W) || (Gdx.input.isKeyPressed(Input.Keys.W) && currentDirection != Direction.UP && currentDirection != Direction.DOWN)) {
                 dir = Direction.UP;
@@ -86,17 +74,11 @@ public class InputHandler extends InputAdapter {
         return null;
     }
 
-    /**
-     * Metodo getP2Direction (currentDirection)
-     * Obtiene la nueva dirección solicitada para el Jugador 2 (Flechas), o null si no hubo pulsación válida.
-     * Parámetro Direction currentDirection Dirección actual en la que se mueve la serpiente de P2.
-     * devolvera dir La nueva dirección a tomar, o null si no se debe alterar la dirección previa.
-     */
+
     public Direction getP2Direction(Direction currentDirection) {
         Direction dir = p2BufferedDirection;
-        p2BufferedDirection = null; // Consumir el evento registrado
+        p2BufferedDirection = null;
 
-        // Respaldo por polling en tiempo real si el evento no fue capturado
         if (dir == null) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || (Gdx.input.isKeyPressed(Input.Keys.UP) && currentDirection != Direction.UP && currentDirection != Direction.DOWN)) {
                 dir = Direction.UP;
@@ -116,21 +98,11 @@ public class InputHandler extends InputAdapter {
         return null;
     }
 
-    /**
-     * Metodo reset ()
-     * Limpia los buffers pendientes de dirección (útil al iniciar o reiniciar rondas).
-     */
     public void reset() {
         p1BufferedDirection = null;
         p2BufferedDirection = null;
     }
 
-    /**
-     * Metodo getNewDirection (currentDirection)
-     * Compatibilidad: delega en el Jugador 1 devolviendo la dirección actual si no hubo cambios.
-     * Parámetro Direction currentDirection Dirección actual de la serpiente.
-     * devolvera dir Dirección resultante para el avance del Jugador 1.
-     */
     public Direction getNewDirection(Direction currentDirection) {
         Direction dir = getP1Direction(currentDirection);
         return dir != null ? dir : currentDirection;

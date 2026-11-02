@@ -9,92 +9,55 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Representa a la serpiente en el juego.
- * Administra sus segmentos corporales, las texturas asociadas y el renderizado en pantalla.
- */
+
 public class Snake implements Disposable {
 
     public static final float TILE_SIZE = 16f;
 
-    // Texturas de la cabeza en las 4 direcciones (Jugador 1)
     private final Map<Direction, Texture> headTextures = new EnumMap<>(Direction.class);
 
-    // Textura base del cuerpo (Jugador 1)
     private final Map<Direction, Texture> bodyTextures = new EnumMap<>(Direction.class);
 
-    // Texturas de la cola en las 4 direcciones (Jugador 1)
     private final Map<Direction, Texture> tailTextures = new EnumMap<>(Direction.class);
 
-    // Lista ordenada de segmentos que componen la serpiente (desde la cola hasta la cabeza)
     private final List<SnakeSegment> segments = new ArrayList<>();
 
-    /**
-     * Constructor de la serpiente.
-     * Carga los assets de texturas e inicializa un cuerpo estático de prueba.
-     */
-    // Número de jugador (1 o 2)
+
     private final int playerNumber;
 
-    // Segmentos acumulados pendientes por crecer
     private int growPending = 0;
 
-    /**
-     * Constructor Snake ()
-     * Constructor por defecto para el Jugador 1 en la posición clásica.
-     */
+
     public Snake() {
         this(1, 21, 14, Direction.RIGHT);
     }
 
-    /**
-     * Constructor Snake (playerNumber, startX, startY, initialDirection)
-     * Constructor parametrizado para instanciar a la serpiente del Jugador 1 o Jugador 2.
-     * Parámetro int playerNumber 1 para Jugador 1 (verde), 2 para Jugador 2 (azul/naranja).
-     * Parámetro int startX Coordenada X inicial de la cabeza.
-     * Parámetro int startY Coordenada Y inicial de la cabeza.
-     * Parámetro Direction initialDirection Dirección inicial de avance.
-     */
+
     public Snake(int playerNumber, int startX, int startY, Direction initialDirection) {
         this.playerNumber = playerNumber;
         loadTextures(playerNumber);
         reset(startX, startY, initialDirection);
     }
 
-    /**
-     * Metodo loadTextures (player)
-     * Carga las texturas correspondientes en memoria según el número de jugador.
-     * Parámetro int player Identificador del jugador (1 o 2).
-     */
     private void loadTextures(int player) {
         String p = "P" + player;
 
-        // Carga de texturas de cabeza
         headTextures.put(Direction.UP, new Texture("snake/head/Cabeza" + p + "_Up.png"));
         headTextures.put(Direction.DOWN, new Texture("snake/head/Cabeza" + p + "_Down.png"));
         headTextures.put(Direction.LEFT, new Texture("snake/head/Cabeza" + p + "_Left.png"));
         headTextures.put(Direction.RIGHT, new Texture("snake/head/Cabeza" + p + "_Right.png"));
 
-        // Carga de texturas del cuerpo (vertical y horizontal)
         bodyTextures.put(Direction.UP, new Texture("snake/Body/Body" + p + ".png"));
         bodyTextures.put(Direction.DOWN, new Texture("snake/Body/Body" + p + ".png"));
         bodyTextures.put(Direction.LEFT, new Texture("snake/Body/Body" + p + "_1.png"));
         bodyTextures.put(Direction.RIGHT, new Texture("snake/Body/Body" + p + "_1.png"));
 
-        // Carga de texturas de cola
         tailTextures.put(Direction.UP, new Texture("snake/tail/Cola" + p + "_Up.png"));
         tailTextures.put(Direction.DOWN, new Texture("snake/tail/Cola" + p + "_Down.png"));
         tailTextures.put(Direction.LEFT, new Texture("snake/tail/Cola" + p + "_Left.png"));
         tailTextures.put(Direction.RIGHT, new Texture("snake/tail/Cola" + p + "_Right.png"));
     }
 
-    /**
-     * Metodo reset (startX, startY, startDir)
-     * Reinicia la serpiente a su estado base con 3 segmentos alineados en la dirección inicial.
-     * Parámetro int startX Coordenada X de la cabeza.
-     * Parámetro int startY Coordenada Y de la cabeza.
-     * Parámetro Direction startDir Dirección hacia la que apunta.
-     */
     public void reset(int startX, int startY, Direction startDir) {
         segments.clear();
         growPending = 0;
@@ -102,21 +65,15 @@ public class Snake implements Disposable {
         int dx = startDir.getDx();
         int dy = startDir.getDy();
 
-        // Creamos cola, cuerpo y cabeza de forma consecutiva
         segments.add(new SnakeSegment(startX - 2 * dx, startY - 2 * dy, SnakeSegment.Type.TAIL, startDir));
         segments.add(new SnakeSegment(startX - dx, startY - dy, SnakeSegment.Type.BODY, startDir));
         segments.add(new SnakeSegment(startX, startY, SnakeSegment.Type.HEAD, startDir));
     }
 
-    /**
-     * Metodo step (direction)
-     * Ejecuta un paso de simulación (tick) avanzando la serpiente en la dirección indicada.
-     * Parámetro Direction direction Dirección hacia la que debe moverse la cabeza.
-     */
+
     public void step(Direction direction) {
         SnakeSegment currentHead = getHead();
 
-        // Evitar giro suicida directo de 180 grados si llega una dirección opuesta
         Direction effectiveDirection = direction.isOpposite(currentHead.getDirection())
             ? currentHead.getDirection()
             : direction;
@@ -124,29 +81,21 @@ public class Snake implements Disposable {
         int nextHeadX = currentHead.getGridX() + effectiveDirection.getDx();
         int nextHeadY = currentHead.getGridY() + effectiveDirection.getDy();
 
-        // La cabeza actual pasa a ser un segmento de cuerpo con su orientación de avance
         currentHead.setType(SnakeSegment.Type.BODY);
         currentHead.setDirection(effectiveDirection);
 
-        // Agregamos la nueva cabeza al final de la lista
         segments.add(new SnakeSegment(nextHeadX, nextHeadY, SnakeSegment.Type.HEAD, effectiveDirection));
 
-        // Si hay crecimiento pendiente, lo consumimos sin remover la cola (aumenta el tamaño)
         if (growPending > 0) {
             growPending--;
         } else {
-            // Removemos el segmento de la cola anterior
             segments.remove(0);
         }
 
-        // Actualizamos el nuevo primer segmento para que sea la cola y apunte hacia el siguiente
         updateTailOrientation();
     }
 
-    /**
-     * Metodo updateTailOrientation ()
-     * Calcula la orientación visual de la cola basándose en la posición del segmento que le sigue.
-     */
+
     private void updateTailOrientation() {
         if (segments.isEmpty()) return;
 
@@ -165,31 +114,19 @@ public class Snake implements Disposable {
         }
     }
 
-    /**
-     * Metodo grow ()
-     * Marca un crecimiento pendiente para el próximo paso.
-     */
+
     public void grow() {
         this.growPending++;
     }
 
-    /**
-     * Metodo getHead ()
-     * Retorna el segmento de la cabeza (último elemento de la lista).
-     * devolvera head Segmento correspondiente a la cabeza de la serpiente.
-     */
+
     public SnakeSegment getHead() {
         return segments.get(segments.size() - 1);
     }
 
-    /**
-     * Metodo checkSelfCollision ()
-     * Comprueba si la cabeza ha chocado contra alguna parte de su propio cuerpo o cola.
-     * devolvera hasCollided true si hay auto-colisión, false si el camino está libre.
-     */
+
     public boolean checkSelfCollision() {
         SnakeSegment head = getHead();
-        // Recorremos todos los segmentos excepto la propia cabeza
         for (int i = 0; i < segments.size() - 1; i++) {
             SnakeSegment segment = segments.get(i);
             if (segment.getGridX() == head.getGridX() && segment.getGridY() == head.getGridY()) {
