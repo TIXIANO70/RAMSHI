@@ -33,8 +33,6 @@ public class quickdrawScreen extends BaseMinigameScreen{
     private int heartH = heartW;
     private String[] P1_keys = {"W","A","S","D"};
     private String[] P2_keys = {"UP","LEFT","DOWN","RIGHT"};
-    private boolean cantLoseHealthP1 = false;
-    private boolean cantLoseHealthP2 = false;
     public quickdrawScreen(Game game){
         super(game);
         this.heart = new Texture("quickdraw/heart.png");
@@ -85,8 +83,7 @@ public class quickdrawScreen extends BaseMinigameScreen{
         if(reactionTimer>reactionInterval){
             addReactionTimer=false;
             reactionTimer=0;
-            cantLoseHealthP1=false;
-            cantLoseHealthP2=false;
+            shooted = false;
         }
         if(triggerInterval<triggerTimer){
             triggerTimer-=triggerInterval;
@@ -97,17 +94,12 @@ public class quickdrawScreen extends BaseMinigameScreen{
         }
     }
     private void takeHealth(int player){
-        if(reactionTimer<reactionInterval){
-            cantLoseHealthP1=true;
-            cantLoseHealthP2=true;
-        }else{
-            cantLoseHealthP1=false;
-            cantLoseHealthP2=false;
-        }
-        if(player==1 && !cantLoseHealthP1){
+        if(player==1 && !shooted){
             healthP1--;
-        }else if(player ==2 && !cantLoseHealthP2){
+            shooted = false;
+        }else if(player ==2 && !shooted){
             healthP2--;
+            shooted = false;
         }
     }
     private void shoot(int player, int key) {
@@ -126,9 +118,9 @@ public class quickdrawScreen extends BaseMinigameScreen{
                 takeHealth(2);
             }
         }
-        shooted =true;
         if(!addReactionTimer){
             addReactionTimer=true;
+            shooted = true;
         }
         if(healthP1==0 || healthP2==0){
             finishRound();
