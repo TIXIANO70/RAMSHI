@@ -1,8 +1,4 @@
 package io.github.some_example_name.entities;
-
-/**
- * Enumeración que representa las posibles direcciones de movimiento y orientación en la cuadrícula 2D.
- */
 public enum Direction {
     UP(0, 1),
     DOWN(0, -1),
@@ -24,13 +20,6 @@ public enum Direction {
     public int getDy() {
         return dy;
     }
-
-    /**
-     * Metodo isOpposite (other)
-     * Comprueba si otra dirección es opuesta a la actual para evitar giros de 180 grados.
-     * Parámetro Direction other Dirección a comparar.
-     * devolvera isOpposite true si es la dirección opuesta, false en caso contrario.
-     */
     public boolean isOpposite(Direction other) {
         return other != null && this.dx + other.dx == 0 && this.dy + other.dy == 0;
     }

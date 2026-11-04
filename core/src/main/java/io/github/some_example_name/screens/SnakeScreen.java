@@ -1,187 +1,288 @@
 package io.github.some_example_name.screens;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import io.github.some_example_name.entities.Direction;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.some_example_name.entities.Snake;
 import io.github.some_example_name.entities.SnakeArena;
 import io.github.some_example_name.utils.InputHandler;
 
-/**
- * Pantalla del minijuego Snake en modo local 1v1 (Split-Screen).
- * Hereda de BaseMinigameScreen toda la infraestructura común de la sesión (HUD, timer,
- * victorias globales y ciclo de vida), implementando exclusivamente las mecánicas de Snake:
- * simulación por ticks, renderizado de las dos arenas y captura de entradas (WASD y Flechas).
- */
-public class SnakeScreen extends BaseMinigameScreen {
 
-    // Dimensiones optimizadas de cada arena en casillas de 16px (17 x 20 = 272px x 320px)
-    // Representa un ~40% menos de pantalla respecto al original para mayor dinamismo
-    public static final int ARENA_GRID_WIDTH = 17;
-    public static final int ARENA_GRID_HEIGHT = 20;
+public class SnakeScreen implements Screen {
 
-    // Intervalo de tiempo por paso de simulación (tick)
+    public static final float VIRTUAL_WIDTH = 800f;
+    public static final float VIRTUAL_HEIGHT = 480f;
+
+    public static final int ARENA_GRID_WIDTH = 22;
+    public static final int ARENA_GRID_HEIGHT = 26;
+
     private static final float MOVE_INTERVAL = 0.12f;
     private float moveTimer = 0f;
 
+    private final Game game;
+    private final SpriteBatch batch;
+    private final ShapeRenderer shapeRenderer;
+    private final BitmapFont font;
+    private final OrthographicCamera camera;
+    private final Viewport viewport;
     private final InputHandler inputHandler;
 
-    // Texturas compartidas del tablero de baldosas
     private final Texture tile1;
     private final Texture tile2;
 
-    // Arenas independientes para el modo Split-Screen
     private final SnakeArena arenaP1;
     private final SnakeArena arenaP2;
 
-    /**
-     * Constructor por defecto que inicia la sesión de Snake con victorias en cero.
-     *
-     * @param game Instancia principal del juego.
-     */
+    private static final float ROUND_DURATION = 30f;
+    private float timeRemaining = ROUND_DURATION;
+    private boolean roundOver = false;
+    private String roundWinnerMessage = "";
+
+    private int p1GlobalWins;
+    private int p2GlobalWins;
+
+
     public SnakeScreen(Game game) {
         this(game, 0, 0);
     }
 
-    /**
-     * Constructor parametrizado que conserva las victorias globales acumuladas.
-     *
-     * @param game    Instancia principal del juego.
-     * @param p1Wins  Victorias acumuladas del Jugador 1.
-     * @param p2Wins  Victorias acumuladas del Jugador 2.
-     */
     public SnakeScreen(Game game, int p1Wins, int p2Wins) {
-        super(game, p1Wins, p2Wins);
-
+        this.game = game;
+        this.p1GlobalWins = p1Wins;
+        this.p2GlobalWins = p2Wins;
+        this.batch = new SpriteBatch();
+        this.shapeRenderer = new ShapeRenderer();
+        this.font = new BitmapFont();
         this.inputHandler = new InputHandler();
 
-        // Carga de texturas compartidas para el fondo
+        this.camera = new OrthographicCamera();
+        this.viewport = new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
+        this.viewport.apply();
+        this.camera.position.set(VIRTUAL_WIDTH / 2f, VIRTUAL_HEIGHT / 2f, 0);
+
         this.tile1 = new Texture("snake/tiles/Tile1.png");
         this.tile2 = new Texture("snake/tiles/Tile2.png");
 
-        // Arena P1: Centrada en la mitad izquierda (X: 64, Y: 56)
-        this.arenaP1 = new SnakeArena(1, 64f, 56f, ARENA_GRID_WIDTH, ARENA_GRID_HEIGHT, tile1, tile2);
+        this.arenaP1 = new SnakeArena(1, 24f, 16f, ARENA_GRID_WIDTH, ARENA_GRID_HEIGHT, tile1, tile2);
 
-        // Arena P2: Centrada en la mitad derecha (X: 464, Y: 56)
-        this.arenaP2 = new SnakeArena(2, 464f, 56f, ARENA_GRID_WIDTH, ARENA_GRID_HEIGHT, tile1, tile2);
+        this.arenaP2 = new SnakeArena(2, 424f, 16f, ARENA_GRID_WIDTH, ARENA_GRID_HEIGHT, tile1, tile2);
     }
 
-    /**
-     * Registra el InputHandler personalizado para captura de WASD (P1) y Flechas (P2).
-     */
     @Override
-    protected void registerInputProcessor() {
-        Gdx.input.setInputProcessor(inputHandler);
+    public void show() {
+        com.badlogic.gdx.Gdx.input.setInputProcessor(inputHandler);
     }
 
-    /**
-     * Actualiza la simulación de Snake: procesa entradas pendientes y ejecuta ticks de movimiento.
-     *
-     * @param delta Tiempo transcurrido desde el último cuadro en segundos.
-     */
     @Override
-    protected void updateMinigame(float delta) {
-        // 1. Capturar entradas de ambos jugadores
-        Direction p1Dir = inputHandler.getP1Direction(arenaP1.getCurrentDirection());
-        if (p1Dir != null) {
-            arenaP1.setNextDirection(p1Dir);
+    public void render(float delta) {
+        if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
+            game.setScreen(new MainMenuScreen(game));
+            dispose();
+            return;
         }
 
-        Direction p2Dir = inputHandler.getP2Direction(arenaP2.getCurrentDirection());
-        if (p2Dir != null) {
-            arenaP2.setNextDirection(p2Dir);
+        if (!roundOver) {
+            timeRemaining -= delta;
+            if (timeRemaining <= 0f) {
+                timeRemaining = 0f;
+                finishRound();
+            } else {
+                io.github.some_example_name.entities.Direction p1Dir = inputHandler.getP1Direction(arenaP1.getCurrentDirection());
+                if (p1Dir != null) {
+                    arenaP1.setNextDirection(p1Dir);
+                }
+
+                io.github.some_example_name.entities.Direction p2Dir = inputHandler.getP2Direction(arenaP2.getCurrentDirection());
+                if (p2Dir != null) {
+                    arenaP2.setNextDirection(p2Dir);
+                }
+
+                moveTimer += delta;
+                if (moveTimer >= MOVE_INTERVAL) {
+                    moveTimer -= MOVE_INTERVAL;
+                    arenaP1.tick();
+                    arenaP2.tick();
+                }
+            }
+        } else {
+            if (com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)
+                || com.badlogic.gdx.Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ENTER)) {
+                startNewRound();
+            }
         }
 
-        // 2. Acumular tiempo para el tick de simulación (0.12s)
-        moveTimer += delta;
-        if (moveTimer >= MOVE_INTERVAL) {
-            moveTimer -= MOVE_INTERVAL;
-            arenaP1.tick();
-            arenaP2.tick();
-        }
-    }
 
-    /**
-     * Renderiza las baldosas, serpientes, comida y los marcos divisores de ambas arenas.
-     *
-     * @param batch         Instancia de SpriteBatch compartida configurada con la cámara.
-     * @param shapeRenderer Instancia de ShapeRenderer compartida configurada con la cámara.
-     */
-    @Override
-    protected void renderMinigame(SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        // 1. Dibujar arenas (baldosas, comida y serpientes)
+
+        ScreenUtils.clear(0.08f, 0.08f, 0.08f, 1f);
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
         batch.begin();
         arenaP1.render(batch);
         arenaP2.render(batch);
         batch.end();
 
-        // 2. Dibujar marcos delimitadores y línea divisoria central
-        drawBordersAndDivider(shapeRenderer);
+        drawBordersAndDivider();
+
+        drawHUD();
+
+        if (roundOver) {
+            drawRoundOverOverlay();
+        }
     }
 
-    /**
-     * Dibuja los marcos de las arenas y la línea divisoria central adaptados a las nuevas dimensiones.
-     *
-     * @param shapeRenderer Instancia para dibujo de primitivas geométricas.
-     */
-    private void drawBordersAndDivider(ShapeRenderer shapeRenderer) {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(0.25f, 0.25f, 0.25f, 1f);
 
-        float arenaWidthPx = ARENA_GRID_WIDTH * Snake.TILE_SIZE;
-        float arenaHeightPx = ARENA_GRID_HEIGHT * Snake.TILE_SIZE;
+    private void finishRound() {
+        roundOver = true;
+        int s1 = arenaP1.getScore();
+        int s2 = arenaP2.getScore();
 
-        // Borde arena P1 (64f, 56f)
-        shapeRenderer.rect(63f, 55f, arenaWidthPx + 2f, arenaHeightPx + 2f);
-
-        // Borde arena P2 (464f, 56f)
-        shapeRenderer.rect(463f, 55f, arenaWidthPx + 2f, arenaHeightPx + 2f);
-
-        // Línea central divisoria
-        shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
-        shapeRenderer.line(VIRTUAL_WIDTH / 2f, 40f, VIRTUAL_WIDTH / 2f, 410f);
-
-        shapeRenderer.end();
+        if (s1 > s2) {
+            p1GlobalWins++;
+            roundWinnerMessage = "¡JUGADOR 1 GANA LA RONDA!";
+        } else if (s2 > s1) {
+            p2GlobalWins++;
+            roundWinnerMessage = "¡JUGADOR 2 GANA LA RONDA!";
+        } else {
+            roundWinnerMessage = "¡EMPATE EN LA RONDA!";
+        }
     }
 
-    /**
-     * Obtiene el puntaje acumulado por la serpiente del Jugador 1 en la ronda.
-     */
-    @Override
-    protected int getP1Score() {
-        return arenaP1.getScore();
-    }
 
-    /**
-     * Obtiene el puntaje acumulado por la serpiente del Jugador 2 en la ronda.
-     */
-    @Override
-    protected int getP2Score() {
-        return arenaP2.getScore();
-    }
-
-    /**
-     * Reinicia las arenas y el buffer de entradas para dar inicio a una nueva ronda de 30 segundos.
-     */
-    @Override
-    protected void resetMinigameRound() {
-        moveTimer = 0f;
+    private void startNewRound() {
+        timeRemaining = ROUND_DURATION;
+        roundOver = false;
+        roundWinnerMessage = "";
         inputHandler.reset();
         arenaP1.resetForNewRound();
         arenaP2.resetForNewRound();
     }
 
-    /**
-     * Libera las texturas y recursos específicos de Snake.
-     */
+
+
+    private void drawBordersAndDivider() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(0.25f, 0.25f, 0.25f, 1f);
+
+        float arenaWidthPx = ARENA_GRID_WIDTH * Snake.TILE_SIZE;
+        float arenaHeightPx = ARENA_GRID_HEIGHT * Snake.TILE_SIZE;
+        shapeRenderer.rect(23f, 15f, arenaWidthPx + 2f, arenaHeightPx + 2f);
+
+        shapeRenderer.rect(423f, 15f, arenaWidthPx + 2f, arenaHeightPx + 2f);
+
+        shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
+        shapeRenderer.line(VIRTUAL_WIDTH / 2f, 16f, VIRTUAL_WIDTH / 2f, 432f);
+
+        shapeRenderer.end();
+    }
+
+
+    private void drawHUD() {
+        batch.begin();
+
+        font.setColor(0.3f, 0.9f, 0.3f, 1f);
+        font.getData().setScale(1.2f);
+        font.draw(batch, "P1: " + arenaP1.getScore() + " pts (Wins: " + p1GlobalWins + ")", 24f, 462f);
+
+        int seconds = (int) Math.ceil(timeRemaining);
+        if (timeRemaining <= 5f && !roundOver) {
+            font.setColor(1f, 0.3f, 0.3f, 1f); // Alerta roja en los últimos 5s
+        } else {
+            font.setColor(1f, 0.9f, 0.2f, 1f); // Amarillo normal
+        }
+        font.getData().setScale(1.4f);
+        font.draw(batch, "TIEMPO: " + seconds + "s", 340f, 462f);
+
+        font.setColor(0.3f, 0.7f, 1f, 1f);
+        font.getData().setScale(1.2f);
+        font.draw(batch, "P2: " + arenaP2.getScore() + " pts (Wins: " + p2GlobalWins + ")", 590f, 462f);
+
+        batch.end();
+    }
+
+
+    private void drawRoundOverOverlay() {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0.05f, 0.05f, 0.05f, 0.92f);
+        shapeRenderer.rect(160f, 130f, 480f, 220f);
+        shapeRenderer.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(1f, 0.84f, 0f, 1f);
+        shapeRenderer.rect(160f, 130f, 480f, 220f);
+        shapeRenderer.end();
+
+        batch.begin();
+
+        font.setColor(Color.WHITE);
+        font.getData().setScale(1.5f);
+        com.badlogic.gdx.graphics.g2d.GlyphLayout titleLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout(font, roundWinnerMessage);
+        font.draw(batch, titleLayout, (VIRTUAL_WIDTH - titleLayout.width) / 2f, 320f);
+
+        font.setColor(0.85f, 0.85f, 0.85f, 1f);
+        font.getData().setScale(1.1f);
+        String scoreSummary = "Puntaje de ronda: P1 (" + arenaP1.getScore() + ") vs P2 (" + arenaP2.getScore() + ")";
+        com.badlogic.gdx.graphics.g2d.GlyphLayout scoreLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout(font, scoreSummary);
+        font.draw(batch, scoreLayout, (VIRTUAL_WIDTH - scoreLayout.width) / 2f, 275f);
+
+        font.setColor(1f, 0.85f, 0.2f, 1f);
+        font.getData().setScale(1.2f);
+        String globalWinsSummary = "VICTORIAS TOTALES:  P1 [" + p1GlobalWins + "]  -  P2 [" + p2GlobalWins + "]";
+        com.badlogic.gdx.graphics.g2d.GlyphLayout winsLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout(font, globalWinsSummary);
+        font.draw(batch, winsLayout, (VIRTUAL_WIDTH - winsLayout.width) / 2f, 235f);
+
+        font.setColor(0.7f, 1f, 0.7f, 1f);
+        font.getData().setScale(1.0f);
+        String instruction = "[ ESPACIO ] Siguiente Ronda       [ ESC ] Menu Principal";
+        com.badlogic.gdx.graphics.g2d.GlyphLayout instrLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout(font, instruction);
+        font.draw(batch, instrLayout, (VIRTUAL_WIDTH - instrLayout.width) / 2f, 175f);
+
+        batch.end();
+    }
+
+
+
     @Override
-    protected void disposeMinigame() {
+    public void resize(int width, int height) {
+        viewport.update(width, height, true);
+    }
+
+    @Override
+    public void pause() {}
+
+    @Override
+    public void resume() {}
+
+    @Override
+    public void hide() {
+        if (com.badlogic.gdx.Gdx.input.getInputProcessor() == inputHandler) {
+            com.badlogic.gdx.Gdx.input.setInputProcessor(null);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        if (com.badlogic.gdx.Gdx.input.getInputProcessor() == inputHandler) {
+            com.badlogic.gdx.Gdx.input.setInputProcessor(null);
+        }
+        batch.dispose();
+        shapeRenderer.dispose();
+        font.dispose();
         tile1.dispose();
         tile2.dispose();
         arenaP1.dispose();
         arenaP2.dispose();
     }
+
 }
+
