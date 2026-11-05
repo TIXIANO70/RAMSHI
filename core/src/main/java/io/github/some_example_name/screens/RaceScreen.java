@@ -194,25 +194,14 @@ public class RaceScreen extends BaseMinigameScreen{
         if (car2 != null) car2.dispose();
         if(obstacle != null) obstacle.dispose();
     }
-    public void spawnObstacle(int initial_x, ArrayList obstaclesList){
+    public void spawnObstacle(int initial_x, ArrayList<Obstacle> obstaclesList){
         int lane=0;
         float rectX=0;
         Obstacle obs = new Obstacle(0,0,0,0);
-        do{
-            lane = MathUtils.random(0,2);
-            rectX =16*scaleX+initial_x+scaleX*lane*32;
-            obs = new Obstacle(rectX, VIRTUAL_HEIGHT, 32*scaleX, 32*scaleX);
-
-        }while(collidesWithObstacle(obs.rect, obstaclesList));
+        lane = MathUtils.random(0,2);
+        rectX =16*scaleX+initial_x+scaleX*lane*32;
+        obs = new Obstacle(rectX, VIRTUAL_HEIGHT, 32*scaleX, 32*scaleX);
         obstaclesList.add(obs);
-    }
-    public boolean collidesWithObstacle(Rectangle rect, ArrayList<Obstacle> obstaclesList){
-        for(Obstacle obs : obstaclesList){
-            if(obs.rect.overlaps(rect)){
-                return false;
-            }
-        }
-        return true;
     }
     public void updateObstacle(float delta, Rectangle rectP1, Rectangle rectP2){
         for (int i = obstaclesP1.size() - 1; i >= 0; i--) {
