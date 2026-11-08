@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -23,9 +24,10 @@ public class LightsScreen extends BaseMinigameScreen {
 
     // --- Geometría (coordenadas virtuales 800x480) ---
     private static final float HALF_WIDTH = VIRTUAL_WIDTH / 2f;
-    private static final float CENTER_Y = 225f;
-    private static final float PAD_SIZE = 90f;
-    private static final float PAD_GAP = 10f;
+    private static final float PAD_SIZE = 80f;
+    private static final float PAD_GAP = 8f;
+    private static final float ROW_BOTTOM_Y = 150f;
+    private static final float ROW_TOP_Y = ROW_BOTTOM_Y + PAD_SIZE + PAD_GAP;
     private static final float BOX_SIZE = 24f;
     private static final float BOX_GAP = 8f;
 
@@ -38,6 +40,12 @@ public class LightsScreen extends BaseMinigameScreen {
     };
     private static final int[] P2_KEYS = {
         Input.Keys.UP, Input.Keys.LEFT, Input.Keys.DOWN, Input.Keys.RIGHT
+    };
+
+    // Nombres de archivo por jugador, en el mismo orden que PADS
+    private static final String[][] KEY_NAMES = {
+        {"w", "a", "s", "d"},
+        {"up", "left", "down", "right"}
     };
 
     private static final Color[] PAD_ON = {
@@ -54,18 +62,34 @@ public class LightsScreen extends BaseMinigameScreen {
         }
     }
 
+    // --- Texturas: [jugador][pad] ---
+    private final Texture[][] keyOff = new Texture[2][4];
+    private final Texture[][] keyOn = new Texture[2][4];
+
     // --- Estado de la ronda ---
     private final Direction[] sequence = new Direction[SEQUENCE_LENGTH];
-    private final int[] progress = new int[2];      // aciertos de cada jugador
-    private final int[] flashPad = new int[2];      // último pad presionado
+    private final int[] progress = new int[2];
+    private final int[] flashPad = new int[2];
     private final float[] flashTimer = new float[2];
     private Phase phase;
     private float stateTime;
-    private int winner;                             // 0 = nadie/empate, 1 = P1, 2 = P2
+    private int winner;                             // 0 = empate, 1 = P1, 2 = P2
 
     public LightsScreen(Game game) {
         super(game);
+        for (int p = 0; p < 2; p++) {
+            for (int i = 0; i < 4; i++) {
+                keyOff[p][i] = loadTexture("lights/key_" + KEY_NAMES[p][i] + "_off.png");
+                keyOn[p][i] = loadTexture("lights/key_" + KEY_NAMES[p][i] + "_on.png");
+            }
+        }
         resetState();
+    }
+
+    private Texture loadTexture(String path) {
+        Texture t = new Texture(path);
+        t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        return t;
     }
 
     // ===================== Hooks de BaseMinigameScreen =====================
@@ -99,7 +123,7 @@ public class LightsScreen extends BaseMinigameScreen {
                 boolean p1Done = handleInput(0, P1_KEYS);
                 boolean p2Done = handleInput(1, P2_KEYS);
                 if (p1Done && p2Done) {
-                    winner = 0;          // terminaron en el mismo frame: empate
+                    winner = 0;
                     finishRound();
                 } else if (p1Done) {
                     winner = 1;
@@ -116,23 +140,40 @@ public class LightsScreen extends BaseMinigameScreen {
     protected void drawGame(SpriteBatch batch) {
         Direction lit = getLitDirection();
 
+        // 1) Fondos tenues de cada tecla y cajitas de progreso
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
-                boolean on = (lit == PADS[i]) || (flashTimer[p] > 0f && flashPad[p] == i);
-                shapeRenderer.setColor(on ? PAD_ON[i] : PAD_OFF[i]);
+                shapeRenderer.setColor(PAD_OFF[i]);
                 shapeRenderer.rect(padX(p, i), padY(i), PAD_SIZE, PAD_SIZE);
             }
             drawProgressBoxes(p);
         }
         shapeRenderer.end();
 
+        // 2) Línea divisoria
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
         shapeRenderer.line(HALF_WIDTH, 16f, HALF_WIDTH, 432f);
         shapeRenderer.end();
 
+        // 3) Imágenes de las teclas
         batch.begin();
+        for (int p = 0; p < 2; p++) {
+            for (int i = 0; i < 4; i++) {
+                boolean on = (lit == PADS[i]) || (flashTimer[p] > 0f && flashPad[p] == i);
+                if (on) {
+                    batch.setColor(PAD_ON[i]);          // tiñe la imagen blanca
+                    batch.draw(keyOn[p][i], padX(p, i), padY(i), PAD_SIZE, PAD_SIZE);
+                } else {
+                    batch.setColor(Color.WHITE);        // imagen de contorno tal cual
+                    batch.draw(keyOff[p][i], padX(p, i), padY(i), PAD_SIZE, PAD_SIZE);
+                }
+            }
+        }
+        batch.setColor(Color.WHITE);                    // restaurar siempre
+
+        // 4) Textos
         font.getData().setScale(1.4f);
         font.setColor(Color.WHITE);
         if (!roundOver) {
@@ -181,7 +222,12 @@ public class LightsScreen extends BaseMinigameScreen {
     @Override
     public void dispose() {
         super.dispose();
-        // Cuando agreguemos Texture, se liberan acá.
+        for (int p = 0; p < 2; p++) {
+            for (int i = 0; i < 4; i++) {
+                if (keyOff[p][i] != null) keyOff[p][i].dispose();
+                if (keyOn[p][i] != null) keyOn[p][i].dispose();
+            }
+        }
     }
 
     // ===================== Lógica propia =====================
@@ -212,7 +258,7 @@ public class LightsScreen extends BaseMinigameScreen {
                         return true;
                     }
                 } else {
-                    progress[player] = 0; // error: vuelve a empezar
+                    progress[player] = 0;
                 }
             }
         }
@@ -252,21 +298,18 @@ public class LightsScreen extends BaseMinigameScreen {
         }
     }
 
+    // Distribución tipo teclado: arriba (W/↑) centrada; izquierda, abajo y derecha en una fila
     private float padX(int player, int pad) {
         float cx = player * HALF_WIDTH + HALF_WIDTH / 2f;
         switch (pad) {
-            case 1:  return cx - PAD_SIZE * 1.5f - PAD_GAP;
-            case 3:  return cx + PAD_SIZE * 0.5f + PAD_GAP;
-            default: return cx - PAD_SIZE / 2f;
+            case 1:  return cx - PAD_SIZE * 1.5f - PAD_GAP;   // izquierda (A / ←)
+            case 3:  return cx + PAD_SIZE * 0.5f + PAD_GAP;   // derecha (D / →)
+            default: return cx - PAD_SIZE / 2f;               // arriba y abajo
         }
     }
 
     private float padY(int pad) {
-        switch (pad) {
-            case 0:  return CENTER_Y + PAD_SIZE * 0.5f + PAD_GAP;
-            case 2:  return CENTER_Y - PAD_SIZE * 1.5f - PAD_GAP;
-            default: return CENTER_Y - PAD_SIZE / 2f;
-        }
+        return (pad == 0) ? ROW_TOP_Y : ROW_BOTTOM_Y;
     }
 
     private void drawCentered(SpriteBatch batch, String text, float y) {
