@@ -16,7 +16,7 @@ public class LightsScreen extends BaseMinigameScreen {
     //  VALORES AJUSTABLES (todo lo que se pueda pedir cambiar está acá)
     // =====================================================================
     private static final float TOTAL_DURATION = 10f;   // Duración TOTAL del minijuego (todas las rondas), en segundos
-    private static final int[] SEQUENCE_LENGTHS = {4, 5, 6}; // Luces por ronda (la cantidad de elementos = cantidad de rondas)
+    private static final int[] SEQUENCE_LENGTHS = {4, 4, 5}; // Luces por ronda (la cantidad de elementos = cantidad de rondas)
     private static final float SHOW_TIME = 1f;         // Tiempo en que se muestra CADA secuencia (igual en todas las rondas)
     private static final float LIGHT_ON_RATIO = 0.7f;  // Fracción de cada luz que está encendida (el resto es pausa)
     private static final float COUNTDOWN_TIME = 0.4f;  // Pausa antes de mostrar cada secuencia (s)
