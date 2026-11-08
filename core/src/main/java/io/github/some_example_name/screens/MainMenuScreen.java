@@ -14,7 +14,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
+import com.badlogic.gdx.Input;
 
 public class MainMenuScreen implements Screen {
 
@@ -154,6 +154,11 @@ public class MainMenuScreen implements Screen {
             } else if (hoverSalir) {
                 Gdx.app.exit();
             }
+        }
+        
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
+            game.setScreen(new LightsScreen(game));
+            dispose();
         }
     }
 
