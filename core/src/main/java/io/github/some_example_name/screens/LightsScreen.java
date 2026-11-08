@@ -15,12 +15,12 @@ public class LightsScreen extends BaseMinigameScreen {
     // =====================================================================
     //  VALORES AJUSTABLES (todo lo que se pueda pedir cambiar está acá)
     // =====================================================================
-    private static final float ROUND_DURATION = 30f;   // Duración de la ronda (segundos)
-    private static final int   SEQUENCE_LENGTH = 4;    // Cantidad de luces de la secuencia
-    private static final float COUNTDOWN_TIME = 1f;    // Cuenta previa antes de mostrar (s)
-    private static final float LIGHT_SPEED = 1f;       // Velocidad de las luces: 2 = el doble de rápido
-    private static final float LIGHT_ON_TIME = 0.5f;   // Cuánto dura encendida cada luz (s)
-    private static final float LIGHT_GAP_TIME = 0.2f;  // Pausa entre luces (s)
+    private static final float TOTAL_DURATION = 10f;   // Duración TOTAL del minijuego (todas las rondas), en segundos
+    private static final int[] SEQUENCE_LENGTHS = {4, 5, 6}; // Luces por ronda (la cantidad de elementos = cantidad de rondas)
+    private static final float SHOW_TIME = 1f;         // Tiempo en que se muestra CADA secuencia (igual en todas las rondas)
+    private static final float LIGHT_ON_RATIO = 0.7f;  // Fracción de cada luz que está encendida (el resto es pausa)
+    private static final float COUNTDOWN_TIME = 0.4f;  // Pausa antes de mostrar cada secuencia (s)
+    private static final float RESULT_TIME = 0.4f;     // Pausa al terminar cada ronda (s)
     private static final float FLASH_TIME = 0.15f;     // Destello al presionar una tecla (s)
     private static final boolean RESET_ON_ERROR = true; // true: al fallar se reinicia el progreso
 
@@ -31,7 +31,7 @@ public class LightsScreen extends BaseMinigameScreen {
 
     // Controles: orden 0=arriba, 1=izquierda, 2=abajo, 3=derecha
     private static final int[][] KEYS = {
-        {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D},          // Jugador 1
+        {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D},           // Jugador 1
         {Input.Keys.UP, Input.Keys.LEFT, Input.Keys.DOWN, Input.Keys.RIGHT} // Jugador 2
     };
 
@@ -44,8 +44,9 @@ public class LightsScreen extends BaseMinigameScreen {
     };
     // =====================================================================
 
-    private enum Phase { COUNTDOWN, SHOWING, INPUT }
+    private enum Phase { COUNTDOWN, SHOWING, INPUT, RESULT }
 
+    private static final int TOTAL_ROUNDS = SEQUENCE_LENGTHS.length;
     private static final float HALF_WIDTH = VIRTUAL_WIDTH / 2f;
     private static final float ROW_TOP_Y = ROW_BOTTOM_Y + PAD_SIZE + PAD_GAP;
     private static final String[][] KEY_NAMES = {
@@ -57,14 +58,16 @@ public class LightsScreen extends BaseMinigameScreen {
     private final Texture[][] keyOff = new Texture[2][4];
     private final Texture[][] keyOn = new Texture[2][4];
 
-    // Estado de la ronda
-    private final int[] sequence = new int[SEQUENCE_LENGTH];  // índices de tecla (0-3)
+    // Estado
+    private final int[] sequence = new int[maxLength()];   // índices de tecla (0-3)
     private final int[] progress = new int[2];
     private final int[] flashPad = new int[2];
     private final float[] flashTimer = new float[2];
+    private final int[] roundWins = new int[2];             // sub-rondas ganadas por cada jugador
+    private int currentRound;                               // 0, 1, 2...
+    private int subWinner;                                  // ganador de la sub-ronda: 0 = nadie, 1 = P1, 2 = P2
     private Phase phase;
     private float stateTime;
-    private int winner;                                       // 0 = empate, 1 = P1, 2 = P2
 
     public LightsScreen(Game game) {
         super(game);
@@ -74,7 +77,7 @@ public class LightsScreen extends BaseMinigameScreen {
                 keyOn[p][i] = loadTexture("lights/key_" + KEY_NAMES[p][i] + "_on.png");
             }
         }
-        resetState();
+        resetAll();
     }
 
     private Texture loadTexture(String path) {
@@ -83,11 +86,17 @@ public class LightsScreen extends BaseMinigameScreen {
         return t;
     }
 
+    private static int maxLength() {
+        int max = 0;
+        for (int n : SEQUENCE_LENGTHS) max = Math.max(max, n);
+        return max;
+    }
+
     // ===================== Hooks de BaseMinigameScreen =====================
 
     @Override
     protected float getRoundDuration() {
-        return ROUND_DURATION;
+        return TOTAL_DURATION;
     }
 
     @Override
@@ -99,14 +108,22 @@ public class LightsScreen extends BaseMinigameScreen {
 
         if (phase == Phase.COUNTDOWN && stateTime >= COUNTDOWN_TIME) {
             changePhase(Phase.SHOWING);
-        } else if (phase == Phase.SHOWING && stateTime >= SEQUENCE_LENGTH * slotLength()) {
+        } else if (phase == Phase.SHOWING && stateTime >= SHOW_TIME) {
             changePhase(Phase.INPUT);
         } else if (phase == Phase.INPUT) {
             boolean p1Done = handleInput(0);
             boolean p2Done = handleInput(1);
             if (p1Done || p2Done) {
-                winner = (p1Done && p2Done) ? 0 : (p1Done ? 1 : 2);
-                finishRound();
+                subWinner = (p1Done && p2Done) ? 0 : (p1Done ? 1 : 2);
+                if (subWinner != 0) roundWins[subWinner - 1]++;
+                changePhase(Phase.RESULT);
+            }
+        } else if (phase == Phase.RESULT && stateTime >= RESULT_TIME) {
+            currentRound++;
+            if (currentRound >= TOTAL_ROUNDS) {
+                finishRound();          // terminaron todas las rondas
+            } else {
+                startSubRound();
             }
         }
     }
@@ -157,37 +174,39 @@ public class LightsScreen extends BaseMinigameScreen {
         batch.end();
     }
 
+    /** Se llama una sola vez al terminar todo: el ganador suma tantos puntos como rondas ganó. */
     @Override
     protected String determineRoundWinner() {
-        if (winner == 1) {
-            p1GlobalWins++;
-            return "¡JUGADOR 1 GANA LA RONDA!";
-        } else if (winner == 2) {
-            p2GlobalWins++;
-            return "¡JUGADOR 2 GANA LA RONDA!";
+        int p1 = roundWins[0];
+        int p2 = roundWins[1];
+        if (p1 > p2) {
+            p1GlobalWins += p1;
+            return "¡JUGADOR 1 GANA! (" + p1 + "-" + p2 + ")  +" + p1 + " pts";
+        } else if (p2 > p1) {
+            p2GlobalWins += p2;
+            return "¡JUGADOR 2 GANA! (" + p2 + "-" + p1 + ")  +" + p2 + " pts";
         }
-        return "¡EMPATE EN LA RONDA!";
+        return "¡EMPATE! (" + p1 + "-" + p2 + ")";
     }
 
     @Override
     protected void onRoundReset() {
-        resetState();
+        resetAll();
     }
 
     @Override
     protected String getP1StatusText() {
-        return "P1: " + progress[0] + "/" + SEQUENCE_LENGTH + " (Wins: " + p1GlobalWins + ")";
+        return "P1: " + roundWins[0] + " rondas (Wins: " + p1GlobalWins + ")";
     }
 
     @Override
     protected String getP2StatusText() {
-        return "P2: " + progress[1] + "/" + SEQUENCE_LENGTH + " (Wins: " + p2GlobalWins + ")";
+        return "P2: " + roundWins[1] + " rondas (Wins: " + p2GlobalWins + ")";
     }
 
     @Override
     protected String getScoreSummary() {
-        return "Progreso: P1 (" + progress[0] + "/" + SEQUENCE_LENGTH
-            + ") vs P2 (" + progress[1] + "/" + SEQUENCE_LENGTH + ")";
+        return "Rondas ganadas: P1 (" + roundWins[0] + ") vs P2 (" + roundWins[1] + ")";
     }
 
     @Override
@@ -203,24 +222,31 @@ public class LightsScreen extends BaseMinigameScreen {
 
     // ===================== Lógica propia =====================
 
-    private void resetState() {
-        for (int i = 0; i < SEQUENCE_LENGTH; i++) {
+    /** Reinicia todo el minijuego (se usa al empezar y al reiniciar con ESPACIO). */
+    private void resetAll() {
+        roundWins[0] = roundWins[1] = 0;
+        currentRound = 0;
+        startSubRound();
+    }
+
+    /** Prepara una sub-ronda: nueva secuencia, progreso en cero y cuenta previa. */
+    private void startSubRound() {
+        for (int i = 0; i < sequenceLength(); i++) {
             sequence[i] = MathUtils.random(0, 3);
         }
         progress[0] = progress[1] = 0;
         flashTimer[0] = flashTimer[1] = 0f;
-        winner = 0;
+        subWinner = 0;
         changePhase(Phase.COUNTDOWN);
+    }
+
+    private int sequenceLength() {
+        return SEQUENCE_LENGTHS[Math.min(currentRound, TOTAL_ROUNDS - 1)];
     }
 
     private void changePhase(Phase newPhase) {
         phase = newPhase;
         stateTime = 0f;
-    }
-
-    /** Duración de cada luz + su pausa, ajustada por LIGHT_SPEED. */
-    private float slotLength() {
-        return (LIGHT_ON_TIME + LIGHT_GAP_TIME) / LIGHT_SPEED;
     }
 
     /** Procesa las teclas de un jugador. Devuelve true si completó la secuencia. */
@@ -233,7 +259,7 @@ public class LightsScreen extends BaseMinigameScreen {
 
             if (i == sequence[progress[player]]) {
                 progress[player]++;
-                if (progress[player] == SEQUENCE_LENGTH) return true;
+                if (progress[player] == sequenceLength()) return true;
             } else if (RESET_ON_ERROR) {
                 progress[player] = 0;
             }
@@ -244,27 +270,33 @@ public class LightsScreen extends BaseMinigameScreen {
     /** Tecla encendida ahora mismo durante SHOWING (-1 si ninguna). */
     private int getLitPad() {
         if (phase != Phase.SHOWING) return -1;
-        int slot = (int) (stateTime / slotLength());
-        float inSlot = stateTime - slot * slotLength();
-        if (slot < SEQUENCE_LENGTH && inSlot < LIGHT_ON_TIME / LIGHT_SPEED) {
-            return sequence[slot];
+        float slot = SHOW_TIME / sequenceLength();      // cada luz ocupa una parte igual del tiempo total
+        int index = (int) (stateTime / slot);
+        float inSlot = stateTime - index * slot;
+        if (index < sequenceLength() && inSlot < slot * LIGHT_ON_RATIO) {
+            return sequence[index];
         }
         return -1;
     }
 
     private String getPhaseMessage() {
+        String round = "RONDA " + (currentRound + 1) + "/" + TOTAL_ROUNDS + " - ";
         switch (phase) {
-            case COUNTDOWN: return "PREPARATE...";
-            case SHOWING:   return "MIRA LA SECUENCIA";
-            default:        return "¡REPETILA!";
+            case COUNTDOWN: return round + "PREPARATE...";
+            case SHOWING:   return round + "MIRA LA SECUENCIA";
+            case INPUT:     return round + "¡REPETILA!";
+            default:
+                if (subWinner == 0) return "EMPATE EN ESTA RONDA";
+                return "PUNTO PARA EL JUGADOR " + subWinner;
         }
     }
 
     private void drawProgressBoxes(int player) {
+        int length = sequenceLength();
         float box = 24f, gap = 8f;
-        float total = SEQUENCE_LENGTH * box + (SEQUENCE_LENGTH - 1) * gap;
+        float total = length * box + (length - 1) * gap;
         float startX = player * HALF_WIDTH + (HALF_WIDTH - total) / 2f;
-        for (int i = 0; i < SEQUENCE_LENGTH; i++) {
+        for (int i = 0; i < length; i++) {
             if (i < progress[player]) shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
             else shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1f);
             shapeRenderer.rect(startX + i * (box + gap), 50f, box, box);
