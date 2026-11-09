@@ -13,7 +13,8 @@ public enum MinigameType {
     SHIPS("Lluvia de cañonazos", ShipsScreen::new),
     TUG_OF_WAR("Tira y afloja", TugOfWarScreen::new),
     QUICKDRAW("Quickdraw", QuickdrawScreen::new),   // comentar si faltan los PNG
-    RACE("Carrera", RaceScreen::new);               // comentar si faltan los PNG
+    RACE("Carrera", RaceScreen::new),               // comentar si faltan los PNG
+    RPS("Piedra, papel o tijera", RpsScreen::new);
 
     private final String displayName;
     private final Function<Game, Screen> factory;
