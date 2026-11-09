@@ -19,7 +19,7 @@ apply plugin: 'io.github.fourlastor.construo'
 import io.github.fourlastor.construo.Target
 
 sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
-application.mainClass = 'io.github.some_example_name.lwjgl3.Lwjgl3Launcher'
+application.mainClass = 'io.github.ramshi.lwjgl3.Lwjgl3Launcher'
 application.applicationName = appName
 eclipse.project.name = appName + '-lwjgl3'
 java.sourceCompatibility = 8
@@ -145,7 +145,7 @@ construo {
       architecture.set(Target.Architecture.AARCH64)
       jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.10_7.tar.gz")
       // macOS needs an identifier
-      identifier.set("io.github.some_example_name." + appName)
+      identifier.set("io.github.ramshi." + appName)
       // Optional: icon for macOS, as an ICNS file
       macIcon.set(project.file("icons/logo.icns"))
     }
@@ -153,7 +153,7 @@ construo {
       architecture.set(Target.Architecture.X86_64)
       jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_mac_hotspot_21.0.10_7.tar.gz")
       // macOS needs an identifier
-      identifier.set("io.github.some_example_name." + appName)
+      identifier.set("io.github.ramshi." + appName)
       // Optional: icon for macOS, as an ICNS file
       macIcon.set(project.file("icons/logo.icns"))
     }
