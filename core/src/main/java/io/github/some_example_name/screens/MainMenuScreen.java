@@ -157,7 +157,7 @@ public class MainMenuScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            game.setScreen(new MeteorsScreen(game));
+            game.setScreen(new ShipsScreen(game));
             dispose();
         }
     }
