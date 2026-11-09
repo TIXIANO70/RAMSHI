@@ -1,4 +1,4 @@
-package io.github.some_example_name.screens;
+package io.github.ramshi.screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -13,8 +13,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import io.github.some_example_name.session.GameSession;
-import io.github.some_example_name.session.MinigameType;
+import io.github.ramshi.session.GameSession;
+import io.github.ramshi.session.MinigameType;
 
 public abstract class BaseMinigameScreen implements Screen {
     public static final float VIRTUAL_WIDTH = 800f;

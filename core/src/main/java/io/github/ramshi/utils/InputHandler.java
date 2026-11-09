@@ -1,9 +1,9 @@
-package io.github.some_example_name.utils;
+package io.github.ramshi.utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import io.github.some_example_name.entities.Direction;
+import io.github.ramshi.entities.Direction;
 
 
 public class InputHandler extends InputAdapter {

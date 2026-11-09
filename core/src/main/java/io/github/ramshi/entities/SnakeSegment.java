@@ -1,4 +1,4 @@
-package io.github.some_example_name.entities;
+package io.github.ramshi.entities;
 
 
 public class SnakeSegment {

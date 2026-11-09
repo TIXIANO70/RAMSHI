@@ -1,7 +1,7 @@
-package io.github.some_example_name;
+package io.github.ramshi;
 
 import com.badlogic.gdx.Game;
-import io.github.some_example_name.screens.MainMenuScreen;
+import io.github.ramshi.screens.MainMenuScreen;
 
 public class Main extends Game {
 

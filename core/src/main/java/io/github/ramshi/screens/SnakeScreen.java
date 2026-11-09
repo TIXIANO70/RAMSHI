@@ -1,14 +1,14 @@
-package io.github.some_example_name.screens;
+package io.github.ramshi.screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import io.github.some_example_name.entities.Direction;
-import io.github.some_example_name.entities.Snake;
-import io.github.some_example_name.entities.SnakeArena;
-import io.github.some_example_name.utils.InputHandler;
+import io.github.ramshi.entities.Direction;
+import io.github.ramshi.entities.Snake;
+import io.github.ramshi.entities.SnakeArena;
+import io.github.ramshi.utils.InputHandler;
 
 public class SnakeScreen extends BaseMinigameScreen {
 

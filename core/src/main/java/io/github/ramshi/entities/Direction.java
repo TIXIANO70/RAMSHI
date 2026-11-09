@@ -1,4 +1,4 @@
-package io.github.some_example_name.entities;
+package io.github.ramshi.entities;
 public enum Direction {
     UP(0, 1),
     DOWN(0, -1),

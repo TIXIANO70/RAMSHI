@@ -1,8 +1,8 @@
-package io.github.some_example_name.session;
+package io.github.ramshi.session;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
-import io.github.some_example_name.screens.ResultsScreen;
+import io.github.ramshi.screens.ResultsScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;

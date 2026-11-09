@@ -1,4 +1,4 @@
-package io.github.some_example_name.screens;
+package io.github.ramshi.screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;

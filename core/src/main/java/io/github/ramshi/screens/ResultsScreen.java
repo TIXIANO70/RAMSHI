@@ -1,4 +1,4 @@
-package io.github.some_example_name.screens;
+package io.github.ramshi.screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -12,7 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import io.github.some_example_name.session.GameSession;
+import io.github.ramshi.session.GameSession;
 
 /** Pantalla final del modo Jugar: ganador, motivo y puntos de cada juego. */
 public class ResultsScreen implements Screen {
