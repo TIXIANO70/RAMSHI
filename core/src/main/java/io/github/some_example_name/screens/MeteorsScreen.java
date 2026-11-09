@@ -3,8 +3,6 @@ package io.github.some_example_name.screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -19,13 +17,14 @@ public class MeteorsScreen extends BaseMinigameScreen {
     // =====================================================================
     private static final float ROUND_DURATION = 10f;        // Duración del minijuego (segundos)
     private static final float PLAYER_SIZE = 32f;           // Tamaño del jugador (px)
-    private static final float PLAYER_SPEED = 260f;         // Velocidad de movimiento lateral (px/s)
+    private static final float PLAYER_SPEED = 430f;         // Velocidad de movimiento lateral (px/s)
     private static final float METEOR_MIN_SIZE = 20f;       // Tamaño mínimo de meteorito (px)
     private static final float METEOR_MAX_SIZE = 40f;       // Tamaño máximo de meteorito (px)
-    private static final float FALL_SPEED_START = 150f;     // Velocidad de caída al inicio (px/s)
-    private static final float FALL_SPEED_END = 350f;       // Velocidad de caída al final (px/s)
-    private static final float SPAWN_INTERVAL_START = 0.6f; // Segundos entre meteoritos al inicio
-    private static final float SPAWN_INTERVAL_END = 0.25f;  // Segundos entre meteoritos al final
+    private static final float FALL_SPEED_START = 180f;     // Velocidad de caída al inicio (px/s)
+    private static final float FALL_SPEED_END = 600f;       // Velocidad de caída al final (px/s)
+    private static final float DIFFICULTY_CURVE = 1.5f;     // 1 = sube parejo; mayor = más tranquilo al inicio y más brusco al final
+    private static final float SPAWN_INTERVAL_START = 0.55f; // Segundos entre meteoritos al inicio
+    private static final float SPAWN_INTERVAL_END = 0.27f;   // Segundos entre meteoritos al final
     private static final float FIRST_SPAWN_DELAY = 0.5f;    // Tiempo hasta el primer meteorito (s)
     private static final float HITBOX_MARGIN = 4f;          // Margen de perdón en colisiones (px)
 
@@ -126,11 +125,13 @@ public class MeteorsScreen extends BaseMinigameScreen {
                 shapeRenderer.circle(m.x + m.size / 2f, m.y + m.size / 2f, m.size / 2f);
             }
 
-            // Jugador (gris si ya fue golpeado)
-            if (alive[p]) {
-                shapeRenderer.setColor(p == 0 ? 0.3f : 0.3f, p == 0 ? 0.9f : 0.7f, p == 0 ? 0.3f : 1f, 1f);
-            } else {
+            // Jugador (rojizo si ya fue golpeado)
+            if (!alive[p]) {
                 shapeRenderer.setColor(0.5f, 0.2f, 0.2f, 1f);
+            } else if (p == 0) {
+                shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
+            } else {
+                shapeRenderer.setColor(0.3f, 0.7f, 1f, 1f);
             }
             shapeRenderer.rect(playerX[p], ARENA_BOTTOM, PLAYER_SIZE, PLAYER_SIZE);
         }
@@ -220,7 +221,7 @@ public class MeteorsScreen extends BaseMinigameScreen {
 
     private float fallSpeed() {
         float progress = MathUtils.clamp(elapsed / ROUND_DURATION, 0f, 1f);
-        return MathUtils.lerp(FALL_SPEED_START, FALL_SPEED_END, progress);
+        return MathUtils.lerp(FALL_SPEED_START, FALL_SPEED_END, (float) Math.pow(progress, DIFFICULTY_CURVE));
     }
 
     private void movePlayer(int p, float delta) {
