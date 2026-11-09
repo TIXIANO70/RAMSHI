@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 
-public class quickdrawScreen extends BaseMinigameScreen{
+public class QuickdrawScreen extends BaseMinigameScreen{
     private int healthP1=3;
     private int healthP2=3;
     private final Texture heart;
@@ -33,7 +33,7 @@ public class quickdrawScreen extends BaseMinigameScreen{
     private int heartH = heartW;
     private String[] P1_keys = {"W","A","S","D"};
     private String[] P2_keys = {"UP","LEFT","DOWN","RIGHT"};
-    public quickdrawScreen(Game game){
+    public QuickdrawScreen(Game game){
         super(game);
         this.heart = new Texture("quickdraw/heart.png");
         this.heart.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
