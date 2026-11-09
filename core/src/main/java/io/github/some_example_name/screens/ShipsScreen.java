@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -19,17 +20,21 @@ public class ShipsScreen extends BaseMinigameScreen {
     // =====================================================================
     private static final float ROUND_DURATION = 10f;        // Duración del minijuego (segundos)
     private static final int MAX_POINTS = 3;                // Puntos máximos del ganador (el mínimo es 1)
-    private static final float PLAYER_SIZE = 32f;           // Tamaño del jugador (px)
+    private static final float PLAYER_SIZE = 48f;           // Tamaño del barco jugador (px)
     private static final float PLAYER_SPEED = 520f;         // Velocidad de movimiento lateral (px/s)
-    private static final float METEOR_MIN_SIZE = 20f;       // Tamaño mínimo de meteorito (px)
-    private static final float METEOR_MAX_SIZE = 40f;       // Tamaño máximo de meteorito (px)
+    private static final float BALL_MIN_SIZE = 16f;         // Tamaño mínimo de bala de cañón (px)
+    private static final float BALL_MAX_SIZE = 32f;         // Tamaño máximo de bala de cañón (px)
     private static final float FALL_SPEED_START = 260f;     // Velocidad de caída al inicio (px/s)
     private static final float FALL_SPEED_END = 900f;       // Velocidad de caída al final (px/s)
     private static final float DIFFICULTY_CURVE = 1.3f;     // 1 = sube parejo; mayor = más tranquilo al inicio y más brusco al final
-    private static final float SPAWN_INTERVAL_START = 0.5f; // Segundos entre meteoritos al inicio
-    private static final float SPAWN_INTERVAL_END = 0.25f;  // Segundos entre meteoritos al final
-    private static final float FIRST_SPAWN_DELAY = 0.5f;    // Tiempo hasta el primer meteorito (s)
+    private static final float SPAWN_INTERVAL_START = 0.5f; // Segundos entre balas al inicio
+    private static final float SPAWN_INTERVAL_END = 0.25f;  // Segundos entre balas al final
+    private static final float FIRST_SPAWN_DELAY = 0.5f;    // Tiempo hasta la primera bala (s)
     private static final float HITBOX_MARGIN = 4f;          // Margen de perdón en colisiones (px)
+
+    // Posiciones verticales (px desde abajo, mundo de 800x480)
+    private static final float PLAYER_Y = 40f;              // Altura de los barcos sobre el agua
+    private static final float BALL_SPAWN_Y = 400f;         // Altura desde donde salen las balas
 
     // Controles: {izquierda, derecha}
     private static final int[][] KEYS = {
@@ -37,25 +42,22 @@ public class ShipsScreen extends BaseMinigameScreen {
         {Input.Keys.LEFT, Input.Keys.RIGHT}    // Jugador 2
     };
 
-    // Colores
-    private static final Color[] PLAYER_COLORS = {
-        new Color(0.3f, 0.9f, 0.3f, 1f),       // Jugador 1
-        new Color(0.3f, 0.7f, 1f, 1f)          // Jugador 2
-    };
-    private static final Color HIT_COLOR = new Color(0.5f, 0.2f, 0.2f, 1f);     // Jugador golpeado
-    private static final Color METEOR_COLOR = new Color(0.65f, 0.45f, 0.30f, 1f);
-    private static final Color ARENA_COLOR = new Color(0.10f, 0.10f, 0.16f, 1f);
+    // Imágenes (carpeta assets/ships/)
+    private static final String BG_FILE = "ships/ships_bg.png";
+    private static final String[] PLAYER_FILES = {"ships/ships_p1.png", "ships/ships_p2.png"};
+    private static final String BALL_FILE = "ships/ships_cannon.png";
 
-    // Zona de juego de cada jugador (mundo virtual 800x480)
+    // Color con el que se tiñe el barco golpeado
+    private static final Color HIT_COLOR = new Color(1f, 0.35f, 0.35f, 1f);
+
+    // Margen lateral de la zona de juego de cada jugador
     private static final float ARENA_MARGIN = 20f;
-    private static final float ARENA_BOTTOM = 40f;
-    private static final float ARENA_TOP = 430f;
     // =====================================================================
 
     private static final float HALF_WIDTH = VIRTUAL_WIDTH / 2f;
     private static final float ARENA_WIDTH = HALF_WIDTH - 2 * ARENA_MARGIN;
 
-    /** Un meteorito programado: cuándo aparece, dónde (0..1 del ancho) y de qué tamaño. */
+    /** Una bala programada: cuándo aparece, dónde (0..1 del ancho) y de qué tamaño. */
     private static class SpawnEvent {
         final float time, xNorm, size;
         SpawnEvent(float time, float xNorm, float size) {
@@ -65,24 +67,31 @@ public class ShipsScreen extends BaseMinigameScreen {
         }
     }
 
-    /** Un meteorito en pantalla. */
-    private static class Meteor {
+    /** Una bala de cañón en pantalla. */
+    private static class Cannonball {
         float x, y;
         final float size;
-        Meteor(float x, float y, float size) {
+        Cannonball(float x, float y, float size) {
             this.x = x;
             this.y = y;
             this.size = size;
         }
     }
 
+    // Texturas
+    private final Texture background = loadTexture(BG_FILE, true);
+    private final Texture ball = loadTexture(BALL_FILE, false);
+    private final Texture[] playerShips = {
+        loadTexture(PLAYER_FILES[0], false), loadTexture(PLAYER_FILES[1], false)
+    };
+
     // Estado
     private final List<SpawnEvent> events = new ArrayList<>();
-    private final List<List<Meteor>> meteors = new ArrayList<>();
+    private final List<List<Cannonball>> balls = new ArrayList<>();
     private final float[] playerX = new float[2];
     private final boolean[] alive = new boolean[2];
     private final Rectangle playerBox = new Rectangle();   // reutilizados para colisiones
-    private final Rectangle meteorBox = new Rectangle();
+    private final Rectangle ballBox = new Rectangle();
     private int nextEvent;
     private float elapsed;
     private float endTime;                                 // momento en que se decidió la ronda (s)
@@ -90,9 +99,17 @@ public class ShipsScreen extends BaseMinigameScreen {
 
     public ShipsScreen(Game game) {
         super(game);
-        meteors.add(new ArrayList<Meteor>());
-        meteors.add(new ArrayList<Meteor>());
+        balls.add(new ArrayList<Cannonball>());
+        balls.add(new ArrayList<Cannonball>());
         resetState();
+    }
+
+    /** smooth = true para imágenes grandes que se reducen (fondo); false para pixel art. */
+    private Texture loadTexture(String path, boolean smooth) {
+        Texture t = new Texture(path);
+        Texture.TextureFilter f = smooth ? Texture.TextureFilter.Linear : Texture.TextureFilter.Nearest;
+        t.setFilter(f, f);
+        return t;
     }
 
     // ===================== Hooks de BaseMinigameScreen =====================
@@ -105,11 +122,11 @@ public class ShipsScreen extends BaseMinigameScreen {
     @Override
     protected void updateGame(float delta) {
         elapsed += delta;
-        spawnMeteors();
+        spawnBalls();
 
         for (int p = 0; p < 2; p++) {
             movePlayer(p, delta);
-            updateMeteors(p, delta);
+            updateBalls(p, delta);
         }
 
         if (!alive[0] || !alive[1]) {
@@ -121,21 +138,28 @@ public class ShipsScreen extends BaseMinigameScreen {
 
     @Override
     protected void drawGame(SpriteBatch batch) {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        for (int p = 0; p < 2; p++) drawArena(p);
-        shapeRenderer.end();
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
-        shapeRenderer.line(HALF_WIDTH, 16f, HALF_WIDTH, 432f);
-        shapeRenderer.end();
-
         batch.begin();
+        batch.draw(background, 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+
+        for (int p = 0; p < 2; p++) {
+            for (Cannonball b : balls.get(p)) {
+                batch.draw(ball, b.x, b.y, b.size, b.size);
+            }
+            batch.setColor(alive[p] ? Color.WHITE : HIT_COLOR);
+            batch.draw(playerShips[p], playerX[p], PLAYER_Y, PLAYER_SIZE, PLAYER_SIZE);
+            batch.setColor(Color.WHITE);                   // restaurar siempre
+        }
+
         font.getData().setScale(1.0f);
-        font.setColor(0.6f, 0.6f, 0.65f, 1f);
+        font.setColor(1f, 1f, 1f, 1f);
         font.draw(batch, "P1: A / D", 24f, 24f);
         font.draw(batch, "P2: FLECHAS", 590f, 24f);
         batch.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(0.9f, 0.9f, 0.9f, 1f);
+        shapeRenderer.line(HALF_WIDTH, 16f, HALF_WIDTH, 432f);
+        shapeRenderer.end();
     }
 
     @Override
@@ -165,8 +189,16 @@ public class ShipsScreen extends BaseMinigameScreen {
 
     @Override
     protected String getScoreSummary() {
-        return "P1 (" + (alive[0] ? "sobrevivió" : "golpeado")
-            + ") vs P2 (" + (alive[1] ? "sobrevivió" : "golpeado") + ")";
+        return "P1 (" + (alive[0] ? "sobrevivió" : "hundido")
+            + ") vs P2 (" + (alive[1] ? "sobrevivió" : "hundido") + ")";
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        background.dispose();
+        ball.dispose();
+        for (Texture t : playerShips) t.dispose();
     }
 
     // ===================== Lógica =====================
@@ -179,29 +211,29 @@ public class ShipsScreen extends BaseMinigameScreen {
         for (int p = 0; p < 2; p++) {
             alive[p] = true;
             playerX[p] = arenaLeft(p) + (ARENA_WIDTH - PLAYER_SIZE) / 2f;
-            meteors.get(p).clear();
+            balls.get(p).clear();
         }
         generateSchedule();
     }
 
-    /** Genera UNA lista de meteoritos que usan los dos jugadores (mismo patrón). */
+    /** Genera UNA lista de balas que usan los dos jugadores (mismo patrón). */
     private void generateSchedule() {
         events.clear();
         float t = FIRST_SPAWN_DELAY;
         while (t < ROUND_DURATION) {
             events.add(new SpawnEvent(t, MathUtils.random(),
-                MathUtils.random(METEOR_MIN_SIZE, METEOR_MAX_SIZE)));
+                MathUtils.random(BALL_MIN_SIZE, BALL_MAX_SIZE)));
             t += MathUtils.lerp(SPAWN_INTERVAL_START, SPAWN_INTERVAL_END, t / ROUND_DURATION);
         }
     }
 
-    /** Crea, para ambos jugadores, los meteoritos cuyo momento ya llegó. */
-    private void spawnMeteors() {
+    /** Crea, para ambos jugadores, las balas cuyo momento ya llegó. */
+    private void spawnBalls() {
         while (nextEvent < events.size() && events.get(nextEvent).time <= elapsed) {
             SpawnEvent e = events.get(nextEvent++);
             for (int p = 0; p < 2; p++) {
                 float x = arenaLeft(p) + e.xNorm * (ARENA_WIDTH - e.size);
-                meteors.get(p).add(new Meteor(x, ARENA_TOP, e.size));
+                balls.get(p).add(new Cannonball(x, BALL_SPAWN_Y, e.size));
             }
         }
     }
@@ -214,24 +246,24 @@ public class ShipsScreen extends BaseMinigameScreen {
         playerX[p] = MathUtils.clamp(playerX[p], left, left + ARENA_WIDTH - PLAYER_SIZE);
     }
 
-    private void updateMeteors(int p, float delta) {
-        List<Meteor> list = meteors.get(p);
+    private void updateBalls(int p, float delta) {
+        List<Cannonball> list = balls.get(p);
         float fall = fallSpeed() * delta;
         for (int i = list.size() - 1; i >= 0; i--) {
-            Meteor m = list.get(i);
-            m.y -= fall;
-            if (alive[p] && hits(p, m)) alive[p] = false;
-            if (m.y + m.size < ARENA_BOTTOM) list.remove(i);   // salió por abajo
+            Cannonball b = list.get(i);
+            b.y -= fall;
+            if (alive[p] && hits(p, b)) alive[p] = false;
+            if (b.y + b.size < PLAYER_Y) list.remove(i);   // pasó la altura del barco
         }
     }
 
     /** Colisión de cajas con un pequeño margen de perdón. */
-    private boolean hits(int p, Meteor m) {
-        playerBox.set(playerX[p] + HITBOX_MARGIN, ARENA_BOTTOM + HITBOX_MARGIN,
+    private boolean hits(int p, Cannonball b) {
+        playerBox.set(playerX[p] + HITBOX_MARGIN, PLAYER_Y + HITBOX_MARGIN,
             PLAYER_SIZE - 2 * HITBOX_MARGIN, PLAYER_SIZE - 2 * HITBOX_MARGIN);
-        meteorBox.set(m.x + HITBOX_MARGIN, m.y + HITBOX_MARGIN,
-            m.size - 2 * HITBOX_MARGIN, m.size - 2 * HITBOX_MARGIN);
-        return playerBox.overlaps(meteorBox);
+        ballBox.set(b.x + HITBOX_MARGIN, b.y + HITBOX_MARGIN,
+            b.size - 2 * HITBOX_MARGIN, b.size - 2 * HITBOX_MARGIN);
+        return playerBox.overlaps(ballBox);
     }
 
     private float fallSpeed() {
@@ -246,26 +278,10 @@ public class ShipsScreen extends BaseMinigameScreen {
     }
 
     private String statusText(int p, int wins) {
-        return "P" + (p + 1) + ": " + (alive[p] ? "EN PIE" : "GOLPEADO") + " (Wins: " + wins + ")";
+        return "P" + (p + 1) + ": " + (alive[p] ? "A FLOTE" : "HUNDIDO") + " (Wins: " + wins + ")";
     }
 
     private float arenaLeft(int p) {
         return p * HALF_WIDTH + ARENA_MARGIN;
-    }
-
-    // ===================== Dibujo =====================
-
-    /** Dibuja fondo, meteoritos y jugador de una arena (dentro de un begin/end Filled). */
-    private void drawArena(int p) {
-        shapeRenderer.setColor(ARENA_COLOR);
-        shapeRenderer.rect(arenaLeft(p), ARENA_BOTTOM, ARENA_WIDTH, ARENA_TOP - ARENA_BOTTOM);
-
-        shapeRenderer.setColor(METEOR_COLOR);
-        for (Meteor m : meteors.get(p)) {
-            shapeRenderer.circle(m.x + m.size / 2f, m.y + m.size / 2f, m.size / 2f);
-        }
-
-        shapeRenderer.setColor(alive[p] ? PLAYER_COLORS[p] : HIT_COLOR);
-        shapeRenderer.rect(playerX[p], ARENA_BOTTOM, PLAYER_SIZE, PLAYER_SIZE);
     }
 }
