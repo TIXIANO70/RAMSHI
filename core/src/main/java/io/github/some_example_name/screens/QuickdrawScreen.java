@@ -47,7 +47,7 @@ public class QuickdrawScreen extends BaseMinigameScreen{
 
     @Override
     protected float getRoundDuration() {
-        return 30;
+        return 10;
     }
 
     @Override

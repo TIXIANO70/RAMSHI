@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.MathUtils;
 public class TugOfWarScreen extends BaseMinigameScreen {
 
     // ---- Duración (static final = constante de compilación, ver nota abajo) ----
-    private static final float ROUND_DURATION = 15f;
+    private static final float ROUND_DURATION = 10f;
 
     // ---- Controles (cambialos acá si querés otras teclas) ----
     private static final int P1_KEY = Input.Keys.A;

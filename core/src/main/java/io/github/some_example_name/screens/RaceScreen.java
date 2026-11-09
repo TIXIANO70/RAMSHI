@@ -79,7 +79,7 @@ public class RaceScreen extends BaseMinigameScreen{
 
     @Override
     protected float getRoundDuration() {
-        return 30f;
+        return 10f;
     }
 
     @Override
