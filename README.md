@@ -1,24 +1,13 @@
-This repo is dedicated to the devolepment of a final course project.
 # RAMSHI
- A 1v1 multiplayer game composed of multiple competitive minigames.
- Where the minigame changes every 10 seconds.
- For now the list of minigames is Snake and Jump Sky
-## Minigames 
-### Snake 
- It´s the classic snake game in mode 1v1, where the one who gets more eggs or the one who lasts longer.
-### Jump Sky 
- Whoever who gets to reach the highest plataform without fallto the abyss wins.
-## Stack
-+ Java with the library Libgdx.
-+ Github as the VCS.
-+ Notion to manage task among the team.
-### Temporal mindmap
-~~~text 
-MainGame 
-|
-|-- Window
-  |--Minigames--Snake
-              |-Jump Sky
-~~~
-### Extras 
-If you want more information go to [Libgdx Info](Readme_from_libgdx)
+Juego 1v1 local (pantalla dividida) de microjuegos de 10 segundos, hecho con Java + libGDX.
+
+## Modos
+- **Jugar**: se eligen N rondas, los minijuegos salen en orden aleatorio y al final se muestra el recuento de puntos.
+- **Endless**: se elige un minijuego y se juega en bucle contando victorias.
+
+## Agregar un minijuego
+1. `screens/MiScreen.java` extendiendo `BaseMinigameScreen` (duración 10 s).
+2. Sprites en `assets/mijuego/`.
+3. Una línea en `session/MinigameType.java`.
+
+Controles: P1 WASD · P2 Flechas.
