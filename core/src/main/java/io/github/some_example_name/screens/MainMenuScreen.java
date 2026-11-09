@@ -149,7 +149,7 @@ public class MainMenuScreen implements Screen {
                 game.setScreen(new SnakeScreen(game));
                 dispose();
             } else if (hoverWIP){
-                game.setScreen(new quickdrawScreen(game));
+                game.setScreen(new RaceScreen(game));
                 dispose();
             } else if (hoverSalir) {
                 Gdx.app.exit();
