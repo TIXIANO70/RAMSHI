@@ -16,7 +16,8 @@ public enum MinigameType {
     RACE("Carrera", RaceScreen::new),               // comentar si faltan los PNG
     RPS("Piedra, papel o tijera", RpsScreen::new),
     PINGPONG("Ping Pong Bomba", PingPongScreen::new),
-    SUMO("Lucha de Sumo", SumoScreen::new);
+    SUMO("Lucha de Sumo", SumoScreen::new),
+    STOP_IT("Stop It!", StopItScreen::new);
 
     private final String displayName;
     private final Function<Game, Screen> factory;
