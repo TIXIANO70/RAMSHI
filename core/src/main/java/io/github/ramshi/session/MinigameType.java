@@ -1,4 +1,4 @@
-package io.github.ramshi.session;
+﻿package io.github.ramshi.session;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
@@ -6,17 +6,16 @@ import io.github.ramshi.screens.*;
 
 import java.util.function.Function;
 
-/** Catálogo de minijuegos. Para agregar uno: una línea acá. */
+/** Catálogo de minijuegos. */
 public enum MinigameType {
     SNAKE("Snake", SnakeScreen::new),
     LIGHTS("Secuencia de luces", LightsScreen::new),
     SHIPS("Lluvia de cañonazos", ShipsScreen::new),
     TUG_OF_WAR("Tira y afloja", TugOfWarScreen::new),
-    QUICKDRAW("Quickdraw", QuickdrawScreen::new),   // comentar si faltan los PNG
-    RACE("Carrera", RaceScreen::new),               // comentar si faltan los PNG
+    QUICKDRAW("Quickdraw", QuickdrawScreen::new),
+    RACE("Carrera", RaceScreen::new),
     RPS("Piedra, papel o tijera", RpsScreen::new),
-    PINGPONG("Ping Pong Bomba", PingPongScreen::new),
-    SUMO("Lucha de Sumo", SumoScreen::new);
+    TANKS("Duelo de Tanques", TankDuelScreen::new);
 
     private final String displayName;
     private final Function<Game, Screen> factory;
