@@ -18,8 +18,6 @@ public class RaceScreen extends BaseMinigameScreen{
     private final Texture car1;
     private final Texture car2;
     private final Texture obstacle;
-    private static final float ROAD_START_ORIG = 16f;
-    private static final float LANE_W_ORIG = 32f;
     private static final float LANE_WIDTH = 128f;
     private static final float TRACK_WIDTH = LANE_WIDTH * 3f;
     private static final float P1_X = 0f;
@@ -31,6 +29,7 @@ public class RaceScreen extends BaseMinigameScreen{
     private int laneP2 = 1;
     private final float carY = 80f;
     private final float acceleration = 5f;
+    private final float general_speed = 32;
     private float speedP1 = 5f;
     private float speedP2 = 5f;
 
@@ -221,7 +220,7 @@ public class RaceScreen extends BaseMinigameScreen{
         for (int i = obstaclesP2.size() - 1; i >= 0; i--) {
             Obstacle obs = obstaclesP2.get(i);
 
-            obs.y -= speedP2 * delta*32;
+            obs.y -= speedP2 * delta*general_speed;
             obs.rect.set(obs.x, obs.y, obs.w, obs.h);
 
             if (rectP2.overlaps(obs.rect)) {
