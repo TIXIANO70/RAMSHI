@@ -77,8 +77,8 @@ public class MainMenuScreen implements Screen {
         for (int i = 0; i < types.length; i++) {
             final MinigameType type = types[i];
             float bx = (i % 2 == 0) ? 80f : 420f;
-            float by = 310f - (i / 2) * 50f;
-            endlessButtons.add(new Button(bx, by, 300f, 42f, type.getDisplayName(),
+            float by = 320f - (i / 2) * 45f;
+            endlessButtons.add(new Button(bx, by, 300f, 38f, type.getDisplayName(),
                 () -> open(GameSession.startEndless(type).firstScreen(game))));
         }
         endlessButtons.add(new Button(270f, 20f, BTN_W, 40f, "VOLVER", () -> page = Page.MAIN));

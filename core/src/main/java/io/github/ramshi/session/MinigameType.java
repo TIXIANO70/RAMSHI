@@ -16,7 +16,9 @@ public enum MinigameType {
     RACE("Carrera", RaceScreen::new),
     RPS("Piedra, papel o tijera", RpsScreen::new),
     TANKS("Duelo de Tanques", TankDuelScreen::new),
-    BOMB_TAG("La Papa Caliente", BombTagScreen::new);
+    BOMB_TAG("La Papa Caliente", BombTagScreen::new),
+    PINGPONG("Ping Pong Bomba", PingPongScreen::new),
+    SUMO("Lucha de Sumo", SumoScreen::new);
 
     private final String displayName;
     private final Function<Game, Screen> factory;
