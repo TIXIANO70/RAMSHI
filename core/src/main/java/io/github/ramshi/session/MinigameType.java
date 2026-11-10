@@ -1,4 +1,4 @@
-﻿package io.github.ramshi.session;
+package io.github.ramshi.session;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
@@ -15,6 +15,7 @@ public enum MinigameType {
     QUICKDRAW("Quickdraw", QuickdrawScreen::new),
     RACE("Carrera", RaceScreen::new),
     RPS("Piedra, papel o tijera", RpsScreen::new),
+    TANKS("Duelo de Tanques", TankDuelScreen::new),
     BOMB_TAG("La Papa Caliente", BombTagScreen::new);
 
     private final String displayName;
