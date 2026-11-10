@@ -14,12 +14,12 @@ public class SnakeScreen extends BaseMinigameScreen {
 
     // ===== AJUSTES =====
     private static final float ROUND_DURATION = 10f;   // duración del minijuego (s)
-    private static final float MOVE_INTERVAL = 0.12f;  // segundos por paso de la serpiente
-    private static final int ARENA_GRID_WIDTH = 22;    // casillas de ancho de cada arena
-    private static final int ARENA_GRID_HEIGHT = 26;   // casillas de alto de cada arena
-    private static final float ARENA_P1_X = 24f;       // posición de la arena de P1 (px)
-    private static final float ARENA_P2_X = 424f;      // posición de la arena de P2 (px)
-    private static final float ARENA_Y = 16f;
+    private static final float MOVE_INTERVAL = 0.098f; // segundos por paso de la serpiente (rápido y ágil)
+    private static final int ARENA_GRID_WIDTH = 14;    // casillas de ancho (cuadrada y compacta)
+    private static final int ARENA_GRID_HEIGHT = 14;   // casillas de alto (cuadrada y compacta)
+    private static final float ARENA_P1_X = 88f;       // posición simétrica de la arena de P1 (px)
+    private static final float ARENA_P2_X = 488f;      // posición simétrica de la arena de P2 (px)
+    private static final float ARENA_Y = 108f;         // margen vertical perfectamente centrado
 
     private final InputHandler inputHandler = new InputHandler();
     private final Texture tile1 = new Texture("snake/tiles/Tile1.png");
@@ -78,7 +78,7 @@ public class SnakeScreen extends BaseMinigameScreen {
         shapeRenderer.rect(ARENA_P1_X - 1f, ARENA_Y - 1f, w + 2f, h + 2f);
         shapeRenderer.rect(ARENA_P2_X - 1f, ARENA_Y - 1f, w + 2f, h + 2f);
         shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
-        shapeRenderer.line(VIRTUAL_WIDTH / 2f, 16f, VIRTUAL_WIDTH / 2f, 432f);
+        shapeRenderer.line(VIRTUAL_WIDTH / 2f, ARENA_Y, VIRTUAL_WIDTH / 2f, ARENA_Y + h);
         shapeRenderer.end();
     }
 
@@ -86,8 +86,16 @@ public class SnakeScreen extends BaseMinigameScreen {
     protected String determineRoundWinner() {
         int s1 = arenaP1.getScore();
         int s2 = arenaP2.getScore();
-        if (s1 > s2) { p1GlobalWins++; return "¡JUGADOR 1 GANA LA RONDA!"; }
-        if (s2 > s1) { p2GlobalWins++; return "¡JUGADOR 2 GANA LA RONDA!"; }
+        if (s1 > s2) {
+            int pts = (s1 - s2 >= 2 || s1 >= 3) ? 2 : 1;
+            p1GlobalWins += pts;
+            return "¡JUGADOR 1 GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
+        }
+        if (s2 > s1) {
+            int pts = (s2 - s1 >= 2 || s2 >= 3) ? 2 : 1;
+            p2GlobalWins += pts;
+            return "¡JUGADOR 2 GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
+        }
         return "¡EMPATE EN LA RONDA!";
     }
 

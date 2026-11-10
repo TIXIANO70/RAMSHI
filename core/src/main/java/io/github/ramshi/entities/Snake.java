@@ -9,29 +9,31 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class Snake implements Disposable {
 
     public static final float TILE_SIZE = 16f;
 
+    // Texturas de cabeza y cola según dirección
     private final Map<Direction, Texture> headTextures = new EnumMap<>(Direction.class);
-
-    private final Map<Direction, Texture> bodyTextures = new EnumMap<>(Direction.class);
-
     private final Map<Direction, Texture> tailTextures = new EnumMap<>(Direction.class);
 
+    // Texturas de cuerpo recto
+    private Texture bodyVertical;
+    private Texture bodyHorizontal;
+
+    // Texturas de esquinas / curvas (L-bends)
+    private Texture cornerDownLeft;  // BodyP#_2.png (conecta Abajo e Izquierda)
+    private Texture cornerUpLeft;    // BodyP#_3.png (conecta Arriba e Izquierda)
+    private Texture cornerDownRight; // BodyP#_4.png (conecta Abajo y Derecha)
+    private Texture cornerUpRight;   // BodyP#_5.png (conecta Arriba y Derecha)
+
     private final List<SnakeSegment> segments = new ArrayList<>();
-
-
     private final int playerNumber;
-
     private int growPending = 0;
-
 
     public Snake() {
         this(1, 21, 14, Direction.RIGHT);
     }
-
 
     public Snake(int playerNumber, int startX, int startY, Direction initialDirection) {
         this.playerNumber = playerNumber;
@@ -42,20 +44,27 @@ public class Snake implements Disposable {
     private void loadTextures(int player) {
         String p = "P" + player;
 
+        // Cabezas
         headTextures.put(Direction.UP, new Texture("snake/head/Cabeza" + p + "_Up.png"));
         headTextures.put(Direction.DOWN, new Texture("snake/head/Cabeza" + p + "_Down.png"));
         headTextures.put(Direction.LEFT, new Texture("snake/head/Cabeza" + p + "_Left.png"));
         headTextures.put(Direction.RIGHT, new Texture("snake/head/Cabeza" + p + "_Right.png"));
 
-        bodyTextures.put(Direction.UP, new Texture("snake/Body/Body" + p + ".png"));
-        bodyTextures.put(Direction.DOWN, new Texture("snake/Body/Body" + p + ".png"));
-        bodyTextures.put(Direction.LEFT, new Texture("snake/Body/Body" + p + "_1.png"));
-        bodyTextures.put(Direction.RIGHT, new Texture("snake/Body/Body" + p + "_1.png"));
-
+        // Colas
         tailTextures.put(Direction.UP, new Texture("snake/tail/Cola" + p + "_Up.png"));
         tailTextures.put(Direction.DOWN, new Texture("snake/tail/Cola" + p + "_Down.png"));
         tailTextures.put(Direction.LEFT, new Texture("snake/tail/Cola" + p + "_Left.png"));
         tailTextures.put(Direction.RIGHT, new Texture("snake/tail/Cola" + p + "_Right.png"));
+
+        // Cuerpo recto
+        bodyVertical = new Texture("snake/Body/Body" + p + ".png");
+        bodyHorizontal = new Texture("snake/Body/Body" + p + "_1.png");
+
+        // Esquinas / Curvas
+        cornerDownLeft = new Texture("snake/Body/Body" + p + "_2.png");
+        cornerUpLeft = new Texture("snake/Body/Body" + p + "_3.png");
+        cornerDownRight = new Texture("snake/Body/Body" + p + "_4.png");
+        cornerUpRight = new Texture("snake/Body/Body" + p + "_5.png");
     }
 
     public void reset(int startX, int startY, Direction startDir) {
@@ -69,7 +78,6 @@ public class Snake implements Disposable {
         segments.add(new SnakeSegment(startX - dx, startY - dy, SnakeSegment.Type.BODY, startDir));
         segments.add(new SnakeSegment(startX, startY, SnakeSegment.Type.HEAD, startDir));
     }
-
 
     public void step(Direction direction) {
         SnakeSegment currentHead = getHead();
@@ -95,7 +103,6 @@ public class Snake implements Disposable {
         updateTailOrientation();
     }
 
-
     private void updateTailOrientation() {
         if (segments.isEmpty()) return;
 
@@ -114,16 +121,13 @@ public class Snake implements Disposable {
         }
     }
 
-
     public void grow() {
         this.growPending++;
     }
 
-
     public SnakeSegment getHead() {
         return segments.get(segments.size() - 1);
     }
-
 
     public boolean checkSelfCollision() {
         SnakeSegment head = getHead();
@@ -136,26 +140,12 @@ public class Snake implements Disposable {
         return false;
     }
 
-    /**
-     * Metodo checkOutOfBounds (gridWidth, gridHeight)
-     * Comprueba si la cabeza se encuentra fuera de los límites de la cuadrícula.
-     * Parámetro int gridWidth Ancho total de la cuadrícula en baldosas.
-     * Parámetro int gridHeight Alto total de la cuadrícula en baldosas.
-     * devolvera isOutOfBounds true si la cabeza está fuera de los límites, false si está adentro.
-     */
     public boolean checkOutOfBounds(int gridWidth, int gridHeight) {
         SnakeSegment head = getHead();
         return head.getGridX() < 0 || head.getGridX() >= gridWidth ||
                head.getGridY() < 0 || head.getGridY() >= gridHeight;
     }
 
-    /**
-     * Metodo occupies (x, y)
-     * Verifica si alguna casilla de la serpiente ocupa las coordenadas dadas.
-     * Parámetro int x Coordenada X de la casilla.
-     * Parámetro int y Coordenada Y de la casilla.
-     * devolvera isOccupied true si coincide con algún segmento.
-     */
     public boolean occupies(int x, int y) {
         for (SnakeSegment segment : segments) {
             if (segment.getGridX() == x && segment.getGridY() == y) {
@@ -165,16 +155,68 @@ public class Snake implements Disposable {
         return false;
     }
 
-    /**
-     * Metodo render (batch, offsetX, offsetY)
-     * Dibuja todos los segmentos de la serpiente aplicando un desplazamiento en píxeles.
-     * Parámetro SpriteBatch batch SpriteBatch utilizado para el dibujado 2D.
-     * Parámetro float offsetX Desplazamiento horizontal en píxeles para la arena correspondiente.
-     * Parámetro float offsetY Desplazamiento vertical en píxeles para la arena correspondiente.
-     */
     public void render(SpriteBatch batch, float offsetX, float offsetY) {
-        for (SnakeSegment segment : segments) {
-            Texture textureToDraw = getTextureForSegment(segment);
+        int count = segments.size();
+        for (int i = 0; i < count; i++) {
+            SnakeSegment segment = segments.get(i);
+            Texture textureToDraw = null;
+
+            if (i == count - 1) {
+                // CABEZA: mira en la dirección de movimiento actual
+                textureToDraw = headTextures.get(segment.getDirection());
+            } else if (i == 0) {
+                // COLA: conecta hacia el segmento siguiente en la cadena
+                if (count > 1) {
+                    SnakeSegment next = segments.get(1);
+                    int dx = next.getGridX() - segment.getGridX();
+                    int dy = next.getGridY() - segment.getGridY();
+                    if (dx > 0) textureToDraw = tailTextures.get(Direction.RIGHT);
+                    else if (dx < 0) textureToDraw = tailTextures.get(Direction.LEFT);
+                    else if (dy > 0) textureToDraw = tailTextures.get(Direction.UP);
+                    else textureToDraw = tailTextures.get(Direction.DOWN);
+                } else {
+                    textureToDraw = tailTextures.get(segment.getDirection());
+                }
+            } else {
+                // CUERPO: evaluamos los vecinos previo y siguiente en la grilla
+                SnakeSegment prev = segments.get(i - 1);
+                SnakeSegment next = segments.get(i + 1);
+
+                int dx1 = prev.getGridX() - segment.getGridX();
+                int dy1 = prev.getGridY() - segment.getGridY();
+                int dx2 = next.getGridX() - segment.getGridX();
+                int dy2 = next.getGridY() - segment.getGridY();
+
+                boolean hasLeft  = (dx1 == -1 || dx2 == -1);
+                boolean hasRight = (dx1 ==  1 || dx2 ==  1);
+                boolean hasUp    = (dy1 ==  1 || dy2 ==  1);
+                boolean hasDown  = (dy1 == -1 || dy2 == -1);
+
+                if (hasLeft && hasRight) {
+                    // Recto horizontal
+                    textureToDraw = bodyHorizontal;
+                } else if (hasUp && hasDown) {
+                    // Recto vertical
+                    textureToDraw = bodyVertical;
+                } else if (hasLeft && hasDown) {
+                    // Esquina Abajo-Izquierda (_2)
+                    textureToDraw = cornerDownLeft;
+                } else if (hasLeft && hasUp) {
+                    // Esquina Arriba-Izquierda (_3)
+                    textureToDraw = cornerUpLeft;
+                } else if (hasRight && hasDown) {
+                    // Esquina Abajo-Derecha (_4)
+                    textureToDraw = cornerDownRight;
+                } else if (hasRight && hasUp) {
+                    // Esquina Arriba-Derecha (_5)
+                    textureToDraw = cornerUpRight;
+                } else {
+                    // Salvaguarda
+                    textureToDraw = (segment.getDirection() == Direction.LEFT || segment.getDirection() == Direction.RIGHT)
+                        ? bodyHorizontal : bodyVertical;
+                }
+            }
+
             if (textureToDraw != null) {
                 float posX = offsetX + segment.getGridX() * TILE_SIZE;
                 float posY = offsetY + segment.getGridY() * TILE_SIZE;
@@ -183,31 +225,8 @@ public class Snake implements Disposable {
         }
     }
 
-    /**
-     * Metodo render (batch)
-     * Dibuja todos los segmentos de la serpiente en las posiciones correspondientes de la cuadrícula base.
-     * Parámetro SpriteBatch batch SpriteBatch utilizado para el dibujado 2D.
-     */
     public void render(SpriteBatch batch) {
         render(batch, 0, 0);
-    }
-
-
-    /**
-     * Metodo getTextureForSegment (segment)
-     * Obtiene la textura correcta según el tipo de segmento y su orientación.
-     * Parámetro SnakeSegment segment Segmento a evaluar.
-     * devolvera texture Textura correspondiente según el tipo y dirección.
-     */
-    private Texture getTextureForSegment(SnakeSegment segment) {
-        switch (segment.getType()) {
-            case HEAD:
-                return headTextures.get(segment.getDirection());
-            case TAIL:
-                return tailTextures.get(segment.getDirection());
-            default:
-                return bodyTextures.get(segment.getDirection());
-        }
     }
 
     public List<SnakeSegment> getSegments() {
@@ -218,10 +237,6 @@ public class Snake implements Disposable {
         return playerNumber;
     }
 
-    /**
-     * Metodo dispose ()
-     * Libera de la memoria de la GPU todas las texturas cargadas.
-     */
     @Override
     public void dispose() {
         for (Texture texture : headTextures.values()) {
@@ -229,15 +244,16 @@ public class Snake implements Disposable {
         }
         headTextures.clear();
 
-        for (Texture texture : bodyTextures.values()) {
-            texture.dispose();
-        }
-        bodyTextures.clear();
-
         for (Texture texture : tailTextures.values()) {
             texture.dispose();
         }
         tailTextures.clear();
+
+        if (bodyVertical != null) bodyVertical.dispose();
+        if (bodyHorizontal != null) bodyHorizontal.dispose();
+        if (cornerDownLeft != null) cornerDownLeft.dispose();
+        if (cornerUpLeft != null) cornerUpLeft.dispose();
+        if (cornerDownRight != null) cornerDownRight.dispose();
+        if (cornerUpRight != null) cornerUpRight.dispose();
     }
 }
-

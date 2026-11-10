@@ -77,11 +77,11 @@ public class MainMenuScreen implements Screen {
         for (int i = 0; i < types.length; i++) {
             final MinigameType type = types[i];
             float bx = (i % 2 == 0) ? 80f : 420f;
-            float by = 340f - (i / 2) * 54f;
-            endlessButtons.add(new Button(bx, by, 300f, 44f, type.getDisplayName(),
+            float by = 310f - (i / 2) * 50f;
+            endlessButtons.add(new Button(bx, by, 300f, 42f, type.getDisplayName(),
                 () -> open(GameSession.startEndless(type).firstScreen(game))));
         }
-        endlessButtons.add(new Button(270f, 10f, BTN_W, 40f, "VOLVER", () -> page = Page.MAIN));
+        endlessButtons.add(new Button(270f, 20f, BTN_W, 40f, "VOLVER", () -> page = Page.MAIN));
     }
 
     private void open(Screen next) {
@@ -138,10 +138,11 @@ public class MainMenuScreen implements Screen {
             font.setColor(Color.WHITE);
             font.getData().setScale(1.3f);
             drawCentered("RONDAS: " + rounds, 260f);
+
+            font.setColor(0.6f, 0.6f, 0.65f, 1f);
+            font.getData().setScale(1.0f);
+            drawCentered("P1: WASD  |  P2: FLECHAS  |  10 SEGUNDOS POR JUEGO", 35f);
         }
-        font.setColor(0.6f, 0.6f, 0.65f, 1f);
-        font.getData().setScale(1.0f);
-        drawCentered("P1: WASD  |  P2: FLECHAS  |  10 SEGUNDOS POR JUEGO", 35f);
         batch.end();
 
         if (Gdx.input.justTouched() && hovered != null) hovered.action.run();
