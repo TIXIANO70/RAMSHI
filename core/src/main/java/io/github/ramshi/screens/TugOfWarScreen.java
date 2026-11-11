@@ -97,7 +97,7 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
         fuente.draw(batch, "P1: alterna [A] [D]", 60f, 100f);
         fuente.setColor(0.3f, 0.7f, 1f, 1f);
-        fuente.draw(batch, "P2: alterna [IZQ] [DER]", 480f, 100f);
+        dibujarDerecha("P2: alterna [IZQ] [DER]", 100f);
         batch.end();
     }
 

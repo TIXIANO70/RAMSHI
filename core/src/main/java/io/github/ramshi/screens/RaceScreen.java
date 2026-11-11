@@ -3,11 +3,13 @@ package io.github.ramshi.screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import io.github.ramshi.Main;
 
 import java.util.ArrayList;
 
@@ -70,6 +72,7 @@ public class RaceScreen extends BaseMinigameScreen {
 
     public RaceScreen(Game juego) {
         super(juego);
+        reiniciarRonda();
     }
 
     private Texture cargarTextura(String ruta) {
@@ -152,8 +155,10 @@ public class RaceScreen extends BaseMinigameScreen {
         batch.draw(auto2, autoX2, AUTO_Y, tamanoAuto, tamanoAuto);
         rectP2 = hitbox(autoX2);
 
-        fuente.draw(batch, "Velocidad: " + velocidadP1, P1_X, 30);
-        fuente.draw(batch, "Velocidad: " + velocidadP2, P2_X, 30);
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(Color.WHITE);
+        fuente.draw(batch, "Velocidad: " + (int) velocidadP1, P1_X + 8f, 30);
+        fuente.draw(batch, "Velocidad: " + (int) velocidadP2, P2_X + 8f, 30);
 
         for (Obstaculo obs : obstaculosP1) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);
         for (Obstaculo obs : obstaculosP2) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);
@@ -178,6 +183,8 @@ public class RaceScreen extends BaseMinigameScreen {
         obstaculosP2.clear();
         carrilP1 = 1;
         carrilP2 = 1;
+        autoX1 = carrilX(P1_X, carrilP1);
+        autoX2 = carrilX(P2_X, carrilP2);
         velocidadP1 = VELOCIDAD_INICIAL;
         velocidadP2 = VELOCIDAD_INICIAL;
         recorrido[0] = recorrido[1] = 0f;

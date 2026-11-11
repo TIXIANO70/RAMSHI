@@ -137,7 +137,7 @@ public class StopItScreen extends BaseMinigameScreen {
         usarFuente(Main.fuenteChica);
         fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
         fuente.draw(batch, "P1: [W] frenar", 24f, 24f);
-        fuente.draw(batch, "P2: [FLECHA ARRIBA] frenar", 520f, 24f);
+        dibujarDerecha("P2: [FLECHA ARRIBA] frenar", 24f);
         batch.end();
     }
 

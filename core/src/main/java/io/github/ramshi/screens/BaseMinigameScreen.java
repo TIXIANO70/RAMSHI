@@ -23,6 +23,8 @@ public abstract class BaseMinigameScreen implements Screen {
 
     private static final float SEGUNDOS_INTRO = 1.2f;
     private static final float SEGUNDOS_RESULTADO = 2.5f;
+    private static final float MARGEN_HUD = 16f;
+    private static final float ALTURA_HUD = 462f;
 
     protected final Game juego;
     protected final GameSession sesion;
@@ -133,17 +135,15 @@ public abstract class BaseMinigameScreen implements Screen {
 
         usarFuente(Main.fuenteMediana);
         fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
-        fuente.draw(batch, getTextoP1(), 24f, 462f);
+        fuente.draw(batch, getTextoP1(), MARGEN_HUD, ALTURA_HUD);
 
         int segundos = (int) Math.ceil(tiempoRestante);
         if (tiempoRestante <= 5f && !rondaTerminada) fuente.setColor(1f, 0.3f, 0.3f, 1f);
         else fuente.setColor(1f, 0.9f, 0.2f, 1f);
-        usarFuente(Main.fuenteMediana);
-        fuente.draw(batch, "TIEMPO: " + segundos + "s", 340f, 462f);
+        dibujarCentrado("TIEMPO: " + segundos + "s", ALTURA_HUD);
 
-        usarFuente(Main.fuenteMediana);
         fuente.setColor(0.3f, 0.7f, 1f, 1f);
-        fuente.draw(batch, getTextoP2(), 590f, 462f);
+        dibujarDerecha(getTextoP2(), ALTURA_HUD);
 
         batch.end();
     }
@@ -206,6 +206,11 @@ public abstract class BaseMinigameScreen implements Screen {
     private void dibujarCentrado(String texto, float y) {
         GlyphLayout layout = new GlyphLayout(fuente, texto);
         fuente.draw(batch, layout, (ANCHO_VIRTUAL - layout.width) / 2f, y);
+    }
+
+    protected void dibujarDerecha(String texto, float y) {
+        GlyphLayout layout = new GlyphLayout(fuente, texto);
+        fuente.draw(batch, layout, ANCHO_VIRTUAL - MARGEN_HUD - layout.width, y);
     }
 
     @Override public void dispose() {
