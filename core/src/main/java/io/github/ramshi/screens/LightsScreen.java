@@ -51,6 +51,7 @@ public class LightsScreen extends BaseMinigameScreen {
 
     private final TextureRegion[][] teclaApagada = new TextureRegion[2][4];
     private final TextureRegion[][] teclaEncendida = new TextureRegion[2][4];
+    private final Texture fondo = new Texture("lights/lights_bg.png");
 
     private final int[] secuencia = new int[Arrays.stream(LARGOS_SECUENCIA).max().getAsInt()];
     private final int[] progreso = new int[2];
@@ -64,6 +65,7 @@ public class LightsScreen extends BaseMinigameScreen {
 
     public LightsScreen(Game juego) {
         super(juego);
+        fondo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
                 teclaApagada[p][i] = cargarTextura(rutaTile(TILES_TECLA[p][i]));
@@ -120,6 +122,10 @@ public class LightsScreen extends BaseMinigameScreen {
 
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
+        batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        batch.end();
+
         int encendida = teclaActual();
 
         formas.begin(ShapeRenderer.ShapeType.Filled);
@@ -180,6 +186,7 @@ public class LightsScreen extends BaseMinigameScreen {
     @Override
     public void dispose() {
         super.dispose();
+        fondo.dispose();
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
                 teclaApagada[p][i].getTexture().dispose();

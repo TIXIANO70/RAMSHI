@@ -4,6 +4,8 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -44,6 +46,8 @@ public class StopItScreen extends BaseMinigameScreen {
     private final String[] ultimoTexto = {"", ""};
     private final Color[] ultimoColor = {Color.WHITE, Color.WHITE};
 
+    private final Texture fondo = cargarTextura("stopit/stopit_bg.png");
+
     public StopItScreen(Game juego) {
         super(juego);
         reiniciarEstado();
@@ -56,6 +60,12 @@ public class StopItScreen extends BaseMinigameScreen {
         return new Controles.Control[] {
             Controles.una("frenar", Controles.W, Controles.ARRIBA)
         };
+    }
+
+    private Texture cargarTextura(String ruta) {
+        Texture t = new Texture(ruta);
+        t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        return t;
     }
 
     @Override
@@ -115,6 +125,10 @@ public class StopItScreen extends BaseMinigameScreen {
 
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
+        batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        batch.end();
+
         formas.begin(ShapeType.Filled);
         for (int p = 0; p < 2; p++) {
             float x = BARRA_X[p];
@@ -210,5 +224,11 @@ public class StopItScreen extends BaseMinigameScreen {
 
     private float mediaZona(int p) {
         return Math.max(MEDIA_ZONA_MIN, MEDIA_ZONA_INICIAL - ACHIQUE_ZONA * intento[p]);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        fondo.dispose();
     }
 }

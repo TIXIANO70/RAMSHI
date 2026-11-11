@@ -30,6 +30,7 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     private static final float ESCALA_TECLA = 4f;
     private static final float TECLA_Y = 210f;
 
+    private final Texture fondo = cargarTextura("quickdraw/quickdraw_bg.png");
     private final Texture escopetaAzul = cargarTextura("quickdraw/blue_shotgun.png");
     private final Texture escopetaRoja = cargarTextura("quickdraw/red_shotgun.png");
 
@@ -123,6 +124,7 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
         batch.draw(escopetaAzul, P1_X, ESCOPETA_Y, TAMANO_ESCOPETA, TAMANO_ESCOPETA);
         batch.draw(escopetaRoja, P2_X, ESCOPETA_Y, TAMANO_ESCOPETA, TAMANO_ESCOPETA);
         if (puedeDisparar) {
@@ -159,6 +161,7 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     @Override
     public void dispose() {
         super.dispose();
+        fondo.dispose();
         escopetaRoja.dispose();
         escopetaAzul.dispose();
     }

@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
@@ -45,6 +46,7 @@ public class SumoScreen extends BaseMinigameScreen {
     private static final Color COLOR_P1 = new Color(255 / 255f, 75 / 255f, 120 / 255f, 1f);
     private static final Color COLOR_P2 = new Color(0f, 255 / 255f, 180 / 255f, 1f);
 
+    private final Texture fondo = new Texture("sumo/sumo_bg.png");
     private final Texture sumoP1Frente = new Texture("sumo/sumo_p1_front.png");
     private final Texture sumoP1Lado  = new Texture("sumo/sumo_p1_side.png");
     private final Texture sumoP2Frente = new Texture("sumo/sumo_p2_front.png");
@@ -77,6 +79,7 @@ public class SumoScreen extends BaseMinigameScreen {
 
     public SumoScreen(Game juego) {
         super(juego);
+        fondo.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
         reiniciarLuchadores();
     }
 
@@ -242,10 +245,11 @@ public class SumoScreen extends BaseMinigameScreen {
 
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
-        formas.begin(ShapeType.Filled);
+        batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        batch.end();
 
-        formas.setColor(COLOR_FONDO);
-        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.begin(ShapeType.Filled);
 
         formas.setColor(COLOR_PLATAFORMA);
         formas.rect(platX, PLAT_Y, platAncho, PLAT_ALTO);
@@ -340,6 +344,7 @@ public class SumoScreen extends BaseMinigameScreen {
     @Override
     public void dispose() {
         super.dispose();
+        fondo.dispose();
         sumoP1Frente.dispose();
         sumoP1Lado.dispose();
         sumoP2Frente.dispose();
