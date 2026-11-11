@@ -10,40 +10,27 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class RpsScreen extends BaseMinigameScreen {
 
-    // =====================================================================
-    //  VALORES AJUSTABLES (todo lo que se pueda pedir cambiar está acá)
-    // =====================================================================
-    private static final float ROUND_DURATION = 10f; // Duración total del juego (s)
-
+    private static final float ROUND_DURATION = 10f;
     private static final int PIEDRA = 0;
     private static final int PAPEL  = 1;
     private static final int TIJERA = 2;
-    private static final int DEFAULT_CHOICE = PAPEL; // Opción elegida de base
-
-    private static final int   COUNT_STEPS = 3;      // Cuenta: 1, 2, 3
-    private static final float STEP_TIME   = 1.0f;   // Segundos por cada número
-    private static final float REVEAL_TIME = 1.0f;   // Segundos mostrando el resultado
-
-    private static final int HAND_POINTS       = 1;  // Puntos por ganar cada mano
-    private static final int WIN_GLOBAL_POINTS = 1;  // Puntos globales al ganador
-    private static final int TIE_GLOBAL_POINTS = 1;  // Puntos globales a cada uno si empatan
-
-    // Controles Jugador 1 (A, S, D) y Jugador 2 (Flechas)
+    private static final int DEFAULT_CHOICE = PAPEL;
+    private static final int   COUNT_STEPS = 3;
+    private static final float STEP_TIME   = 1.0f;
+    private static final float REVEAL_TIME = 1.0f;
+    private static final int HAND_POINTS       = 1;
+    private static final int WIN_GLOBAL_POINTS = 1;
+    private static final int TIE_GLOBAL_POINTS = 1;
     private static final int P1_KEY_PIEDRA = Input.Keys.A;
     private static final int P1_KEY_PAPEL  = Input.Keys.S;
     private static final int P1_KEY_TIJERA = Input.Keys.D;
-
     private static final int P2_KEY_PIEDRA = Input.Keys.LEFT;
     private static final int P2_KEY_PAPEL  = Input.Keys.DOWN;
     private static final int P2_KEY_TIJERA = Input.Keys.RIGHT;
-
-    // Posiciones y tamaño de los sprites (mundo virtual 800x480)
     private static final float SPRITE_SIZE = 128f;
     private static final float P1_X = 140f;
     private static final float P2_X = 532f;
     private static final float HAND_Y = 180f;
-    // =====================================================================
-
     private static final String[] NAMES = {"PIEDRA", "PAPEL", "TIJERA"};
     private final Texture[] textures = new Texture[3];
 
@@ -66,14 +53,12 @@ public class RpsScreen extends BaseMinigameScreen {
         resetHand();
     }
 
-    /** Regla de victoria: devuelve true si la opción 'a' le gana a la opción 'b'. */
     private boolean wins(int a, int b) {
         return (a == PIEDRA && b == TIJERA)
             || (a == PAPEL  && b == PIEDRA)
             || (a == TIJERA && b == PAPEL);
     }
 
-    /** Reinicia una mano dejando a ambos jugadores en la opción base (PAPEL). */
     private void resetHand() {
         p1Choice = DEFAULT_CHOICE;
         p2Choice = DEFAULT_CHOICE;
@@ -93,7 +78,6 @@ public class RpsScreen extends BaseMinigameScreen {
         float countDuration = COUNT_STEPS * STEP_TIME;
 
         if (handTimer < countDuration) {
-            // Fase 1-2-3: elección secreta
             if (Gdx.input.isKeyJustPressed(P1_KEY_PIEDRA)) p1Choice = PIEDRA;
             if (Gdx.input.isKeyJustPressed(P1_KEY_PAPEL))  p1Choice = PAPEL;
             if (Gdx.input.isKeyJustPressed(P1_KEY_TIJERA)) p1Choice = TIJERA;
@@ -102,7 +86,6 @@ public class RpsScreen extends BaseMinigameScreen {
             if (Gdx.input.isKeyJustPressed(P2_KEY_PAPEL))  p2Choice = PAPEL;
             if (Gdx.input.isKeyJustPressed(P2_KEY_TIJERA)) p2Choice = TIJERA;
         } else if (!revealed) {
-            // Instante en que termina el 3: revelamos y sumamos puntos
             revealed = true;
             if (wins(p1Choice, p2Choice)) {
                 p1Score += HAND_POINTS;
@@ -114,14 +97,12 @@ public class RpsScreen extends BaseMinigameScreen {
                 handMessage = "¡EMPATE!";
             }
         } else if (handTimer >= countDuration + REVEAL_TIME) {
-            // Terminó el segundo de muestra: arrancamos nueva mano
             resetHand();
         }
     }
 
     @Override
     protected void drawGame(SpriteBatch batch) {
-        // Mientras no se revele, ambos dibujan el sprite base (PAPEL)
         int shownP1 = revealed ? p1Choice : DEFAULT_CHOICE;
         int shownP2 = revealed ? p2Choice : DEFAULT_CHOICE;
 

@@ -11,36 +11,28 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class StopItScreen extends BaseMinigameScreen {
 
-    // =====================================================================
-    //  VALORES AJUSTABLES
-    // =====================================================================
-    private static final float ROUND_DURATION = 10f;   // Duración del minijuego (s)
-    private static final int MAX_ATTEMPTS = 12;        // Zonas pre-generadas (más que las posibles en 10 s)
-
-    private static final float SPEED_START = 0.9f;     // Barras por segundo en el primer intento
-    private static final float SPEED_STEP = 0.15f;     // Aumento de velocidad por intento
-    private static final float ZONE_HALF_START = 0.09f;// Mitad del ancho de la zona (0..1) al inicio
-    private static final float ZONE_HALF_MIN = 0.04f;  // Mitad mínima de la zona
-    private static final float ZONE_SHRINK = 0.006f;   // Cuánto se achica por intento
-    private static final float RESULT_PAUSE = 0.5f;    // Pausa mostrando el resultado de un intento (s)
-
+    private static final float ROUND_DURATION = 10f;
+    private static final int MAX_ATTEMPTS = 12;
+    private static final float SPEED_START = 0.9f;
+    private static final float SPEED_STEP = 0.15f;
+    private static final float ZONE_HALF_START = 0.09f;
+    private static final float ZONE_HALF_MIN = 0.04f;
+    private static final float ZONE_SHRINK = 0.006f;
+    private static final float RESULT_PAUSE = 0.5f;
     private static final int POINTS_PERFECT = 3;
     private static final int POINTS_GREEN = 2;
     private static final int POINTS_NEAR = 1;
-
-    // Controles: {frenar}
+    private static final float PERFECT_RATIO = 0.3f;
+    private static final float NEAR_RATIO = 2f;
     private static final int[] KEYS = {Input.Keys.W, Input.Keys.UP};
-
-    // Layout (mundo virtual 800x480)
     private static final float[] BAR_X = {40f, 440f};
     private static final float BAR_W = 320f;
     private static final float BAR_Y = 220f;
     private static final float BAR_H = 36f;
-    // =====================================================================
 
     private final float[] zoneCenter = new float[MAX_ATTEMPTS];
 
-    private final float[] pos = new float[2];          // marcador (0..1)
+    private final float[] pos = new float[2];
     private final int[] dir = {1, 1};
     private final boolean[] stopped = new boolean[2];
     private final float[] pauseTimer = new float[2];
@@ -87,7 +79,7 @@ public class StopItScreen extends BaseMinigameScreen {
         float half = zoneHalf(p);
         float d = Math.abs(pos[p] - zoneCenter[attempt[p]]);
         int points;
-        if (d <= half * 0.3f) {
+        if (d <= half * PERFECT_RATIO) {
             points = POINTS_PERFECT;
             lastText[p] = "¡PERFECTO! +" + points;
             lastColor[p] = new Color(1f, 0.85f, 0.2f, 1f);
@@ -95,7 +87,7 @@ public class StopItScreen extends BaseMinigameScreen {
             points = POINTS_GREEN;
             lastText[p] = "¡BIEN! +" + points;
             lastColor[p] = new Color(0.3f, 0.9f, 0.3f, 1f);
-        } else if (d <= half * 2f) {
+        } else if (d <= half * NEAR_RATIO) {
             points = POINTS_NEAR;
             lastText[p] = "CERCA +" + points;
             lastColor[p] = new Color(1f, 0.6f, 0.2f, 1f);
@@ -114,23 +106,19 @@ public class StopItScreen extends BaseMinigameScreen {
         shapeRenderer.begin(ShapeType.Filled);
         for (int p = 0; p < 2; p++) {
             float x = BAR_X[p];
-            // Fondo de la barra
             shapeRenderer.setColor(0.18f, 0.18f, 0.2f, 1f);
             shapeRenderer.rect(x, BAR_Y, BAR_W, BAR_H);
 
-            // Zonas: cerca (naranja), verde, perfecto (dorado)
             float half = zoneHalf(p);
             float c = zoneCenter[attempt[p]];
-            drawZone(x, c, half * 2f, 0.55f, 0.35f, 0.12f);
+            drawZone(x, c, half * NEAR_RATIO, 0.55f, 0.35f, 0.12f);
             drawZone(x, c, half, 0.2f, 0.7f, 0.25f);
-            drawZone(x, c, half * 0.3f, 1f, 0.85f, 0.2f);
+            drawZone(x, c, half * PERFECT_RATIO, 1f, 0.85f, 0.2f);
 
-            // Marcador
             if (stopped[p]) shapeRenderer.setColor(lastColor[p]);
             else shapeRenderer.setColor(Color.WHITE);
             shapeRenderer.rect(x + pos[p] * BAR_W - 3f, BAR_Y - 8f, 6f, BAR_H + 16f);
         }
-        // Línea divisoria
         shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
         shapeRenderer.rect(VIRTUAL_WIDTH / 2f - 1f, 16f, 2f, 416f);
         shapeRenderer.end();
@@ -193,8 +181,6 @@ public class StopItScreen extends BaseMinigameScreen {
     protected String getScoreSummary() {
         return "Puntos: P1 (" + score[0] + ") vs P2 (" + score[1] + ")";
     }
-
-    // ===================== Lógica =====================
 
     private void resetState() {
         for (int i = 0; i < MAX_ATTEMPTS; i++) {

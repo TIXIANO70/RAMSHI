@@ -9,19 +9,12 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class TugOfWarScreen extends BaseMinigameScreen {
 
-    // ---- Duración (static final = constante de compilación, ver nota abajo) ----
     private static final float ROUND_DURATION = 10f;
-
-    // ---- Controles (cambialos acá si querés otras teclas) ----
     private static final int P1_KEY = Input.Keys.A;
     private static final int P2_KEY = Input.Keys.LEFT;
-
-    // ---- Mecánica ----
-    private static final float PULL_STEP = 5f;     // píxeles que mueve cada pulsación
-    private static final float MAX_OFFSET = 150f;  // desplazamiento máximo = línea de victoria
-    private static final float SMOOTHING = 12f;    // qué tan rápido "alcanza" el dibujo a la lógica
-
-    // ---- Layout (el mundo virtual es 800x480) ----
+    private static final float PULL_STEP = 5f;
+    private static final float MAX_OFFSET = 150f;
+    private static final float SMOOTHING = 12f;
     private static final float CENTER_X = VIRTUAL_WIDTH / 2f;
     private static final float ROPE_Y = 235f;
     private static final float ROPE_H = 10f;
@@ -29,9 +22,8 @@ public class TugOfWarScreen extends BaseMinigameScreen {
     private static final float PLAYER_W = 64f;
     private static final float PLAYER_H = 90f;
 
-    // Negativo = soga hacia P1 (izquierda), positivo = hacia P2 (derecha)
-    private float ropeTarget = 0f;  // posición LÓGICA (decide el ganador)
-    private float ropeShown = 0f;   // posición DIBUJADA (suavizada con delta)
+    private float ropeTarget = 0f;
+    private float ropeShown = 0f;
 
     private int p1Pulls = 0;
     private int p2Pulls = 0;
@@ -57,10 +49,8 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         }
         ropeTarget = MathUtils.clamp(ropeTarget, -MAX_OFFSET, MAX_OFFSET);
 
-        // Suavizado independiente del framerate
         ropeShown = MathUtils.lerp(ropeShown, ropeTarget, Math.min(1f, SMOOTHING * delta));
 
-        // Victoria por KO: alguien llevó la soga hasta su línea
         if (Math.abs(ropeTarget) >= MAX_OFFSET) {
             ropeShown = ropeTarget;
             finishRound();
@@ -73,29 +63,23 @@ public class TugOfWarScreen extends BaseMinigameScreen {
 
         shapeRenderer.begin(ShapeType.Filled);
 
-        // Suelo
         shapeRenderer.setColor(0.22f, 0.40f, 0.18f, 1f);
         shapeRenderer.rect(0f, 150f, VIRTUAL_WIDTH, 180f);
 
-        // Línea central
         shapeRenderer.setColor(1f, 1f, 1f, 1f);
         shapeRenderer.rect(CENTER_X - 1f, 150f, 2f, 180f);
 
-        // Líneas de victoria (la bandera de la soga tiene que tocarlas)
         shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
         shapeRenderer.rect(CENTER_X - MAX_OFFSET - 2f, 150f, 4f, 180f);
         shapeRenderer.setColor(0.3f, 0.7f, 1f, 1f);
         shapeRenderer.rect(CENTER_X + MAX_OFFSET - 2f, 150f, 4f, 180f);
 
-        // Soga
         shapeRenderer.setColor(0.55f, 0.38f, 0.18f, 1f);
         shapeRenderer.rect(ropeCenter - ROPE_HALF, ROPE_Y, ROPE_HALF * 2f, ROPE_H);
 
-        // Bandera del centro de la soga
         shapeRenderer.setColor(0.9f, 0.15f, 0.15f, 1f);
         shapeRenderer.rect(ropeCenter - 4f, ROPE_Y - 10f, 8f, ROPE_H + 20f);
 
-        // Jugadores agarrados de cada punta
         shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
         shapeRenderer.rect(ropeCenter - ROPE_HALF - PLAYER_W, ROPE_Y - 40f, PLAYER_W, PLAYER_H);
         shapeRenderer.setColor(0.3f, 0.7f, 1f, 1f);
@@ -103,7 +87,6 @@ public class TugOfWarScreen extends BaseMinigameScreen {
 
         shapeRenderer.end();
 
-        // Texto de ayuda
         batch.begin();
         font.getData().setScale(1.1f);
         font.setColor(0.3f, 0.9f, 0.3f, 1f);
@@ -151,7 +134,6 @@ public class TugOfWarScreen extends BaseMinigameScreen {
 
     @Override
     public void dispose() {
-        super.dispose(); // libera batch, shapeRenderer y font de la base
-        // Cuando agreguemos Texture, se liberan acá (ver sección de sprites)
+        super.dispose();
     }
 }
