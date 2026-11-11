@@ -49,6 +49,15 @@ public class StopItScreen extends BaseMinigameScreen {
         reiniciarEstado();
     }
 
+    @Override protected String getConsigna() { return "¡FRENÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.una("frenar", Controles.W, Controles.ARRIBA)
+        };
+    }
+
     @Override
     protected float getDuracionRonda() {
         return DURACION_RONDA;
@@ -134,10 +143,6 @@ public class StopItScreen extends BaseMinigameScreen {
                 dibujarCentradoEn(batch, ultimoTexto[p], BARRA_X[p], BARRA_ANCHO, 320f);
             }
         }
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
-        fuente.draw(batch, "P1: [W] frenar", 24f, 24f);
-        dibujarDerecha("P2: [FLECHA ARRIBA] frenar", 24f);
         batch.end();
     }
 

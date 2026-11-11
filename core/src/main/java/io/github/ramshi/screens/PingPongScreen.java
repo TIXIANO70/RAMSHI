@@ -59,6 +59,15 @@ public class PingPongScreen extends BaseMinigameScreen {
         return MathUtils.clamp(y, 0f, ALTO_VIRTUAL - PALETA_ALTO);
     }
 
+    @Override protected String getConsigna() { return "¡DEVOLVÉ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("mover", Controles.W, Controles.S, Controles.ARRIBA, Controles.ABAJO)
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
@@ -120,14 +129,6 @@ public class PingPongScreen extends BaseMinigameScreen {
         formas.setColor(COLOR_BOMBA);
         formas.circle(bombaX, bombaY, RADIO_BOMBA);
         formas.end();
-
-        batch.begin();
-        fuente.setColor(COLOR_P1);
-        usarFuente(Main.fuenteMediana);
-        fuente.draw(batch, "P1: " + puntajeP1 + "  [W/S]", 50f, 60f);
-        fuente.setColor(COLOR_P2);
-        dibujarDerecha("P2: " + puntajeP2 + "  [FLECHAS]", 60f);
-        batch.end();
     }
 
     @Override

@@ -108,6 +108,16 @@ public class SumoScreen extends BaseMinigameScreen {
         return mov;
     }
 
+    @Override protected String getConsigna() { return "¡EMPUJÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("empujar", Controles.A, Controles.D, Controles.IZQUIERDA, Controles.DERECHA),
+            Controles.una("saltar", Controles.W, Controles.ARRIBA)
+        };
+    }
+
     @Override
     protected float getDuracionRonda() {
         return DURACION_RONDA;
@@ -266,13 +276,6 @@ public class SumoScreen extends BaseMinigameScreen {
         float dibujoP2X = p2X - TAMANO_SPRITE / 2f;
         float dibujoP2Y = p2Y - TAMANO_SPRITE / 2f;
         batch.draw(texP2, dibujoP2X, dibujoP2Y, TAMANO_SPRITE, TAMANO_SPRITE, 0, 0, 48, 48, espejoP2, false);
-
-        fuente.setColor(COLOR_P1);
-        usarFuente(Main.fuenteChica);
-        fuente.draw(batch, "P1: [A/D] Empuja  [W] Salta", 45f, 70f);
-
-        fuente.setColor(COLOR_P2);
-        dibujarDerecha("P2: [FLECHAS] Empuja  [ARRIBA] Salta", 70f);
 
         batch.end();
 

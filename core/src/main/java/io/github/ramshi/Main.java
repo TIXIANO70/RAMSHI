@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
+import io.github.ramshi.screens.Controles;
 import io.github.ramshi.screens.MainMenuScreen;
 
 public class Main extends Game {
@@ -60,5 +61,6 @@ public class Main extends Game {
         fuenteGrande.dispose();
         fuenteCartel.dispose();
         fuenteTitulo.dispose();
+        Controles.liberar();
     }
 }

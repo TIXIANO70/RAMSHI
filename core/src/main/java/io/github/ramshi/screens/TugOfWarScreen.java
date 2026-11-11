@@ -36,6 +36,15 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         super(juego);
     }
 
+    @Override protected String getConsigna() { return "¡TIRÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("alternar", Controles.A, Controles.D, Controles.IZQUIERDA, Controles.DERECHA)
+        };
+    }
+
     @Override
     protected float getDuracionRonda() {
         return DURACION_RONDA;
@@ -91,14 +100,6 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         formas.rect(centroSoga + MITAD_SOGA, SOGA_Y - 40f, JUGADOR_ANCHO, JUGADOR_ALTO);
 
         formas.end();
-
-        batch.begin();
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
-        fuente.draw(batch, "P1: alterna [A] [D]", 60f, 100f);
-        fuente.setColor(0.3f, 0.7f, 1f, 1f);
-        dibujarDerecha("P2: alterna [IZQ] [DER]", 100f);
-        batch.end();
     }
 
     @Override
@@ -119,12 +120,12 @@ public class TugOfWarScreen extends BaseMinigameScreen {
 
     @Override
     protected String getTextoP1() {
-        return "P1 [A/D] (Victorias: " + victoriasP1 + ")";
+        return "P1 (Victorias: " + victoriasP1 + ")";
     }
 
     @Override
     protected String getTextoP2() {
-        return "P2 [IZQ/DER] (Victorias: " + victoriasP2 + ")";
+        return "P2 (Victorias: " + victoriasP2 + ")";
     }
 
     @Override

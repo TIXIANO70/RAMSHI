@@ -75,6 +75,15 @@ public class SnakeScreen extends BaseMinigameScreen {
         return t;
     }
 
+    @Override protected String getConsigna() { return "¡COMÉ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.cruz("mover")
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override

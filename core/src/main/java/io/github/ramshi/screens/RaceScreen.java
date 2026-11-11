@@ -91,6 +91,15 @@ public class RaceScreen extends BaseMinigameScreen {
         return pistaX + TAMANO_AUTO_ORIGINAL / 2f * escalaX + TAMANO_AUTO_ORIGINAL * carril * escalaX;
     }
 
+    @Override protected String getConsigna() { return "¡ESQUIVÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("carril", Controles.A, Controles.D, Controles.IZQUIERDA, Controles.DERECHA)
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
@@ -157,8 +166,8 @@ public class RaceScreen extends BaseMinigameScreen {
 
         usarFuente(Main.fuenteChica);
         fuente.setColor(Color.WHITE);
-        fuente.draw(batch, "Velocidad: " + (int) velocidadP1, P1_X + 8f, 30);
-        fuente.draw(batch, "Velocidad: " + (int) velocidadP2, P2_X + 8f, 30);
+        fuente.draw(batch, "Velocidad: " + (int) velocidadP1, P1_X + 8f, 62f);
+        fuente.draw(batch, "Velocidad: " + (int) velocidadP2, P2_X + 8f, 62f);
 
         for (Obstaculo obs : obstaculosP1) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);
         for (Obstaculo obs : obstaculosP2) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);

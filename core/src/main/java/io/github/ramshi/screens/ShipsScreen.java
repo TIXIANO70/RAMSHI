@@ -82,6 +82,15 @@ public class ShipsScreen extends BaseMinigameScreen {
         return t;
     }
 
+    @Override protected String getConsigna() { return "¡ESQUIVÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("mover", Controles.A, Controles.D, Controles.IZQUIERDA, Controles.DERECHA)
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
@@ -114,11 +123,6 @@ public class ShipsScreen extends BaseMinigameScreen {
             batch.draw(barcos[p], barcoX[p], BARCO_Y, TAMANO_BARCO, TAMANO_BARCO);
             batch.setColor(Color.WHITE);
         }
-
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(1f, 1f, 1f, 1f);
-        fuente.draw(batch, "P1: A / D", 24f, 24f);
-        dibujarDerecha("P2: FLECHAS", 24f);
         batch.end();
 
         formas.begin(ShapeRenderer.ShapeType.Line);

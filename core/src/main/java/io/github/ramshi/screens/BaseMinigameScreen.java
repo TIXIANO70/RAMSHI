@@ -5,7 +5,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -21,10 +23,20 @@ public abstract class BaseMinigameScreen implements Screen {
     public static final float ANCHO_VIRTUAL = 800f;
     public static final float ALTO_VIRTUAL = 480f;
 
-    private static final float SEGUNDOS_INTRO = 1.2f;
+    private static final float SEGUNDOS_INTRO = 1.5f;
+    private static final float TAMANO_CORAZON = 40f;
+    private static final float SEPARACION_CORAZON = 8f;
+    private static final float CORAZONES_Y = 398f;
     private static final float SEGUNDOS_RESULTADO = 2.5f;
     private static final float MARGEN_HUD = 16f;
     private static final float ALTURA_HUD = 462f;
+    private static final float ALTO_LEYENDA = 40f;
+    private static final float LEYENDA_Y = 4f;
+    private static final float CONSIGNA_Y = 380f;
+    private static final float CONTROLES_Y = 230f;
+    private static final Color COLOR_CONSIGNA = new Color(1f, 0.85f, 0.2f, 1f);
+    private static final Color COLOR_P1 = new Color(0.3f, 0.9f, 0.3f, 1f);
+    private static final Color COLOR_P2 = new Color(0.3f, 0.7f, 1f, 1f);
 
     protected final Game juego;
     protected final GameSession sesion;
@@ -43,6 +55,8 @@ public abstract class BaseMinigameScreen implements Screen {
     private float tiempoResultado = 0f;
     private int puntosGanadosP1 = 0;
     private int puntosGanadosP2 = 0;
+    private Texture corazon;
+    private Texture corazonVacio;
 
     protected BaseMinigameScreen(Game juego) {
         this.juego = juego;
@@ -124,7 +138,19 @@ public abstract class BaseMinigameScreen implements Screen {
     }
 
     public void dibujarHUD() {
+        Controles.Control[] controles = getControles();
+        if (controles.length > 0) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            formas.begin(ShapeRenderer.ShapeType.Filled);
+            formas.setColor(0f, 0f, 0f, 0.55f);
+            formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_LEYENDA);
+            formas.end();
+        }
+
         batch.begin();
+        for (int p = 0; p < 2 && controles.length > 0; p++) {
+            Controles.dibujarLeyenda(batch, controles, p, centroJugador(p), LEYENDA_Y);
+        }
 
         if (sesion.esModoJugar()) {
             fuente.setColor(Color.WHITE);
@@ -134,7 +160,7 @@ public abstract class BaseMinigameScreen implements Screen {
         }
 
         usarFuente(Main.fuenteMediana);
-        fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
+        fuente.setColor(COLOR_P1);
         fuente.draw(batch, getTextoP1(), MARGEN_HUD, ALTURA_HUD);
 
         int segundos = (int) Math.ceil(tiempoRestante);
@@ -142,24 +168,81 @@ public abstract class BaseMinigameScreen implements Screen {
         else fuente.setColor(1f, 0.9f, 0.2f, 1f);
         dibujarCentrado("TIEMPO: " + segundos + "s", ALTURA_HUD);
 
-        fuente.setColor(0.3f, 0.7f, 1f, 1f);
+        fuente.setColor(COLOR_P2);
         dibujarDerecha(getTextoP2(), ALTURA_HUD);
 
+        if (getVidaMaxima() > 0) dibujarCorazones();
         batch.end();
     }
 
+    private void dibujarCorazones() {
+        if (corazon == null) {
+            corazon = new Texture("quickdraw/heart.png");
+            corazonVacio = new Texture("quickdraw/empty_heart.png");
+            corazon.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            corazonVacio.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        }
+        int maximo = getVidaMaxima();
+        float ancho = maximo * TAMANO_CORAZON + (maximo - 1) * SEPARACION_CORAZON;
+        for (int p = 0; p < 2; p++) {
+            float x = centroJugador(p) - ancho / 2f;
+            for (int i = 0; i < maximo; i++) {
+                Texture t = (i < getVida(p)) ? corazon : corazonVacio;
+                batch.draw(t, x + i * (TAMANO_CORAZON + SEPARACION_CORAZON), CORAZONES_Y, TAMANO_CORAZON, TAMANO_CORAZON);
+            }
+        }
+    }
+
+    protected int getVidaMaxima() {
+        return 0;
+    }
+
+    protected int getVida(int jugador) {
+        return 0;
+    }
+
     private void dibujarIntro() {
-        dibujarCaja(160f, 170f, 480f, 140f);
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(0.03f, 0.03f, 0.06f, 0.88f);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.setColor(1f, 0.84f, 0f, 1f);
+        formas.rect(ANCHO_VIRTUAL / 2f - 1f, 40f, 2f, 360f);
+        formas.end();
+
         MinigameType tipo = sesion.tipoActual();
+        Controles.Control[] controles = getControles();
         batch.begin();
+        usarFuente(Main.fuenteGrande);
         fuente.setColor(Color.WHITE);
-        usarFuente(Main.fuenteCartel);
-        dibujarCentrado(tipo != null ? tipo.getNombre() : "", 275f);
-        fuente.setColor(1f, 0.85f, 0.2f, 1f);
-        usarFuente(Main.fuenteMediana);
-        dibujarCentrado("¡PREPARATE!", 215f);
-        usarFuente(Main.fuenteMediana);
+        dibujarCentrado(tipo != null ? tipo.getNombre() : "", ALTURA_HUD);
+        for (int p = 0; p < 2; p++) {
+            usarFuente(Main.fuenteCartel);
+            fuente.setColor(COLOR_CONSIGNA);
+            dibujarCentradoEn(getConsigna(), centroJugador(p), CONSIGNA_Y);
+            usarFuente(Main.fuenteMediana);
+            fuente.setColor(p == 0 ? COLOR_P1 : COLOR_P2);
+            dibujarCentradoEn("JUGADOR " + (p + 1), centroJugador(p), CONSIGNA_Y - 44f);
+            if (controles.length > 0) Controles.dibujarGrande(batch, controles, p, centroJugador(p), CONTROLES_Y);
+        }
         batch.end();
+    }
+
+    private float centroJugador(int p) {
+        return ANCHO_VIRTUAL * (p == 0 ? 0.25f : 0.75f);
+    }
+
+    private void dibujarCentradoEn(String texto, float centroX, float y) {
+        GlyphLayout layout = new GlyphLayout(fuente, texto);
+        fuente.draw(batch, layout, centroX - layout.width / 2f, y);
+    }
+
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[0];
+    }
+
+    protected String getConsigna() {
+        return "¡PREPARATE!";
     }
 
     public void dibujarFinDeRonda() {
@@ -216,6 +299,10 @@ public abstract class BaseMinigameScreen implements Screen {
     @Override public void dispose() {
         batch.dispose();
         formas.dispose();
+        if (corazon != null) {
+            corazon.dispose();
+            corazonVacio.dispose();
+        }
     }
     @Override public void show() {}
     @Override public void resize(int width, int height) { vista.update(width, height, true); }

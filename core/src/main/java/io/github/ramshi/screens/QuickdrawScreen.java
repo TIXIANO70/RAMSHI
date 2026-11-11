@@ -21,18 +21,15 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     private static final float P2_X = 600f;
     private static final float ESCOPETA_Y = 180f;
     private static final float TAMANO_ESCOPETA = 128f;
-    private static final float CORAZON_Y = 300f;
-    private static final float TAMANO_CORAZON = 32f;
-    private static final float SEPARACION_CORAZON = 48f;
     private static final int[][] TECLAS = {
         {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D},
         {Input.Keys.UP, Input.Keys.LEFT, Input.Keys.DOWN, Input.Keys.RIGHT}
     };
-    private static final String[] NOMBRES_TECLAS_P1 = {"W", "A", "S", "D"};
-    private static final String[] NOMBRES_TECLAS_P2 = {"UP", "LEFT", "DOWN", "RIGHT"};
+    private static final int[][][] TECLAS_SPRITE_P1 = {Controles.W, Controles.A, Controles.S, Controles.D};
+    private static final int[][][] TECLAS_SPRITE_P2 = {Controles.ARRIBA, Controles.IZQUIERDA, Controles.ABAJO, Controles.DERECHA};
+    private static final float ESCALA_TECLA = 4f;
+    private static final float TECLA_Y = 210f;
 
-    private final Texture corazon = cargarTextura("quickdraw/heart.png");
-    private final Texture corazonVacio = cargarTextura("quickdraw/empty_heart.png");
     private final Texture escopetaAzul = cargarTextura("quickdraw/blue_shotgun.png");
     private final Texture escopetaRoja = cargarTextura("quickdraw/red_shotgun.png");
 
@@ -54,6 +51,15 @@ public class QuickdrawScreen extends BaseMinigameScreen {
         Texture t = new Texture(ruta);
         t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
         return t;
+    }
+
+    @Override protected String getConsigna() { return "¡DISPARÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.cruz("la que salga")
+        };
     }
 
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
@@ -119,15 +125,10 @@ public class QuickdrawScreen extends BaseMinigameScreen {
         batch.begin();
         batch.draw(escopetaAzul, P1_X, ESCOPETA_Y, TAMANO_ESCOPETA, TAMANO_ESCOPETA);
         batch.draw(escopetaRoja, P2_X, ESCOPETA_Y, TAMANO_ESCOPETA, TAMANO_ESCOPETA);
-        for (int i = 0; i < vidaP1; i++) {
-            batch.draw(corazon, P1_X + i * SEPARACION_CORAZON, CORAZON_Y, TAMANO_CORAZON, TAMANO_CORAZON);
-        }
-        for (int i = 0; i < vidaP2; i++) {
-            batch.draw(corazon, P2_X + i * SEPARACION_CORAZON, CORAZON_Y, TAMANO_CORAZON, TAMANO_CORAZON);
-        }
         if (puedeDisparar) {
-            fuente.draw(batch, NOMBRES_TECLAS_P1[opcionDisparo - 1], 400, 200);
-            fuente.draw(batch, NOMBRES_TECLAS_P2[opcionDisparo - 1], 400, 250);
+            float lado = 16f * ESCALA_TECLA;
+            Controles.dibujarTecla(batch, TECLAS_SPRITE_P1[opcionDisparo - 1], ANCHO_VIRTUAL / 2f - lado - 12f, TECLA_Y, ESCALA_TECLA);
+            Controles.dibujarTecla(batch, TECLAS_SPRITE_P2[opcionDisparo - 1], ANCHO_VIRTUAL / 2f + 12f, TECLA_Y, ESCALA_TECLA);
         }
         batch.end();
     }
@@ -146,8 +147,11 @@ public class QuickdrawScreen extends BaseMinigameScreen {
         tiempoGatillo = 0;
     }
 
-    @Override protected String getTextoP1() { return "Vida: " + vidaP1; }
-    @Override protected String getTextoP2() { return "Vida: " + vidaP2; }
+    @Override protected int getVidaMaxima() { return VIDA_MAXIMA; }
+    @Override protected int getVida(int jugador) { return jugador == 0 ? vidaP1 : vidaP2; }
+
+    @Override protected String getTextoP1() { return "P1 (Victorias: " + victoriasP1 + ")"; }
+    @Override protected String getTextoP2() { return "P2 (Victorias: " + victoriasP2 + ")"; }
     @Override protected String getResumen() { return "P1(" + vidaP1 + "hp) vs P2(" + vidaP2 + "hp)"; }
 
     @Override
@@ -155,7 +159,5 @@ public class QuickdrawScreen extends BaseMinigameScreen {
         super.dispose();
         escopetaRoja.dispose();
         escopetaAzul.dispose();
-        corazon.dispose();
-        corazonVacio.dispose();
     }
 }

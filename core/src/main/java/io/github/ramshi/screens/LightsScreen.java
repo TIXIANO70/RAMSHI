@@ -83,6 +83,15 @@ public class LightsScreen extends BaseMinigameScreen {
         return new TextureRegion(t, RECORTE_BORDE, RECORTE_BORDE, RECORTE_TAMANO, RECORTE_TAMANO);
     }
 
+    @Override protected String getConsigna() { return "¡REPETÍ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.cruz("repetir")
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_TOTAL; }
 
     @Override
@@ -145,10 +154,6 @@ public class LightsScreen extends BaseMinigameScreen {
             GlyphLayout layout = new GlyphLayout(fuente, mensajeFase());
             fuente.draw(batch, layout, (ANCHO_VIRTUAL - layout.width) / 2f, 420f);
         }
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
-        fuente.draw(batch, "P1: W A S D", 24f, 24f);
-        dibujarDerecha("P2: FLECHAS", 24f);
         batch.end();
     }
 

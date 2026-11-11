@@ -67,6 +67,17 @@ public class RpsScreen extends BaseMinigameScreen {
         mensajeMano = "";
     }
 
+    @Override protected String getConsigna() { return "¡GANÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.una("piedra", Controles.A, Controles.IZQUIERDA),
+            Controles.una("papel", Controles.S, Controles.ABAJO),
+            Controles.una("tijera", Controles.D, Controles.DERECHA)
+        };
+    }
+
     @Override
     protected float getDuracionRonda() {
         return DURACION_RONDA;
@@ -121,11 +132,6 @@ public class RpsScreen extends BaseMinigameScreen {
             fuente.draw(batch, NOMBRES[eleccionP1], P1_X + 20f, 150f);
             fuente.draw(batch, NOMBRES[eleccionP2], P2_X + 20f, 150f);
         }
-
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.7f, 0.7f, 0.7f, 1f);
-        fuente.draw(batch, "P1: [A] Piedra  [S] Papel  [D] Tijera", 40f, 60f);
-        dibujarDerecha("P2: [IZQ] Piedra  [ABAJO] Papel  [DER] Tijera", 60f);
         batch.end();
     }
 
