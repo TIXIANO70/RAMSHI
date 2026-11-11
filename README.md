@@ -1,13 +1,439 @@
 # RAMSHI
-Juego 1v1 local (pantalla dividida) de microjuegos de 10 segundos, hecho con Java + libGDX.
 
-## Modos
-- **Jugar**: se eligen N rondas, los minijuegos salen en orden aleatorio y al final se muestra el recuento de puntos.
-- **Endless**: se elige un minijuego y se juega en bucle contando victorias.
+Juego **1 contra 1 local** de **microjuegos de 10 segundos**, al estilo WarioWare, hecho en **Java + libGDX**.
+Los dos jugadores comparten el teclado y la pantalla: cada minijuego dura 10 segundos, el que lo gana suma puntos (de **1 a 3** en casi todos) y al final de la partida gana quien juntó más.
 
-## Agregar un minijuego
-1. `screens/MiScreen.java` extendiendo `BaseMinigameScreen` (duración 10 s).
-2. Sprites en `assets/mijuego/`.
-3. Una línea en `session/MinigameType.java`.
+- **Jugador 1:** `W` `A` `S` `D` (y `ESPACIO` en los juegos que tienen una acción extra).
+- **Jugador 2:** flechas `↑` `←` `↓` `→` (y `ENTER` en los juegos que tienen una acción extra).
 
-Controles: P1 WASD · P2 Flechas.
+---
+
+## Índice
+
+1. [Cómo ejecutarlo](#1-cómo-ejecutarlo)
+2. [Modos de juego](#2-modos-de-juego)
+3. [Qué pasa en cada minijuego](#3-qué-pasa-en-cada-minijuego)
+4. [Sistema de puntos](#4-sistema-de-puntos)
+5. [Los 12 minijuegos](#5-los-12-minijuegos)
+6. [Estructura del proyecto](#6-estructura-del-proyecto)
+7. [Cómo funciona por dentro](#7-cómo-funciona-por-dentro)
+8. [Cómo agregar un minijuego](#8-cómo-agregar-un-minijuego)
+9. [Ajustes rápidos](#9-ajustes-rápidos)
+10. [Assets, fuente y créditos](#10-assets-fuente-y-créditos)
+11. [Problemas comunes](#11-problemas-comunes)
+12. [Equipo y licencia](#12-equipo-y-licencia)
+
+---
+
+## 1. Cómo ejecutarlo
+
+**Requisitos:** un JDK instalado (recomendado 17 o 21). Gradle se descarga solo con el *wrapper* que trae el proyecto; la primera vez tarda un poco porque baja libGDX y FreeType.
+
+Desde la carpeta del proyecto:
+
+| Qué querés hacer | Windows (PowerShell) | Linux / macOS |
+|---|---|---|
+| Jugar | `.\gradlew.bat lwjgl3:run` | `./gradlew lwjgl3:run` |
+| Solo compilar | `.\gradlew.bat core:compileJava` | `./gradlew core:compileJava` |
+| Generar el `.jar` ejecutable | `.\gradlew.bat lwjgl3:jar` | `./gradlew lwjgl3:jar` |
+
+El `.jar` queda en `lwjgl3/build/libs/` y se abre con `java -jar <archivo>.jar`.
+
+La ventana es de **800 × 480** (el mundo del juego mide lo mismo; si se agranda la ventana, la imagen se escala manteniendo la proporción).
+
+---
+
+## 2. Modos de juego
+
+El menú principal tiene tres botones: **JUGAR**, **ENDLESS** y **SALIR**. Se usa con el mouse.
+
+### Jugar (partida completa)
+
+1. Con los botones **−** y **+** se eligen las **rondas**: de **3 a 15** (empieza en **8**).
+2. Al tocar **JUGAR** se arma una lista de minijuegos al azar. **Nunca sale el mismo juego dos veces seguidas**; si hay más rondas que juegos, se vuelve a mezclar la lista.
+3. Se juegan uno detrás del otro sin volver al menú.
+4. Después de cada minijuego aparece la **tabla de la partida** (ver [sección 3](#3-qué-pasa-en-cada-minijuego)).
+5. Al terminar la última ronda se pasa a la **pantalla de resultados**:
+   - Ganador y motivo.
+   - Lista de todos los juegos con los puntos de cada jugador y quién ganó cada uno.
+   - Totales.
+   - **Desempate:** 1) más puntos totales; 2) si empatan, más juegos ganados; 3) si también empatan, es empate.
+   - Durante el primer segundo y medio no acepta teclas (para no saltearla sin querer). Después, clic, `ESPACIO`, `ENTER` o `ESC` vuelven al menú.
+
+### Endless (práctica)
+
+1. Se elige **un minijuego** de la lista (12 botones en dos columnas).
+2. Se juega en bucle: al terminar cada ronda aparece el cartel del ganador con la explicación de los puntos y las **victorias totales** de la sesión.
+3. `ESPACIO` o `ENTER` → siguiente ronda (si no, arranca sola a los 2,5 s).
+4. `ESC` → vuelve al menú (también desde la lista de juegos).
+
+En cualquier minijuego, **`ESC` vuelve al menú principal**.
+
+---
+
+## 3. Qué pasa en cada minijuego
+
+Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
+
+### 3.1 Cartel de inicio (1,5 s)
+
+- La pantalla se oscurece y se divide en dos mitades, una por jugador.
+- Arriba: el **nombre del juego**.
+- En cada mitad: la **consigna** en grande (por ejemplo **¡ESQUIVÁ!**), "JUGADOR 1" / "JUGADOR 2" y **las teclas que va a usar ese jugador, dibujadas en grande**, con lo que hace cada una.
+  - Las teclas de movimiento aparecen con la forma del teclado (`W` arriba, `A S D` abajo; lo mismo con las flechas).
+  - En Piedra, papel o tijera, debajo de cada tecla se ve el dibujo del objeto.
+
+### 3.2 Durante el juego
+
+- **Arriba a la izquierda:** estado del jugador 1 (verde).
+- **Arriba al centro:** el tiempo. Se pone **rojo en los últimos 5 segundos**.
+- **Arriba a la derecha:** estado del jugador 2 (celeste).
+- **Corazones** (solo en los juegos con vidas: Quickdraw y Duelo de Tanques): uno por vida, centrados en la mitad de cada jugador. Las vidas perdidas se ven como corazones vacíos.
+- **Barra de abajo:** recordatorio de los controles de cada jugador (tecla en chico + acción).
+- En modo Jugar, en la línea de más arriba: "Juego N/M" y el total de la partida.
+
+### 3.3 Al terminar el minijuego (2,5 s)
+
+**En modo Jugar** aparece la tabla de la partida:
+
+- **Quién ganó y cuántos puntos sumó** (en grande).
+- **El motivo** (qué pasó en el juego).
+- **La explicación de los puntos:** qué hizo el ganador y qué regla se aplicó.
+  Ejemplo: *"El rival se hundió a los 2,4 s (antes de 3,3 s = 3 pts, antes de 6,6 s = 2, después = 1)"*.
+- La lista de los juegos jugados hasta el momento, con el último **resaltado en amarillo**, y el **total actualizado** de cada jugador.
+
+**En modo Endless** aparece un cartel con lo mismo (ganador, motivo, explicación) y las victorias totales.
+
+---
+
+## 4. Sistema de puntos
+
+Regla general para **todos** los minijuegos:
+
+| Resultado | Puntos |
+|---|---|
+| Paliza (ganar rápido, sin daño o por mucha diferencia) | **3** |
+| Victoria clara | **2** |
+| Victoria ajustada o por tiempo | **1** |
+| **Empate** | **0 para los dos** |
+
+Hay dos formas de medir "qué tan buena" fue la victoria:
+
+- **Por rapidez** (juegos que pueden terminar antes de los 10 s): el rival cae o se llega a la meta…
+  - entre 0 y 3,3 s → **3 puntos**
+  - entre 3,3 y 6,6 s → **2 puntos**
+  - después de 6,6 s → **1 punto**
+- **Por diferencia** (juegos que se deciden al final): cuanto mayor la ventaja, más puntos (ver cada juego).
+
+**Excepción:** Piedra, papel o tijera da 1 punto por mano ganada, con un tope de 5.
+
+El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijuegos).
+
+---
+
+## 5. Los 12 minijuegos
+
+### Resumen
+
+| # | Minijuego | Consigna | Controles P1 / P2 | Cómo se gana | 3 pts | 2 pts | 1 pt |
+|---|---|---|---|---|---|---|---|
+| 1 | Snake | ¡COMÉ! | WASD / flechas | Más huevos al final | Gana por 4+ | por 2-3 | por 1 |
+| 2 | Secuencia de luces | ¡REPETÍ! | WASD / flechas | Más secuencias completadas | 3 de 3 | 2 | 1 |
+| 3 | Lluvia de cañonazos | ¡ESQUIVÁ! | A D / ← → | El rival se hunde primero | antes de 3,3 s | antes de 6,6 s | después |
+| 4 | Tira y afloja | ¡TIRÁ! | A D / ← → (alternando) | Llevar la soga a tu línea | llega antes de 3,3 s | antes de 6,6 s | después, o soga de su lado al final |
+| 5 | Quickdraw | ¡DISPARÁ! | WASD / flechas | Dejar al rival sin vidas o tener más | termina con 3 vidas | con 2 | con 1 |
+| 6 | Carrera | ¡ESQUIVÁ! | A D / ← → | Más distancia recorrida | +50% | +20% | menos |
+| 7 | Piedra, papel o tijera | ¡GANÁ! | A S D / ← ↓ → | Más manos ganadas | 1 punto por mano ganada, **hasta 5** | | |
+| 8 | Duelo de Tanques | ¡DESTRUÍ! | WASD + ESPACIO / flechas + ENTER | Destruir al rival o más vidas | KO sin perder vidas | KO | más vidas al final |
+| 9 | La Papa Caliente | ¡PASALA! | WASD + ESPACIO / flechas + ENTER | No tener la bomba a los 10 s | el rival la tuvo +70% | +50% | menos |
+| 10 | Ping Pong Bomba | ¡DEVOLVÉ! | W S / ↑ ↓ | Meter 2 goles | 2-0 | 2-1 | iba ganando al final |
+| 11 | Lucha de Sumo | ¡EMPUJÁ! | A D + W / ← → + ↑ | Tirar al rival de la plataforma | ring out antes de 3,3 s | antes de 6,6 s | después, o más cerca del centro |
+| 12 | Stop It! | ¡FRENÁ! | W / ↑ | Más puntos frenando la barra | gana por 6+ | por 3-5 | por 1-2 |
+
+### Detalle de cada minijuego
+
+#### 1. Snake — `SnakeScreen`
+- Cada jugador tiene **su propia arena de 14 × 14** y su serpiente (arranca con 3 tramos).
+- Comer el huevo hace crecer la serpiente y suma 1 huevo.
+- Chocar contra la pared o contra uno mismo hace **reaparecer la serpiente con 0 huevos**.
+- **La serpiente acelera** durante la ronda (de 0,098 s a 0,065 s por paso).
+- No se puede dar media vuelta.
+
+#### 2. Secuencia de luces — `LightsScreen`
+- **3 secuencias** de **4, 5 y 6 luces** dentro de los 10 s. Cada una se muestra en 1 s (así que la última va más rápido).
+- **Los dos reciben la misma secuencia**; gana la secuencia el primero que la repite completa.
+- Equivocarse **reinicia el progreso** de esa secuencia.
+- Las teclas se ven como teclas reales (pack de Kenney) que se encienden con el color de cada dirección.
+
+#### 3. Lluvia de cañonazos — `ShipsScreen`
+- Pantalla dividida: cada barco se mueve de izquierda a derecha en su zona.
+- **Los dos reciben exactamente el mismo patrón de balas** (se genera una sola vez por ronda).
+- La caída se acelera fuerte hacia el final (curva de dificultad 2,2: tranquilo al principio, lluvia al final).
+- El primero al que le pega una bala pierde. Si les pegan a los dos a la vez, o sobreviven los dos, es empate.
+
+#### 4. Tira y afloja — `TugOfWarScreen`
+- Hay que **alternar** las dos teclas (`A`/`D` o `←`/`→`). Apretar la misma dos veces seguidas **no tira**.
+- Cada tirón mueve la soga 5 px; a los 150 px se llega a la línea y se gana en el momento.
+- Si nadie llega, gana quien tenga la soga de su lado al final (1 punto).
+
+#### 5. Quickdraw — `QuickdrawScreen`
+- Duelo del oeste: cada jugador tiene **3 vidas** (corazones arriba).
+- Cada tanto aparece en el centro **la tecla que hay que apretar** (dibujada en grande para cada jugador).
+- El primero que aprieta la correcta le saca una vida al rival.
+- **Apretar una tecla equivocada o antes de tiempo te saca una vida a vos.**
+- Termina cuando alguien se queda sin vidas o se acaba el tiempo.
+
+#### 6. Carrera — `RaceScreen`
+- Cada auto tiene una pista de 3 carriles; se cambia de carril con izquierda/derecha.
+- La velocidad sube sola cada segundo y la distancia se acumula.
+- Los obstáculos aparecen **cada cierta distancia recorrida** (siempre separados, nunca amontonados).
+- **Chocar** deja la velocidad en 0 y rompe el obstáculo. La parte trasera del auto no cuenta como choque (para que no frene si apenas lo rozás al cambiar de carril).
+
+#### 7. Piedra, papel o tijera — `RpsScreen`
+- Manos rápidas: cuenta regresiva **2, 1** (0,4 s por número) y se revela durante 0,5 s, así que entran unas **7 manos** en 10 s.
+- Durante la cuenta, cada uno elige en secreto (`A` piedra, `S` papel, `D` tijera / `←` piedra, `↓` papel, `→` tijera). Si no elige, queda papel.
+- Gana la ronda quien ganó más manos y suma **1 punto por mano ganada, hasta 5** (`PUNTOS_MAXIMOS`). Es el único juego que puede dar más de 3.
+
+#### 8. Duelo de Tanques — `TankDuelScreen`
+- Tanques que se mueven en 4 direcciones y disparan hacia donde miran.
+- **3 vidas** cada uno (corazones arriba). Las balas se rompen contra las cajas y los bordes.
+- Los tanques no se pueden encimar.
+
+#### 9. La Papa Caliente — `BombTagScreen`
+- Uno empieza con la bomba (al azar). **Al tocar al rival, se la pasa**, con un momento de inmunidad para que no vuelva enseguida.
+- El que tiene la bomba corre un 8% más rápido.
+- **Dash** con `ESPACIO` / `ENTER` (recarga de 2 s; se ve abajo de cada lado).
+- A los 10 s explota la bomba: pierde quien la tiene. **Nunca hay empate.**
+
+#### 10. Ping Pong Bomba — `PingPongScreen`
+- Paletas verticales a cada lado, una "bomba" como pelota.
+- Cada rebote en una paleta la acelera un 8%.
+- El primero en meter **2 goles** gana en el momento.
+
+#### 11. Lucha de Sumo — `SumoScreen`
+- Empujar al rival fuera de la plataforma. **La plataforma se achica** con el tiempo (de 440 a 260 px).
+- Si los dos empujan de frente, hay una onda de choque y rebotan.
+- `W` / `↑` para saltar (sirve para esquivar).
+- Si nadie cae, gana el que terminó más cerca del centro.
+
+#### 12. Stop It! — `StopItScreen`
+- Un marcador va y viene sobre una barra; hay que **frenarlo dentro de la zona**.
+- Perfecto = 3, bien = 2, cerca = 1, afuera = 0. Después de cada intento la zona se achica y el marcador va más rápido.
+- Gana quien suma más; los puntos de RAMSHI salen de la diferencia.
+
+---
+
+## 6. Estructura del proyecto
+
+```
+RAMSHI/
+├── assets/                       Imágenes y fuentes (una carpeta por minijuego)
+│   ├── bombtag/  lights/  pingpong/  quickdraw/  race/  rps/
+│   ├── ships/  snake/  stopit/  sumo/  tanks/  tugofwar/
+│   └── ui/
+│       ├── fonts/                Pixelify Sans (+ licencia OFL)
+│       └── kenney/               Pack de teclas de Kenney (ver INDICE.md)
+├── core/src/main/java/io/github/ramshi/
+│   ├── Main.java                 Arranque del juego y fuentes compartidas
+│   ├── screens/
+│   │   ├── BaseMinigameScreen.java   Base de todos los minijuegos
+│   │   ├── Controles.java            Teclas de Kenney: cartel de inicio y barra de abajo
+│   │   ├── MainMenuScreen.java       Menú principal y lista de Endless
+│   │   ├── ResultsScreen.java        Resultado final del modo Jugar
+│   │   └── *Screen.java              Un archivo por minijuego (12)
+│   └── session/
+│       ├── GameSession.java          Estado de la partida (modo, cola de juegos, puntos)
+│       └── MinigameType.java         Catálogo de minijuegos (una línea por juego)
+├── lwjgl3/                       Lanzador de escritorio (ventana 800 × 480)
+├── CREDITS.md                    Créditos de assets y fuentes
+└── README.md
+```
+
+Todo el código (variables, métodos, constantes) está **en español** para que sea más fácil de estudiar. Los nombres de las clases y archivos quedaron en inglés.
+
+---
+
+## 7. Cómo funciona por dentro
+
+### `Main`
+Extiende `Game` de libGDX. Al arrancar crea **5 fuentes** (Pixelify Sans en 16, 20, 24, 32 y 56 px) que usan todas las pantallas (`Main.fuenteChica`, `fuenteMediana`, `fuenteGrande`, `fuenteCartel`, `fuenteTitulo`) y abre el menú. Al cerrar, libera las fuentes y las texturas de las teclas.
+
+### `BaseMinigameScreen`
+Clase abstracta de la que heredan los 12 minijuegos. Se encarga de todo lo común:
+
+- Cámara y mundo virtual de **800 × 480** (`ANCHO_VIRTUAL`, `ALTO_VIRTUAL`).
+- **Cronómetro** de la ronda, cartel de inicio, HUD, barra de controles, corazones y pantallas de fin de ronda.
+- `ESC` para volver al menú.
+- Pasar al siguiente juego (modo Jugar) o reiniciar la ronda (modo Endless).
+- Calcular cuántos puntos sumó cada jugador en ese juego.
+
+**Métodos que cada minijuego tiene que implementar (obligatorios):**
+
+| Método | Qué hace |
+|---|---|
+| `getDuracionRonda()` | Devuelve la duración (10 s). |
+| `actualizarJuego(delta)` | Lógica de cada frame. |
+| `dibujarJuego(batch)` | Dibuja el juego. |
+| `determinarGanador()` | Reparte los puntos y devuelve el mensaje del ganador. |
+| `reiniciarRonda()` | Deja todo como al principio. |
+| `getTextoP1()` / `getTextoP2()` | Texto de arriba de cada jugador. |
+| `getResumen()` | El "motivo" que se muestra al terminar. |
+
+**Métodos opcionales (si no se definen, se usa el valor por defecto):**
+
+| Método | Para qué |
+|---|---|
+| `getConsigna()` | Palabra del cartel de inicio. Por defecto: "¡PREPARATE!". |
+| `getControles()` | Teclas para el cartel de inicio y la barra de abajo. Por defecto: ninguna. |
+| `getVidaMaxima()` / `getVida(jugador)` | Si se definen, la base dibuja los corazones. |
+
+**Herramientas que da la base:**
+
+| Herramienta | Para qué |
+|---|---|
+| `terminarRonda()` | Terminar antes de tiempo (por ejemplo, un KO). Solo cuenta la primera vez. |
+| `sumarPuntos(jugador, puntos)` | Suma los puntos y arma el mensaje "¡JUGADOR N GANA (+X PUNTOS)!". |
+| `puntosPorTiempo()` | 3, 2 o 1 según en qué tercio de la ronda terminó. |
+| `explicacion` | Texto que explica los puntos (se muestra al terminar). |
+| `segundosJugados()` / `reglaTiempo()` | Para armar la explicación de los juegos por rapidez. |
+| `usarFuente(Main.fuenteX)` | Cambiar de tamaño de letra conservando el color. |
+| `dibujarDerecha(texto, y)` | Escribir pegado al borde derecho. |
+
+### `Controles`
+Tiene las teclas del pack de Kenney como constantes (`W`, `A`, `S`, `D`, `ARRIBA`, `IZQUIERDA`, `ABAJO`, `DERECHA`, `ESPACIO`, `ENTER`) y tres formas de declarar un control:
+
+```java
+Controles.cruz("mover")                                              // WASD / flechas en forma de cruz
+Controles.dos("mover", Controles.A, Controles.D, Controles.IZQUIERDA, Controles.DERECHA)
+Controles.una("saltar", Controles.W, Controles.ARRIBA)
+Controles.una("piedra", Controles.A, Controles.IZQUIERDA).conIcono("rps/piedra.png")  // dibujo en vez de texto
+```
+
+### `GameSession` y `MinigameType`
+- `MinigameType` es la **lista de minijuegos**: una línea por juego con el nombre que se ve y la clase.
+- `GameSession` guarda el modo (Jugar o Endless), la cola de juegos y los resultados. El menú de Endless se arma solo a partir de `MinigameType` (máximo 12 botones).
+
+---
+
+## 8. Cómo agregar un minijuego
+
+1. **Sprites:** crear `assets/mijuego/` y poner ahí los PNG. Pixel art con filtro `Nearest`; fondos grandes con `Linear`.
+2. **Clase:** crear `core/src/main/java/io/github/ramshi/screens/MiJuegoScreen.java`:
+
+```java
+public class MiJuegoScreen extends BaseMinigameScreen {
+
+    private static final float DURACION_RONDA = 10f;
+    // ... todos los ajustes del juego acá arriba, como private static final
+
+    public MiJuegoScreen(Game juego) {
+        super(juego);
+        reiniciarRonda();
+    }
+
+    @Override protected String getConsigna() { return "¡HACÉ ALGO!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] { Controles.cruz("mover") };
+    }
+
+    @Override protected float getDuracionRonda() { return DURACION_RONDA; }
+    @Override protected void actualizarJuego(float delta) { /* lógica, usando delta */ }
+    @Override protected void dibujarJuego(SpriteBatch batch) { /* dibujo */ }
+
+    @Override
+    protected String determinarGanador() {
+        // empate: return "¡EMPATE!";
+        explicacion = "Qué hizo el ganador y qué regla se aplicó.";
+        return sumarPuntos(1, 2);
+    }
+
+    @Override protected void reiniciarRonda() { /* estado inicial */ }
+    @Override protected String getTextoP1() { return "P1 (Victorias: " + victoriasP1 + ")"; }
+    @Override protected String getTextoP2() { return "P2 (Victorias: " + victoriasP2 + ")"; }
+    @Override protected String getResumen() { return "Qué pasó en el juego"; }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        // liberar las Texture propias
+    }
+}
+```
+
+3. **Registrar:** agregar una línea en `session/MinigameType.java`:
+
+```java
+MI_JUEGO("Nombre visible", MiJuegoScreen::new),
+```
+
+**Reglas para que funcione bien en el modo Jugar:**
+- La duración tiene que ser una constante `static final` (la base la lee en su constructor, antes de que existan los campos del juego; si fuera un campo normal valdría 0 y el juego terminaría al instante).
+- El ganador suma entre 1 y 3 puntos con `sumarPuntos(...)`; el empate no suma.
+- `dispose()` siempre llama a `super.dispose()`.
+- No cambiar de pantalla ni manejar `ESC` desde el juego: lo hace la base.
+
+---
+
+## 9. Ajustes rápidos
+
+Todos los valores que se pueden ajustar están como **constantes al principio de cada clase**. Los más usados:
+
+| Dónde | Constante | Valor | Qué cambia |
+|---|---|---|---|
+| `BaseMinigameScreen` | `SEGUNDOS_INTRO` | 1.5 | Duración del cartel de inicio |
+| `BaseMinigameScreen` | `SEGUNDOS_RESULTADO` | 2.5 | Duración de la pantalla de fin de ronda |
+| `MainMenuScreen` | `MIN_RONDAS` / `MAX_RONDAS` / `RONDAS_INICIALES` | 3 / 15 / 8 | Rondas del modo Jugar |
+| Cada minijuego | `DURACION_RONDA` | 10 | Duración del juego |
+| Snake | `INTERVALO_INICIAL` / `INTERVALO_FINAL` | 0.098 / 0.065 | Velocidad de la serpiente |
+| Secuencia de luces | `LARGOS_SECUENCIA` | {4, 5, 6} | Cantidad de luces (y de secuencias) |
+| Secuencia de luces | `TIEMPO_MUESTRA` | 1 | Tiempo en que se muestra cada secuencia |
+| Secuencia de luces | `REINICIAR_AL_FALLAR` | true | Si equivocarse reinicia el progreso |
+| Lluvia de cañonazos | `VELOCIDAD_CAIDA_FIN` / `CURVA_DIFICULTAD` | 1150 / 2.2 | Qué tan brusca es la lluvia al final |
+| Tira y afloja | `PASO_TIRON` / `DESPLAZAMIENTO_MAX` | 5 / 150 | Cuántos tirones hacen falta para ganar |
+| Quickdraw | `TIEMPO_REACCION` | 0.35 | Ventana para disparar |
+| Carrera | `SEPARACION_INICIAL` / `SEPARACION_FINAL` | 320 / 260 | Distancia entre obstáculos |
+| Carrera | `PARTE_TRASERA_LIBRE` / `MARGEN_GOLPE` | 0.35 / 10 | Qué tan permisivo es el choque |
+| Piedra, papel o tijera | `PASOS_CUENTA` / `TIEMPO_PASO` / `TIEMPO_REVELAR` | 2 / 0.4 / 0.5 | Cuenta regresiva y velocidad de cada mano |
+| Piedra, papel o tijera | `PUNTOS_MAXIMOS` | 5 | Tope de puntos por ronda |
+| Duelo de Tanques | `TIEMPO_RECARGA` / `VIDA_MAXIMA` | 0.30 / 3 | Cadencia de disparo y vidas |
+| La Papa Caliente | `RECARGA_DASH` / `BONUS_PORTADOR` | 2.0 / 1.08 | Dash y ventaja del que tiene la bomba |
+| Ping Pong Bomba | `GOLES_PARA_GANAR` / `ACELERACION_REBOTE` | 2 / 1.08 | Goles y aceleración de la bomba |
+| Lucha de Sumo | `PLAT_ANCHO_INICIAL` / `PLAT_ANCHO_FINAL` | 440 / 260 | Cuánto se achica la plataforma |
+| Stop It! | `VELOCIDAD_INICIAL` / `MEDIA_ZONA_INICIAL` | 0.9 / 0.09 | Velocidad del marcador y tamaño de la zona |
+
+Los cortes de puntos también son constantes: `DIFERENCIA_PARA_3` / `DIFERENCIA_PARA_2` (Snake, Stop It!), `VENTAJA_PARA_3` / `VENTAJA_PARA_2` (Carrera), `PROPORCION_PARA_3` / `PROPORCION_PARA_2` (Papa Caliente), `PUNTOS_KO_PERFECTO` / `PUNTOS_KO` / `PUNTOS_VICTORIA` (Tanques). Los cortes por rapidez (3,3 s y 6,6 s) están en `puntosPorTiempo()` de la base.
+
+---
+
+## 10. Assets, fuente y créditos
+
+- **Fuente:** [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) (licencia SIL OFL 1.1), cargada con la extensión `gdx-freetype`.
+- **Teclas:** pack *Input Prompts Pixel 1-Bit* de [Kenney](https://kenney.nl) (CC0). Está completo en `assets/ui/kenney/`; el archivo `INDICE.md` de esa carpeta dice qué tecla es cada `tile_XXXX.png` (las teclas rellenas son el número + 272).
+- **Fondos y sprites de los minijuegos:** hechos o conseguidos por el equipo.
+
+Todo lo que no sea propio tiene que anotarse en [`CREDITS.md`](CREDITS.md) con autor, licencia y origen.
+
+---
+
+## 11. Problemas comunes
+
+| Qué pasa | Por qué | Cómo se arregla |
+|---|---|---|
+| `gradlew` no se reconoce en PowerShell | PowerShell no ejecuta archivos de la carpeta actual sin `.\` | Usar `.\gradlew.bat lwjgl3:run` |
+| Error de Java / versión no soportada | No hay JDK o es muy viejo | Instalar un JDK 17 o 21 y reabrir la terminal |
+| La primera ejecución tarda mucho | Gradle descarga libGDX y FreeType | Esperar; las siguientes son rápidas |
+| Un minijuego termina apenas empieza | `DURACION_RONDA` no es `static final` | Ver las reglas de la [sección 8](#8-cómo-agregar-un-minijuego) |
+| Falta una imagen (`File not found`) | La ruta no coincide con la carpeta de `assets/` | Revisar mayúsculas y nombre exacto del PNG |
+| Dos teclas a la vez no responden | Algunos teclados no registran ciertas combinaciones | Es del hardware (*ghosting*); probar con otro teclado |
+
+---
+
+## 12. Equipo y licencia
+
+Proyecto académico grupal. Integrantes (usuarios de Git): **TIXIANO70**, **Hung Nicolás**, **puroh**, **JuaDES** y **Adrián Escalante**.
+
+Licencia: **MIT** (ver [`LICENSE`](LICENSE)).
+
+**Forma de trabajo con Git:** cada cambio va en una rama propia (`feature/...`, `fix/...`, `refactor/...`) → Pull Request → merge a `main`. Antes de empezar algo nuevo, `git pull` en `main`.
