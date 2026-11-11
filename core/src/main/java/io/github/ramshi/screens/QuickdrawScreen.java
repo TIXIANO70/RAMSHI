@@ -8,47 +8,46 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 
-public class QuickdrawScreen extends BaseMinigameScreen {
+public class QuickdrawScreen extends BaseMinigameScreen{
+    private int healthP1=3;
+    private int healthP2=3;
+    private float triggerInterval=1;
+    private float reactionInterval=0.5f;
 
-    private static final float DURACION_RONDA = 10f;
-    private static final int VIDA_MAXIMA = 3;
-    private static final float PRIMER_INTERVALO = 1f;
-    private static final float INTERVALO_BASE = 1f;
-    private static final float AZAR_MIN = 0.1f;
-    private static final float AZAR_MAX = 2f;
-    private static final float TIEMPO_REACCION = 0.35f;
-    private static final float P1_X = 0f;
-    private static final float P2_X = 600f;
-    private static final float ESCOPETA_Y = 180f;
-    private static final float TAMANO_ESCOPETA = 128f;
-    private static final float CORAZON_Y = 300f;
-    private static final float TAMANO_CORAZON = 32f;
-    private static final float SEPARACION_CORAZON = 48f;
-    private static final int[][] TECLAS = {
-        {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D},
-        {Input.Keys.UP, Input.Keys.LEFT, Input.Keys.DOWN, Input.Keys.RIGHT}
-    };
-    private static final String[] NOMBRES_TECLAS_P1 = {"W", "A", "S", "D"};
-    private static final String[] NOMBRES_TECLAS_P2 = {"UP", "LEFT", "DOWN", "RIGHT"};
 
-    private final Texture fondo = cargarTextura("quickdraw/quickdraw_bg.png");
-    private final Texture corazon = cargarTextura("quickdraw/heart.png");
-    private final Texture corazonVacio = cargarTextura("quickdraw/empty_heart.png");
-    private final Texture escopetaAzul = cargarTextura("quickdraw/blue_shotgun.png");
-    private final Texture escopetaRoja = cargarTextura("quickdraw/red_shotgun.png");
-
-    private int vidaP1 = VIDA_MAXIMA;
-    private int vidaP2 = VIDA_MAXIMA;
-    private float intervaloGatillo = PRIMER_INTERVALO;
-    private float tiempoGatillo;
-    private boolean puedeDisparar;
-    private float tiempoReaccion;
-    private boolean contarReaccion = false;
-    private boolean yaDisparo;
-    private int opcionDisparo;
-
-    public QuickdrawScreen(Game juego) {
-        super(juego);
+    private float P1_X = 0f;
+    private float P2_X = 600f;
+    private float gunY = 180f;
+    private float gunH = 128f;
+    private float gunW = gunH;
+    private float triggerTimer;
+    private boolean canShoot;
+    private float reactionTimer;
+    private boolean addReactionTimer=false;
+    private boolean shooted;
+    private int shootOption;
+    private int heartY = 300;
+    private int heartW = 32;
+    private int heartH = heartW;
+    private String[] P1_keys = {"W","A","S","D"};
+    private String[] P2_keys = {"UP","LEFT","DOWN","RIGHT"};
+    private final Texture heart;
+    private final Texture empty_heart;
+    private final Texture blue_shotgun;
+    private final Texture red_shotgun;
+    private final Texture desert;
+    public QuickdrawScreen(Game game){
+        super(game);
+        this.heart = new Texture("quickdraw/heart.png");
+        this.heart.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        this.empty_heart = new Texture("quickdraw/empty_heart.png");
+        this.empty_heart.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        this.blue_shotgun = new Texture("quickdraw/blue_shotgun.png");
+        this.blue_shotgun.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        this.red_shotgun = new Texture("quickdraw/red_shotgun.png");
+        this.red_shotgun.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        this.desert = new Texture("quickdraw/desert.png");
+        this.desert.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
     }
 
     private Texture cargarTextura(String ruta) {
@@ -118,11 +117,11 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
-        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
-        batch.draw(escopetaAzul, P1_X, ESCOPETA_Y, TAMANO_ESCOPETA, TAMANO_ESCOPETA);
-        batch.draw(escopetaRoja, P2_X, ESCOPETA_Y, TAMANO_ESCOPETA, TAMANO_ESCOPETA);
-        for (int i = 0; i < vidaP1; i++) {
-            batch.draw(corazon, P1_X + i * SEPARACION_CORAZON, CORAZON_Y, TAMANO_CORAZON, TAMANO_CORAZON);
+        batch.draw(desert, 0,0,VIRTUAL_WIDTH,VIRTUAL_HEIGHT);
+        batch.draw(blue_shotgun, P1_X, gunY, gunW, gunH);
+        batch.draw(red_shotgun, P2_X, gunY, gunW, gunH);
+        for(int i=0; i<healthP1;i++){
+            batch.draw(heart, P1_X+i*48, heartY, heartW, heartH);
         }
         for (int i = 0; i < vidaP2; i++) {
             batch.draw(corazon, P2_X + i * SEPARACION_CORAZON, CORAZON_Y, TAMANO_CORAZON, TAMANO_CORAZON);
@@ -155,10 +154,10 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     @Override
     public void dispose() {
         super.dispose();
-        fondo.dispose();
-        escopetaRoja.dispose();
-        escopetaAzul.dispose();
-        corazon.dispose();
-        corazonVacio.dispose();
+        if(desert!=null) desert.dispose();
+        if(red_shotgun != null) red_shotgun.dispose();
+        if(blue_shotgun != null) blue_shotgun.dispose();
+        if(heart != null) heart.dispose();
+        if(empty_heart != null) empty_heart.dispose();
     }
 }
