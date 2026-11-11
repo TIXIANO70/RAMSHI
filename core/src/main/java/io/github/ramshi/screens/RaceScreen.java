@@ -13,172 +13,172 @@ import java.util.ArrayList;
 
 public class RaceScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;
-    private static final float START_SPEED = 5f;
-    private static final float ACCELERATION = 5f;
-    private static final float SPEED_INTERVAL = 1f;
-    private static final float SPAWN_INTERVAL = 2f;
-    private static final float GENERAL_SPEED = 32f;
-    private static final int LANES = 3;
-    private static final float LANE_WIDTH = 128f;
-    private static final float TRACK_WIDTH = LANE_WIDTH * LANES;
+    private static final float DURACION_RONDA = 10f;
+    private static final float VELOCIDAD_INICIAL = 5f;
+    private static final float ACELERACION = 5f;
+    private static final float INTERVALO_VELOCIDAD = 1f;
+    private static final float INTERVALO_OBSTACULOS = 2f;
+    private static final float VELOCIDAD_GENERAL = 32f;
+    private static final int CARRILES = 3;
+    private static final float ANCHO_CARRIL = 128f;
+    private static final float ANCHO_PISTA = ANCHO_CARRIL * CARRILES;
     private static final float P1_X = 0f;
     private static final float P2_X = 432f;
-    private static final float CAR_Y = 80f;
-    private static final float CAR_ORIG_SIZE = 32f;
-    private static final int[][] KEYS = {
+    private static final float AUTO_Y = 80f;
+    private static final float TAMANO_AUTO_ORIGINAL = 32f;
+    private static final int[][] TECLAS = {
         {Input.Keys.A, Input.Keys.D},
         {Input.Keys.LEFT, Input.Keys.RIGHT}
     };
 
-    private static class Obstacle {
+    private static class Obstaculo {
         float x, y, w, h;
         Rectangle rect;
 
-        Obstacle(float x, float y, float w, float h) {
+        Obstaculo(float x, float y, float w, float h) {
             this.x = x; this.y = y; this.w = w; this.h = h;
             this.rect = new Rectangle(x, y, w, h);
         }
     }
 
-    private final Texture pista = loadTexture("race/pista.png");
-    private final Texture car1 = loadTexture("race/car1.png");
-    private final Texture car2 = loadTexture("race/car2.png");
-    private final Texture obstacle = loadTexture("race/obstacle.png");
+    private final Texture pista = cargarTextura("race/pista.png");
+    private final Texture auto1 = cargarTextura("race/car1.png");
+    private final Texture auto2 = cargarTextura("race/car2.png");
+    private final Texture obstaculoTex = cargarTextura("race/obstacle.png");
 
-    private final float scaleX = TRACK_WIDTH / pista.getWidth();
-    private final float carSize = CAR_ORIG_SIZE * scaleX;
-    private final ArrayList<Obstacle> obstaclesP1 = new ArrayList<Obstacle>();
-    private final ArrayList<Obstacle> obstaclesP2 = new ArrayList<Obstacle>();
+    private final float escalaX = ANCHO_PISTA / pista.getWidth();
+    private final float tamanoAuto = TAMANO_AUTO_ORIGINAL * escalaX;
+    private final ArrayList<Obstaculo> obstaculosP1 = new ArrayList<Obstaculo>();
+    private final ArrayList<Obstaculo> obstaculosP2 = new ArrayList<Obstaculo>();
     private float distanciaP1 = 0;
     private float distanciaP2 = 0;
-    private int laneP1 = 1;
-    private int laneP2 = 1;
-    private float speedP1 = START_SPEED;
-    private float speedP2 = START_SPEED;
-    private float spawnTimer = 0f;
-    private float speedTimer = 0f;
-    private float carX1;
-    private float carX2;
+    private int carrilP1 = 1;
+    private int carrilP2 = 1;
+    private float velocidadP1 = VELOCIDAD_INICIAL;
+    private float velocidadP2 = VELOCIDAD_INICIAL;
+    private float tiempoObstaculos = 0f;
+    private float tiempoVelocidad = 0f;
+    private float autoX1;
+    private float autoX2;
     private Rectangle rectP1;
     private Rectangle rectP2;
 
-    public RaceScreen(Game game) {
-        super(game);
+    public RaceScreen(Game juego) {
+        super(juego);
     }
 
-    private Texture loadTexture(String path) {
-        Texture t = new Texture(path);
+    private Texture cargarTextura(String ruta) {
+        Texture t = new Texture(ruta);
         t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
         return t;
     }
 
-    private float laneX(float trackX, int lane) {
-        return trackX + CAR_ORIG_SIZE / 2f * scaleX + CAR_ORIG_SIZE * lane * scaleX;
+    private float carrilX(float pistaX, int carril) {
+        return pistaX + TAMANO_AUTO_ORIGINAL / 2f * escalaX + TAMANO_AUTO_ORIGINAL * carril * escalaX;
     }
 
-    @Override protected float getRoundDuration() { return ROUND_DURATION; }
+    @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
-    protected void updateGame(float delta) {
-        if (Gdx.input.isKeyJustPressed(KEYS[0][0])) laneP1 = MathUtils.clamp(laneP1 - 1, 0, LANES - 1);
-        if (Gdx.input.isKeyJustPressed(KEYS[0][1])) laneP1 = MathUtils.clamp(laneP1 + 1, 0, LANES - 1);
-        if (Gdx.input.isKeyJustPressed(KEYS[1][0])) laneP2 = MathUtils.clamp(laneP2 - 1, 0, LANES - 1);
-        if (Gdx.input.isKeyJustPressed(KEYS[1][1])) laneP2 = MathUtils.clamp(laneP2 + 1, 0, LANES - 1);
-        carX1 = laneX(P1_X, laneP1);
-        carX2 = laneX(P2_X, laneP2);
+    protected void actualizarJuego(float delta) {
+        if (Gdx.input.isKeyJustPressed(TECLAS[0][0])) carrilP1 = MathUtils.clamp(carrilP1 - 1, 0, CARRILES - 1);
+        if (Gdx.input.isKeyJustPressed(TECLAS[0][1])) carrilP1 = MathUtils.clamp(carrilP1 + 1, 0, CARRILES - 1);
+        if (Gdx.input.isKeyJustPressed(TECLAS[1][0])) carrilP2 = MathUtils.clamp(carrilP2 - 1, 0, CARRILES - 1);
+        if (Gdx.input.isKeyJustPressed(TECLAS[1][1])) carrilP2 = MathUtils.clamp(carrilP2 + 1, 0, CARRILES - 1);
+        autoX1 = carrilX(P1_X, carrilP1);
+        autoX2 = carrilX(P2_X, carrilP2);
 
-        speedTimer += delta;
-        spawnTimer += delta;
-        if (speedTimer >= SPEED_INTERVAL) {
-            speedP1 += ACCELERATION;
-            speedP2 += ACCELERATION;
-            distanciaP1 += speedP1;
-            distanciaP2 += speedP2;
-            speedTimer -= SPEED_INTERVAL;
+        tiempoVelocidad += delta;
+        tiempoObstaculos += delta;
+        if (tiempoVelocidad >= INTERVALO_VELOCIDAD) {
+            velocidadP1 += ACELERACION;
+            velocidadP2 += ACELERACION;
+            distanciaP1 += velocidadP1;
+            distanciaP2 += velocidadP2;
+            tiempoVelocidad -= INTERVALO_VELOCIDAD;
         }
-        if (spawnTimer >= SPAWN_INTERVAL) {
-            spawnObstacle(P1_X, obstaclesP1);
-            spawnObstacle(P2_X, obstaclesP2);
-            spawnTimer -= SPAWN_INTERVAL;
+        if (tiempoObstaculos >= INTERVALO_OBSTACULOS) {
+            crearObstaculo(P1_X, obstaculosP1);
+            crearObstaculo(P2_X, obstaculosP2);
+            tiempoObstaculos -= INTERVALO_OBSTACULOS;
         }
-        speedP1 = updateObstacles(obstaclesP1, rectP1, speedP1, delta);
-        speedP2 = updateObstacles(obstaclesP2, rectP2, speedP2, delta);
+        velocidadP1 = actualizarObstaculos(obstaculosP1, rectP1, velocidadP1, delta);
+        velocidadP2 = actualizarObstaculos(obstaculosP2, rectP2, velocidadP2, delta);
     }
 
-    private void spawnObstacle(float trackX, ArrayList<Obstacle> list) {
-        float x = laneX(trackX, MathUtils.random(0, LANES - 1));
-        list.add(new Obstacle(x, VIRTUAL_HEIGHT, carSize, carSize));
+    private void crearObstaculo(float pistaX, ArrayList<Obstaculo> lista) {
+        float x = carrilX(pistaX, MathUtils.random(0, CARRILES - 1));
+        lista.add(new Obstaculo(x, ALTO_VIRTUAL, tamanoAuto, tamanoAuto));
     }
 
-    private float updateObstacles(ArrayList<Obstacle> list, Rectangle car, float speed, float delta) {
-        float fall = speed * delta * GENERAL_SPEED;
-        for (int i = list.size() - 1; i >= 0; i--) {
-            Obstacle obs = list.get(i);
-            obs.y -= fall;
+    private float actualizarObstaculos(ArrayList<Obstaculo> lista, Rectangle auto, float velocidad, float delta) {
+        float caida = velocidad * delta * VELOCIDAD_GENERAL;
+        for (int i = lista.size() - 1; i >= 0; i--) {
+            Obstaculo obs = lista.get(i);
+            obs.y -= caida;
             obs.rect.set(obs.x, obs.y, obs.w, obs.h);
-            if (car.overlaps(obs.rect)) speed = 0f;
-            if (obs.y + obs.h < 0) list.remove(i);
+            if (auto.overlaps(obs.rect)) velocidad = 0f;
+            if (obs.y + obs.h < 0) lista.remove(i);
         }
-        return speed;
+        return velocidad;
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
+    protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
-        float pistaHeight = pista.getHeight();
-        for (float y = 0; y < VIRTUAL_HEIGHT; y += pistaHeight) {
-            batch.draw(pista, P1_X, y, TRACK_WIDTH, pistaHeight);
-            batch.draw(pista, P2_X, y, TRACK_WIDTH, pistaHeight);
+        float altoPista = pista.getHeight();
+        for (float y = 0; y < ALTO_VIRTUAL; y += altoPista) {
+            batch.draw(pista, P1_X, y, ANCHO_PISTA, altoPista);
+            batch.draw(pista, P2_X, y, ANCHO_PISTA, altoPista);
         }
 
-        batch.draw(car1, carX1, CAR_Y, carSize, carSize);
-        rectP1 = new Rectangle(carX1, CAR_Y, carSize, carSize);
-        batch.draw(car2, carX2, CAR_Y, carSize, carSize);
-        rectP2 = new Rectangle(carX2, CAR_Y, carSize, carSize);
+        batch.draw(auto1, autoX1, AUTO_Y, tamanoAuto, tamanoAuto);
+        rectP1 = new Rectangle(autoX1, AUTO_Y, tamanoAuto, tamanoAuto);
+        batch.draw(auto2, autoX2, AUTO_Y, tamanoAuto, tamanoAuto);
+        rectP2 = new Rectangle(autoX2, AUTO_Y, tamanoAuto, tamanoAuto);
 
-        font.draw(batch, "Velocidad: " + speedP1, P1_X, 30);
-        font.draw(batch, "Velocidad: " + speedP2, P2_X, 30);
+        fuente.draw(batch, "Velocidad: " + velocidadP1, P1_X, 30);
+        fuente.draw(batch, "Velocidad: " + velocidadP2, P2_X, 30);
 
-        for (Obstacle obs : obstaclesP1) batch.draw(obstacle, obs.x, obs.y, obs.w, obs.h);
-        for (Obstacle obs : obstaclesP2) batch.draw(obstacle, obs.x, obs.y, obs.w, obs.h);
+        for (Obstaculo obs : obstaculosP1) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);
+        for (Obstaculo obs : obstaculosP2) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);
         batch.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
+    protected String determinarGanador() {
         if (distanciaP1 > distanciaP2) {
-            p1GlobalWins++;
+            victoriasP1++;
             return "¡JUGADOR 1 GANA LA RONDA!";
         } else if (distanciaP1 < distanciaP2) {
-            p2GlobalWins++;
+            victoriasP2++;
             return "¡JUGADOR 2 GANA LA RONDA!";
         }
         return "¡EMPATE EN LA RONDA!";
     }
 
     @Override
-    protected void onRoundReset() {
+    protected void reiniciarRonda() {
         distanciaP1 = 0;
         distanciaP2 = 0;
-        obstaclesP1.clear();
-        obstaclesP2.clear();
-        laneP1 = 1;
-        laneP2 = 1;
-        speedP1 = 0;
-        speedP2 = 0;
+        obstaculosP1.clear();
+        obstaculosP2.clear();
+        carrilP1 = 1;
+        carrilP2 = 1;
+        velocidadP1 = 0;
+        velocidadP2 = 0;
     }
 
-    @Override protected String getP1StatusText() { return "P1: " + (int) distanciaP1 + " m (Wins: " + p1GlobalWins + ")"; }
-    @Override protected String getP2StatusText() { return "P2: " + (int) distanciaP2 + " m (Wins: " + p2GlobalWins + ")"; }
-    @Override protected String getScoreSummary() { return "Distancia: P1 (" + (int) distanciaP1 + "m) vs P2 (" + (int) distanciaP2 + "m)"; }
+    @Override protected String getTextoP1() { return "P1: " + (int) distanciaP1 + " m (Victorias: " + victoriasP1 + ")"; }
+    @Override protected String getTextoP2() { return "P2: " + (int) distanciaP2 + " m (Victorias: " + victoriasP2 + ")"; }
+    @Override protected String getResumen() { return "Distancia: P1 (" + (int) distanciaP1 + "m) vs P2 (" + (int) distanciaP2 + "m)"; }
 
     @Override
     public void dispose() {
         super.dispose();
         pista.dispose();
-        car1.dispose();
-        car2.dispose();
-        obstacle.dispose();
+        auto1.dispose();
+        auto2.dispose();
+        obstaculoTex.dispose();
     }
 }

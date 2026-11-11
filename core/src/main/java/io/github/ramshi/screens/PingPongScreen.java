@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class PingPongScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;
+    private static final float DURACION_RONDA = 10f;
     private static final int GOLES_PARA_GANAR = 2;
     private static final float PALETA_ANCHO = 15f;
     private static final float PALETA_ALTO = 80f;
@@ -20,48 +20,48 @@ public class PingPongScreen extends BaseMinigameScreen {
     private static final float VELOCIDAD_BOMBA_BASE_Y = 420f;
     private static final float ACELERACION_REBOTE = 1.05f;
     private static final float P1_X = 30f;
-    private static final float P2_X = VIRTUAL_WIDTH - 45f;
-    private static final int[][] KEYS = {
+    private static final float P2_X = ANCHO_VIRTUAL - 45f;
+    private static final int[][] TECLAS = {
         {Input.Keys.W, Input.Keys.S},
         {Input.Keys.UP, Input.Keys.DOWN}
     };
-    private static final Color COLOR_BG = new Color(30 / 255f, 30 / 255f, 45 / 255f, 1f);
+    private static final Color COLOR_FONDO = new Color(30 / 255f, 30 / 255f, 45 / 255f, 1f);
     private static final Color COLOR_LINEA = new Color(60 / 255f, 60 / 255f, 80 / 255f, 1f);
     private static final Color COLOR_P1 = new Color(255 / 255f, 75 / 255f, 120 / 255f, 1f);
     private static final Color COLOR_P2 = new Color(0f, 204 / 255f, 255 / 255f, 1f);
     private static final Color COLOR_BOMBA = new Color(255 / 255f, 140 / 255f, 0f, 1f);
 
-    private int p1Score = 0;
-    private int p2Score = 0;
-    private float p1Y = (VIRTUAL_HEIGHT - PALETA_ALTO) / 2f;
-    private float p2Y = (VIRTUAL_HEIGHT - PALETA_ALTO) / 2f;
+    private int puntajeP1 = 0;
+    private int puntajeP2 = 0;
+    private float p1Y = (ALTO_VIRTUAL - PALETA_ALTO) / 2f;
+    private float p2Y = (ALTO_VIRTUAL - PALETA_ALTO) / 2f;
     private float bombaX;
     private float bombaY;
     private float bombaVelX;
     private float bombaVelY;
 
-    public PingPongScreen(Game game) {
-        super(game);
+    public PingPongScreen(Game juego) {
+        super(juego);
         reiniciarPelota(1);
     }
 
     private void reiniciarPelota(int quienSaca) {
-        bombaX = VIRTUAL_WIDTH / 2f;
-        bombaY = VIRTUAL_HEIGHT / 2f;
+        bombaX = ANCHO_VIRTUAL / 2f;
+        bombaY = ALTO_VIRTUAL / 2f;
         bombaVelX = (quienSaca == 1 ? 1 : -1) * VELOCIDAD_BOMBA_BASE_X;
         bombaVelY = (MathUtils.randomBoolean() ? 1 : -1) * VELOCIDAD_BOMBA_BASE_Y;
     }
 
     private float moverPaleta(int p, float y, float delta) {
-        if (Gdx.input.isKeyPressed(KEYS[p][0])) y += VELOCIDAD_PALETA * delta;
-        if (Gdx.input.isKeyPressed(KEYS[p][1])) y -= VELOCIDAD_PALETA * delta;
-        return MathUtils.clamp(y, 0f, VIRTUAL_HEIGHT - PALETA_ALTO);
+        if (Gdx.input.isKeyPressed(TECLAS[p][0])) y += VELOCIDAD_PALETA * delta;
+        if (Gdx.input.isKeyPressed(TECLAS[p][1])) y -= VELOCIDAD_PALETA * delta;
+        return MathUtils.clamp(y, 0f, ALTO_VIRTUAL - PALETA_ALTO);
     }
 
-    @Override protected float getRoundDuration() { return ROUND_DURATION; }
+    @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
-    protected void updateGame(float delta) {
+    protected void actualizarJuego(float delta) {
         p1Y = moverPaleta(0, p1Y, delta);
         p2Y = moverPaleta(1, p2Y, delta);
 
@@ -71,8 +71,8 @@ public class PingPongScreen extends BaseMinigameScreen {
         if (bombaY - RADIO_BOMBA <= 0f) {
             bombaY = RADIO_BOMBA;
             bombaVelY = Math.abs(bombaVelY);
-        } else if (bombaY + RADIO_BOMBA >= VIRTUAL_HEIGHT) {
-            bombaY = VIRTUAL_HEIGHT - RADIO_BOMBA;
+        } else if (bombaY + RADIO_BOMBA >= ALTO_VIRTUAL) {
+            bombaY = ALTO_VIRTUAL - RADIO_BOMBA;
             bombaVelY = -Math.abs(bombaVelY);
         }
 
@@ -91,68 +91,68 @@ public class PingPongScreen extends BaseMinigameScreen {
         }
 
         if (bombaX + RADIO_BOMBA < 0f) {
-            p2Score++;
-            if (p2Score >= GOLES_PARA_GANAR) finishRound();
+            puntajeP2++;
+            if (puntajeP2 >= GOLES_PARA_GANAR) terminarRonda();
             else reiniciarPelota(2);
-        } else if (bombaX - RADIO_BOMBA > VIRTUAL_WIDTH) {
-            p1Score++;
-            if (p1Score >= GOLES_PARA_GANAR) finishRound();
+        } else if (bombaX - RADIO_BOMBA > ANCHO_VIRTUAL) {
+            puntajeP1++;
+            if (puntajeP1 >= GOLES_PARA_GANAR) terminarRonda();
             else reiniciarPelota(1);
         }
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
-        shapeRenderer.begin(ShapeType.Filled);
-        shapeRenderer.setColor(COLOR_BG);
-        shapeRenderer.rect(0f, 0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+    protected void dibujarJuego(SpriteBatch batch) {
+        formas.begin(ShapeType.Filled);
+        formas.setColor(COLOR_FONDO);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
 
-        shapeRenderer.setColor(COLOR_LINEA);
-        for (float y = 0; y < VIRTUAL_HEIGHT; y += 24f) {
-            shapeRenderer.rect(VIRTUAL_WIDTH / 2f - 2f, y, 4f, 14f);
+        formas.setColor(COLOR_LINEA);
+        for (float y = 0; y < ALTO_VIRTUAL; y += 24f) {
+            formas.rect(ANCHO_VIRTUAL / 2f - 2f, y, 4f, 14f);
         }
 
-        shapeRenderer.setColor(COLOR_P1);
-        shapeRenderer.rect(P1_X, p1Y, PALETA_ANCHO, PALETA_ALTO);
-        shapeRenderer.setColor(COLOR_P2);
-        shapeRenderer.rect(P2_X, p2Y, PALETA_ANCHO, PALETA_ALTO);
-        shapeRenderer.setColor(COLOR_BOMBA);
-        shapeRenderer.circle(bombaX, bombaY, RADIO_BOMBA);
-        shapeRenderer.end();
+        formas.setColor(COLOR_P1);
+        formas.rect(P1_X, p1Y, PALETA_ANCHO, PALETA_ALTO);
+        formas.setColor(COLOR_P2);
+        formas.rect(P2_X, p2Y, PALETA_ANCHO, PALETA_ALTO);
+        formas.setColor(COLOR_BOMBA);
+        formas.circle(bombaX, bombaY, RADIO_BOMBA);
+        formas.end();
 
         batch.begin();
-        font.setColor(COLOR_P1);
-        font.getData().setScale(1.2f);
-        font.draw(batch, "P1: " + p1Score + "  [W/S]", 50f, 60f);
-        font.setColor(COLOR_P2);
-        font.draw(batch, "P2: " + p2Score + "  [FLECHAS]", VIRTUAL_WIDTH - 210f, 60f);
+        fuente.setColor(COLOR_P1);
+        fuente.getData().setScale(1.2f);
+        fuente.draw(batch, "P1: " + puntajeP1 + "  [W/S]", 50f, 60f);
+        fuente.setColor(COLOR_P2);
+        fuente.draw(batch, "P2: " + puntajeP2 + "  [FLECHAS]", ANCHO_VIRTUAL - 210f, 60f);
         batch.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
-        if (p1Score > p2Score) {
-            int pts = (p1Score >= 2 || (p1Score - p2Score) >= 2) ? 2 : 1;
-            p1GlobalWins += pts;
+    protected String determinarGanador() {
+        if (puntajeP1 > puntajeP2) {
+            int pts = (puntajeP1 >= 2 || (puntajeP1 - puntajeP2) >= 2) ? 2 : 1;
+            victoriasP1 += pts;
             return "¡JUGADOR 1 GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
-        } else if (p2Score > p1Score) {
-            int pts = (p2Score >= 2 || (p2Score - p1Score) >= 2) ? 2 : 1;
-            p2GlobalWins += pts;
+        } else if (puntajeP2 > puntajeP1) {
+            int pts = (puntajeP2 >= 2 || (puntajeP2 - puntajeP1) >= 2) ? 2 : 1;
+            victoriasP2 += pts;
             return "¡JUGADOR 2 GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
         }
         return "¡EMPATE EN LA RONDA!";
     }
 
     @Override
-    protected void onRoundReset() {
-        p1Score = 0;
-        p2Score = 0;
-        p1Y = (VIRTUAL_HEIGHT - PALETA_ALTO) / 2f;
-        p2Y = (VIRTUAL_HEIGHT - PALETA_ALTO) / 2f;
+    protected void reiniciarRonda() {
+        puntajeP1 = 0;
+        puntajeP2 = 0;
+        p1Y = (ALTO_VIRTUAL - PALETA_ALTO) / 2f;
+        p2Y = (ALTO_VIRTUAL - PALETA_ALTO) / 2f;
         reiniciarPelota(1);
     }
 
-    @Override protected String getP1StatusText() { return "P1: " + p1Score + " (Wins: " + p1GlobalWins + ")"; }
-    @Override protected String getP2StatusText() { return "P2: " + p2Score + " (Wins: " + p2GlobalWins + ")"; }
-    @Override protected String getScoreSummary() { return "Goles de Bomba: P1 [" + p1Score + "]  -  P2 [" + p2Score + "]"; }
+    @Override protected String getTextoP1() { return "P1: " + puntajeP1 + " (Victorias: " + victoriasP1 + ")"; }
+    @Override protected String getTextoP2() { return "P2: " + puntajeP2 + " (Victorias: " + victoriasP2 + ")"; }
+    @Override protected String getResumen() { return "Goles de Bomba: P1 [" + puntajeP1 + "]  -  P2 [" + puntajeP2 + "]"; }
 }

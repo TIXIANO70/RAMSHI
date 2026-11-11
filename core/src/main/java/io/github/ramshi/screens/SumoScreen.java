@@ -12,11 +12,11 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class SumoScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;
+    private static final float DURACION_RONDA = 10f;
     private static final float RADIO = 22f;
-    private static final float SPRITE_SIZE = 48f;
+    private static final float TAMANO_SPRITE = 48f;
     private static final float IMPULSO_TAP = 16f;
-    private static final float VELOCIDAD_HOLD = 240f;
+    private static final float VELOCIDAD_MANTENER = 240f;
     private static final float FUERZA_SALTO = 400f;
     private static final float GRAVEDAD = 950f;
     private static final float VELOCIDAD_CAIDA = 450f;
@@ -30,25 +30,25 @@ public class SumoScreen extends BaseMinigameScreen {
     private static final int PUNTOS_KO = 2;
     private static final int PUNTOS_CENTRO = 1;
     private static final float MARGEN_CENTRO = 5f;
-    private static final int[][] KEYS = {
+    private static final int[][] TECLAS = {
         {Input.Keys.A, Input.Keys.D, Input.Keys.W},
         {Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP}
     };
     private static final float PLAT_ANCHO = 440f;
     private static final float PLAT_ALTO = 22f;
-    private static final float PLAT_X = (VIRTUAL_WIDTH - PLAT_ANCHO) / 2f;
+    private static final float PLAT_X = (ANCHO_VIRTUAL - PLAT_ANCHO) / 2f;
     private static final float PLAT_Y = 190f;
-    private static final float PLAT_CENTER_X = PLAT_X + PLAT_ANCHO / 2f;
+    private static final float PLAT_CENTRO_X = PLAT_X + PLAT_ANCHO / 2f;
     private static final float BASE_Y = PLAT_Y + PLAT_ALTO + RADIO;
-    private static final Color COLOR_BG = new Color(30 / 255f, 30 / 255f, 45 / 255f, 1f);
+    private static final Color COLOR_FONDO = new Color(30 / 255f, 30 / 255f, 45 / 255f, 1f);
     private static final Color COLOR_PLATAFORMA = new Color(0f, 204 / 255f, 255 / 255f, 1f);
     private static final Color COLOR_P1 = new Color(255 / 255f, 75 / 255f, 120 / 255f, 1f);
     private static final Color COLOR_P2 = new Color(0f, 255 / 255f, 180 / 255f, 1f);
 
-    private final Texture sumoP1Front = new Texture("sumo/sumo_p1_front.png");
-    private final Texture sumoP1Side  = new Texture("sumo/sumo_p1_side.png");
-    private final Texture sumoP2Front = new Texture("sumo/sumo_p2_front.png");
-    private final Texture sumoP2Side  = new Texture("sumo/sumo_p2_side.png");
+    private final Texture sumoP1Frente = new Texture("sumo/sumo_p1_front.png");
+    private final Texture sumoP1Lado  = new Texture("sumo/sumo_p1_side.png");
+    private final Texture sumoP2Frente = new Texture("sumo/sumo_p2_front.png");
+    private final Texture sumoP2Lado  = new Texture("sumo/sumo_p2_side.png");
 
     private float p1X;
     private float p1Y;
@@ -58,27 +58,27 @@ public class SumoScreen extends BaseMinigameScreen {
     private float p2Y;
     private float p2VelY = 0f;
 
-    private float lastMoveP1 = 0f;
-    private float lastMoveP2 = 0f;
+    private float ultimoMovP1 = 0f;
+    private float ultimoMovP2 = 0f;
     private boolean p1Cayo;
     private boolean p2Cayo;
 
-    private boolean shockwaveActive = false;
-    private float shockwaveX;
-    private float shockwaveY;
-    private float shockwaveRadius;
-    private float shockwaveAlpha;
+    private boolean ondaActiva = false;
+    private float ondaX;
+    private float ondaY;
+    private float ondaRadio;
+    private float ondaAlfa;
 
-    private int p1RoundsWon = 0;
-    private int p2RoundsWon = 0;
-    private String outcomeReason = "";
+    private int rondasGanadasP1 = 0;
+    private int rondasGanadasP2 = 0;
+    private String motivoFinal = "";
 
-    public SumoScreen(Game game) {
-        super(game);
-        resetFighters();
+    public SumoScreen(Game juego) {
+        super(juego);
+        reiniciarLuchadores();
     }
 
-    private void resetFighters() {
+    private void reiniciarLuchadores() {
         p1X = PLAT_X + DISTANCIA_INICIO;
         p1Y = BASE_Y;
         p1VelY = 0f;
@@ -87,51 +87,51 @@ public class SumoScreen extends BaseMinigameScreen {
         p2Y = BASE_Y;
         p2VelY = 0f;
 
-        lastMoveP1 = 0f;
-        lastMoveP2 = 0f;
+        ultimoMovP1 = 0f;
+        ultimoMovP2 = 0f;
         p1Cayo = false;
         p2Cayo = false;
-        shockwaveActive = false;
-        outcomeReason = "";
+        ondaActiva = false;
+        motivoFinal = "";
     }
 
     private float leerMovimiento(int p, float delta) {
-        float move = 0f;
-        if (Gdx.input.isKeyJustPressed(KEYS[p][0])) move -= IMPULSO_TAP;
-        else if (Gdx.input.isKeyPressed(KEYS[p][0])) move -= VELOCIDAD_HOLD * delta;
-        if (Gdx.input.isKeyJustPressed(KEYS[p][1])) move += IMPULSO_TAP;
-        else if (Gdx.input.isKeyPressed(KEYS[p][1])) move += VELOCIDAD_HOLD * delta;
-        return move;
+        float mov = 0f;
+        if (Gdx.input.isKeyJustPressed(TECLAS[p][0])) mov -= IMPULSO_TAP;
+        else if (Gdx.input.isKeyPressed(TECLAS[p][0])) mov -= VELOCIDAD_MANTENER * delta;
+        if (Gdx.input.isKeyJustPressed(TECLAS[p][1])) mov += IMPULSO_TAP;
+        else if (Gdx.input.isKeyPressed(TECLAS[p][1])) mov += VELOCIDAD_MANTENER * delta;
+        return mov;
     }
 
     @Override
-    protected float getRoundDuration() {
-        return ROUND_DURATION;
+    protected float getDuracionRonda() {
+        return DURACION_RONDA;
     }
 
     @Override
-    protected void updateGame(float delta) {
+    protected void actualizarJuego(float delta) {
         if (p1Cayo || p2Cayo) {
             if (p1Cayo) p1Y -= VELOCIDAD_CAIDA * delta;
             if (p2Cayo) p2Y -= VELOCIDAD_CAIDA * delta;
             return;
         }
 
-        float moveP1 = leerMovimiento(0, delta);
-        if (Gdx.input.isKeyJustPressed(KEYS[0][2]) && Math.abs(p1Y - BASE_Y) < 1.5f) {
+        float movP1 = leerMovimiento(0, delta);
+        if (Gdx.input.isKeyJustPressed(TECLAS[0][2]) && Math.abs(p1Y - BASE_Y) < 1.5f) {
             p1VelY = FUERZA_SALTO;
         }
 
-        float moveP2 = leerMovimiento(1, delta);
-        if (Gdx.input.isKeyJustPressed(KEYS[1][2]) && Math.abs(p2Y - BASE_Y) < 1.5f) {
+        float movP2 = leerMovimiento(1, delta);
+        if (Gdx.input.isKeyJustPressed(TECLAS[1][2]) && Math.abs(p2Y - BASE_Y) < 1.5f) {
             p2VelY = FUERZA_SALTO;
         }
 
-        p1X += moveP1;
-        p2X += moveP2;
+        p1X += movP1;
+        p2X += movP2;
 
-        lastMoveP1 = moveP1;
-        lastMoveP2 = moveP2;
+        ultimoMovP1 = movP1;
+        ultimoMovP2 = movP2;
 
         boolean p1SobrePlataforma = (p1X >= PLAT_X - RADIO && p1X <= PLAT_X + PLAT_ANCHO + RADIO);
         p1VelY -= GRAVEDAD * delta;
@@ -158,15 +158,15 @@ public class SumoScreen extends BaseMinigameScreen {
             p1X -= solapamiento / 2f;
             p2X += solapamiento / 2f;
 
-            boolean p1AtacandoHaciaP2 = (p1X < p2X && moveP1 > 0f) || (p1X > p2X && moveP1 < 0f);
-            boolean p2AtacandoHaciaP1 = (p2X > p1X && moveP2 < 0f) || (p2X < p1X && moveP2 > 0f);
+            boolean p1AtacandoHaciaP2 = (p1X < p2X && movP1 > 0f) || (p1X > p2X && movP1 < 0f);
+            boolean p2AtacandoHaciaP1 = (p2X > p1X && movP2 < 0f) || (p2X < p1X && movP2 > 0f);
 
             if (p1AtacandoHaciaP2 && p2AtacandoHaciaP1) {
-                shockwaveActive = true;
-                shockwaveX = (p1X + p2X) / 2f;
-                shockwaveY = (p1Y + p2Y) / 2f;
-                shockwaveRadius = ONDA_RADIO_INICIAL;
-                shockwaveAlpha = 1f;
+                ondaActiva = true;
+                ondaX = (p1X + p2X) / 2f;
+                ondaY = (p1Y + p2Y) / 2f;
+                ondaRadio = ONDA_RADIO_INICIAL;
+                ondaAlfa = 1f;
 
                 if (p1X < p2X) {
                     p1X -= RETROCESO_CHOQUE;
@@ -194,11 +194,11 @@ public class SumoScreen extends BaseMinigameScreen {
             }
         }
 
-        if (shockwaveActive) {
-            shockwaveRadius += ONDA_CRECIMIENTO * delta;
-            shockwaveAlpha -= ONDA_DESVANECER * delta;
-            if (shockwaveAlpha <= 0f) {
-                shockwaveActive = false;
+        if (ondaActiva) {
+            ondaRadio += ONDA_CRECIMIENTO * delta;
+            ondaAlfa -= ONDA_DESVANECER * delta;
+            if (ondaAlfa <= 0f) {
+                ondaActiva = false;
             }
         }
 
@@ -208,137 +208,137 @@ public class SumoScreen extends BaseMinigameScreen {
         if (p1Fuera && p2Fuera) {
             p1Cayo = true;
             p2Cayo = true;
-            outcomeReason = "¡AMBOS CAYERON AL MISMO TIEMPO!";
-            finishRound();
+            motivoFinal = "¡AMBOS CAYERON AL MISMO TIEMPO!";
+            terminarRonda();
         } else if (p1Fuera) {
             p1Cayo = true;
-            p2RoundsWon++;
-            outcomeReason = "¡RING OUT! JUGADOR 2 EMPUJA AL RIVAL";
-            finishRound();
+            rondasGanadasP2++;
+            motivoFinal = "¡RING OUT! JUGADOR 2 EMPUJA AL RIVAL";
+            terminarRonda();
         } else if (p2Fuera) {
             p2Cayo = true;
-            p1RoundsWon++;
-            outcomeReason = "¡RING OUT! JUGADOR 1 EMPUJA AL RIVAL";
-            finishRound();
+            rondasGanadasP1++;
+            motivoFinal = "¡RING OUT! JUGADOR 1 EMPUJA AL RIVAL";
+            terminarRonda();
         }
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
-        shapeRenderer.begin(ShapeType.Filled);
+    protected void dibujarJuego(SpriteBatch batch) {
+        formas.begin(ShapeType.Filled);
 
-        shapeRenderer.setColor(COLOR_BG);
-        shapeRenderer.rect(0f, 0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+        formas.setColor(COLOR_FONDO);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
 
-        shapeRenderer.setColor(COLOR_PLATAFORMA);
-        shapeRenderer.rect(PLAT_X, PLAT_Y, PLAT_ANCHO, PLAT_ALTO);
+        formas.setColor(COLOR_PLATAFORMA);
+        formas.rect(PLAT_X, PLAT_Y, PLAT_ANCHO, PLAT_ALTO);
 
-        shapeRenderer.setColor(1f, 0.3f, 0.3f, 0.8f);
-        shapeRenderer.rect(PLAT_X, PLAT_Y, 20f, PLAT_ALTO);
-        shapeRenderer.rect(PLAT_X + PLAT_ANCHO - 20f, PLAT_Y, 20f, PLAT_ALTO);
+        formas.setColor(1f, 0.3f, 0.3f, 0.8f);
+        formas.rect(PLAT_X, PLAT_Y, 20f, PLAT_ALTO);
+        formas.rect(PLAT_X + PLAT_ANCHO - 20f, PLAT_Y, 20f, PLAT_ALTO);
 
-        float shadowScale1 = MathUtils.clamp(1f - (p1Y - BASE_Y) / 180f, 0.35f, 1f);
-        float shadowScale2 = MathUtils.clamp(1f - (p2Y - BASE_Y) / 180f, 0.35f, 1f);
+        float escalaSombra1 = MathUtils.clamp(1f - (p1Y - BASE_Y) / 180f, 0.35f, 1f);
+        float escalaSombra2 = MathUtils.clamp(1f - (p2Y - BASE_Y) / 180f, 0.35f, 1f);
 
-        shapeRenderer.setColor(0.08f, 0.1f, 0.14f, 0.6f);
-        shapeRenderer.ellipse(p1X - (RADIO * 0.9f * shadowScale1), PLAT_Y + PLAT_ALTO - 4f, RADIO * 1.8f * shadowScale1, 8f * shadowScale1);
-        shapeRenderer.ellipse(p2X - (RADIO * 0.9f * shadowScale2), PLAT_Y + PLAT_ALTO - 4f, RADIO * 1.8f * shadowScale2, 8f * shadowScale2);
+        formas.setColor(0.08f, 0.1f, 0.14f, 0.6f);
+        formas.ellipse(p1X - (RADIO * 0.9f * escalaSombra1), PLAT_Y + PLAT_ALTO - 4f, RADIO * 1.8f * escalaSombra1, 8f * escalaSombra1);
+        formas.ellipse(p2X - (RADIO * 0.9f * escalaSombra2), PLAT_Y + PLAT_ALTO - 4f, RADIO * 1.8f * escalaSombra2, 8f * escalaSombra2);
 
-        shapeRenderer.end();
+        formas.end();
 
         batch.begin();
 
-        Texture p1Tex = (Math.abs(lastMoveP1) > 0.01f) ? sumoP1Side : sumoP1Front;
-        boolean p1FlipX = (lastMoveP1 < -0.01f);
-        float p1DrawX = p1X - SPRITE_SIZE / 2f;
-        float p1DrawY = p1Y - SPRITE_SIZE / 2f;
-        batch.draw(p1Tex, p1DrawX, p1DrawY, SPRITE_SIZE, SPRITE_SIZE, 0, 0, 48, 48, p1FlipX, false);
+        Texture texP1 = (Math.abs(ultimoMovP1) > 0.01f) ? sumoP1Lado : sumoP1Frente;
+        boolean espejoP1 = (ultimoMovP1 < -0.01f);
+        float dibujoP1X = p1X - TAMANO_SPRITE / 2f;
+        float dibujoP1Y = p1Y - TAMANO_SPRITE / 2f;
+        batch.draw(texP1, dibujoP1X, dibujoP1Y, TAMANO_SPRITE, TAMANO_SPRITE, 0, 0, 48, 48, espejoP1, false);
 
-        Texture p2Tex = (Math.abs(lastMoveP2) > 0.01f) ? sumoP2Side : sumoP2Front;
-        boolean p2FlipX = (lastMoveP2 <= 0.01f);
-        float p2DrawX = p2X - SPRITE_SIZE / 2f;
-        float p2DrawY = p2Y - SPRITE_SIZE / 2f;
-        batch.draw(p2Tex, p2DrawX, p2DrawY, SPRITE_SIZE, SPRITE_SIZE, 0, 0, 48, 48, p2FlipX, false);
+        Texture texP2 = (Math.abs(ultimoMovP2) > 0.01f) ? sumoP2Lado : sumoP2Frente;
+        boolean espejoP2 = (ultimoMovP2 <= 0.01f);
+        float dibujoP2X = p2X - TAMANO_SPRITE / 2f;
+        float dibujoP2Y = p2Y - TAMANO_SPRITE / 2f;
+        batch.draw(texP2, dibujoP2X, dibujoP2Y, TAMANO_SPRITE, TAMANO_SPRITE, 0, 0, 48, 48, espejoP2, false);
 
-        font.setColor(COLOR_P1);
-        font.getData().setScale(1.1f);
-        font.draw(batch, "P1: [A/D] Empuja  [W] Salta", 45f, 70f);
+        fuente.setColor(COLOR_P1);
+        fuente.getData().setScale(1.1f);
+        fuente.draw(batch, "P1: [A/D] Empuja  [W] Salta", 45f, 70f);
 
-        font.setColor(COLOR_P2);
-        font.draw(batch, "P2: [FLECHAS] Empuja  [ARRIBA] Salta", VIRTUAL_WIDTH - 295f, 70f);
+        fuente.setColor(COLOR_P2);
+        fuente.draw(batch, "P2: [FLECHAS] Empuja  [ARRIBA] Salta", ANCHO_VIRTUAL - 295f, 70f);
 
         batch.end();
 
-        if (shockwaveActive && shockwaveAlpha > 0f) {
+        if (ondaActiva && ondaAlfa > 0f) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-            shapeRenderer.begin(ShapeType.Line);
+            formas.begin(ShapeType.Line);
             Gdx.gl.glLineWidth(3f);
-            shapeRenderer.setColor(1f, 0.9f, 0.3f, MathUtils.clamp(shockwaveAlpha, 0f, 1f));
-            shapeRenderer.circle(shockwaveX, shockwaveY, shockwaveRadius);
+            formas.setColor(1f, 0.9f, 0.3f, MathUtils.clamp(ondaAlfa, 0f, 1f));
+            formas.circle(ondaX, ondaY, ondaRadio);
 
-            shapeRenderer.setColor(1f, 1f, 1f, MathUtils.clamp(shockwaveAlpha * 0.7f, 0f, 1f));
-            shapeRenderer.circle(shockwaveX, shockwaveY, shockwaveRadius * 0.65f);
-            shapeRenderer.end();
+            formas.setColor(1f, 1f, 1f, MathUtils.clamp(ondaAlfa * 0.7f, 0f, 1f));
+            formas.circle(ondaX, ondaY, ondaRadio * 0.65f);
+            formas.end();
 
             Gdx.gl.glLineWidth(1f);
         }
     }
 
     @Override
-    protected String determineRoundWinner() {
+    protected String determinarGanador() {
         if (p1Cayo && p2Cayo) {
             return "¡EMPATE POR DOBLE CAÍDA!";
         }
 
         if (p2Cayo) {
-            p1GlobalWins += PUNTOS_KO;
+            victoriasP1 += PUNTOS_KO;
             return "¡JUGADOR 1 GANA (" + PUNTOS_KO + " PUNTOS POR KO)!";
         } else if (p1Cayo) {
-            p2GlobalWins += PUNTOS_KO;
+            victoriasP2 += PUNTOS_KO;
             return "¡JUGADOR 2 GANA (" + PUNTOS_KO + " PUNTOS POR KO)!";
         }
 
-        float d1 = Math.abs(p1X - PLAT_CENTER_X);
-        float d2 = Math.abs(p2X - PLAT_CENTER_X);
+        float d1 = Math.abs(p1X - PLAT_CENTRO_X);
+        float d2 = Math.abs(p2X - PLAT_CENTRO_X);
 
         if (d1 < d2 - MARGEN_CENTRO) {
-            p1GlobalWins += PUNTOS_CENTRO;
+            victoriasP1 += PUNTOS_CENTRO;
             return "¡JUGADOR 1 DOMINA EL CENTRO (" + PUNTOS_CENTRO + " PUNTO)!";
         } else if (d2 < d1 - MARGEN_CENTRO) {
-            p2GlobalWins += PUNTOS_CENTRO;
+            victoriasP2 += PUNTOS_CENTRO;
             return "¡JUGADOR 2 DOMINA EL CENTRO (" + PUNTOS_CENTRO + " PUNTO)!";
         }
         return "¡EMPATE POR TIEMPO!";
     }
 
     @Override
-    protected void onRoundReset() {
-        resetFighters();
+    protected void reiniciarRonda() {
+        reiniciarLuchadores();
     }
 
     @Override
-    protected String getP1StatusText() {
-        return "P1 (Wins: " + p1GlobalWins + ")";
+    protected String getTextoP1() {
+        return "P1 (Victorias: " + victoriasP1 + ")";
     }
 
     @Override
-    protected String getP2StatusText() {
-        return "P2 (Wins: " + p2GlobalWins + ")";
+    protected String getTextoP2() {
+        return "P2 (Victorias: " + victoriasP2 + ")";
     }
 
     @Override
-    protected String getScoreSummary() {
-        return outcomeReason.isEmpty() ? "Lucha cerrada sobre la plataforma" : outcomeReason;
+    protected String getResumen() {
+        return motivoFinal.isEmpty() ? "Lucha cerrada sobre la plataforma" : motivoFinal;
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        sumoP1Front.dispose();
-        sumoP1Side.dispose();
-        sumoP2Front.dispose();
-        sumoP2Side.dispose();
+        sumoP1Frente.dispose();
+        sumoP1Lado.dispose();
+        sumoP2Frente.dispose();
+        sumoP2Lado.dispose();
     }
 }

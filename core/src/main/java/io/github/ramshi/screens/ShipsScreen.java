@@ -15,219 +15,219 @@ import java.util.List;
 
 public class ShipsScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;
-    private static final int MAX_POINTS = 3;
-    private static final float PLAYER_SIZE = 48f;
-    private static final float PLAYER_SPEED = 520f;
-    private static final float BALL_MIN_SIZE = 16f;
-    private static final float BALL_MAX_SIZE = 32f;
-    private static final float FALL_SPEED_START = 260f;
-    private static final float FALL_SPEED_END = 900f;
-    private static final float DIFFICULTY_CURVE = 1.3f;
-    private static final float SPAWN_INTERVAL_START = 0.5f;
-    private static final float SPAWN_INTERVAL_END = 0.25f;
-    private static final float FIRST_SPAWN_DELAY = 0.5f;
-    private static final float HITBOX_MARGIN = 4f;
-    private static final float PLAYER_Y = 40f;
-    private static final float BALL_SPAWN_Y = 400f;
-    private static final float ARENA_MARGIN = 20f;
-    private static final Color HIT_COLOR = new Color(1f, 0.35f, 0.35f, 1f);
-    private static final int[][] KEYS = {
+    private static final float DURACION_RONDA = 10f;
+    private static final int PUNTOS_MAX = 3;
+    private static final float TAMANO_BARCO = 48f;
+    private static final float VELOCIDAD_BARCO = 520f;
+    private static final float TAMANO_BALA_MIN = 16f;
+    private static final float TAMANO_BALA_MAX = 32f;
+    private static final float VELOCIDAD_CAIDA_INICIO = 260f;
+    private static final float VELOCIDAD_CAIDA_FIN = 900f;
+    private static final float CURVA_DIFICULTAD = 1.3f;
+    private static final float INTERVALO_BALAS_INICIO = 0.5f;
+    private static final float INTERVALO_BALAS_FIN = 0.25f;
+    private static final float PRIMERA_BALA = 0.5f;
+    private static final float MARGEN_GOLPE = 4f;
+    private static final float BARCO_Y = 40f;
+    private static final float BALAS_Y = 400f;
+    private static final float MARGEN_ZONA = 20f;
+    private static final Color COLOR_GOLPE = new Color(1f, 0.35f, 0.35f, 1f);
+    private static final int[][] TECLAS = {
         {Input.Keys.A, Input.Keys.D},
         {Input.Keys.LEFT, Input.Keys.RIGHT}
     };
-    private static final float HALF_WIDTH = VIRTUAL_WIDTH / 2f;
-    private static final float ARENA_WIDTH = HALF_WIDTH - 2 * ARENA_MARGIN;
+    private static final float MITAD_ANCHO = ANCHO_VIRTUAL / 2f;
+    private static final float ANCHO_ZONA = MITAD_ANCHO - 2 * MARGEN_ZONA;
 
-    private static class SpawnEvent {
-        final float time, xNorm, size;
-        SpawnEvent(float time, float xNorm, float size) { this.time = time; this.xNorm = xNorm; this.size = size; }
+    private static class EventoBala {
+        final float tiempo, xNorm, tamano;
+        EventoBala(float tiempo, float xNorm, float tamano) { this.tiempo = tiempo; this.xNorm = xNorm; this.tamano = tamano; }
     }
 
-    private static class Cannonball {
+    private static class BalaCanon {
         float x, y;
-        final float size;
-        Cannonball(float x, float y, float size) { this.x = x; this.y = y; this.size = size; }
+        final float tamano;
+        BalaCanon(float x, float y, float tamano) { this.x = x; this.y = y; this.tamano = tamano; }
     }
 
-    private final Texture background = loadTexture("ships/ships_bg.png", true);
-    private final Texture ball = loadTexture("ships/ships_cannon.png", false);
-    private final Texture[] playerShips = {
-        loadTexture("ships/ships_p1.png", false), loadTexture("ships/ships_p2.png", false)
+    private final Texture fondo = cargarTextura("ships/ships_bg.png", true);
+    private final Texture bala = cargarTextura("ships/ships_cannon.png", false);
+    private final Texture[] barcos = {
+        cargarTextura("ships/ships_p1.png", false), cargarTextura("ships/ships_p2.png", false)
     };
 
-    private final List<SpawnEvent> events = new ArrayList<>();
-    private final List<List<Cannonball>> balls = new ArrayList<>();
-    private final float[] playerX = new float[2];
-    private final boolean[] alive = new boolean[2];
-    private final Rectangle playerBox = new Rectangle();
-    private final Rectangle ballBox = new Rectangle();
-    private int nextEvent;
-    private float elapsed;
-    private float endTime;
-    private int winner;
+    private final List<EventoBala> eventos = new ArrayList<>();
+    private final List<List<BalaCanon>> balas = new ArrayList<>();
+    private final float[] barcoX = new float[2];
+    private final boolean[] vivo = new boolean[2];
+    private final Rectangle cajaBarco = new Rectangle();
+    private final Rectangle cajaBala = new Rectangle();
+    private int siguienteEvento;
+    private float transcurrido;
+    private float tiempoFinal;
+    private int ganador;
 
-    public ShipsScreen(Game game) {
-        super(game);
-        balls.add(new ArrayList<Cannonball>());
-        balls.add(new ArrayList<Cannonball>());
-        onRoundReset();
+    public ShipsScreen(Game juego) {
+        super(juego);
+        balas.add(new ArrayList<BalaCanon>());
+        balas.add(new ArrayList<BalaCanon>());
+        reiniciarRonda();
     }
 
-    private Texture loadTexture(String path, boolean smooth) {
-        Texture t = new Texture(path);
-        Texture.TextureFilter f = smooth ? Texture.TextureFilter.Linear : Texture.TextureFilter.Nearest;
+    private Texture cargarTextura(String ruta, boolean suave) {
+        Texture t = new Texture(ruta);
+        Texture.TextureFilter f = suave ? Texture.TextureFilter.Linear : Texture.TextureFilter.Nearest;
         t.setFilter(f, f);
         return t;
     }
 
-    @Override protected float getRoundDuration() { return ROUND_DURATION; }
+    @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
-    protected void updateGame(float delta) {
-        elapsed += delta;
-        spawnBalls();
+    protected void actualizarJuego(float delta) {
+        transcurrido += delta;
+        lanzarBalas();
 
         for (int p = 0; p < 2; p++) {
-            movePlayer(p, delta);
-            updateBalls(p, delta);
+            moverBarco(p, delta);
+            actualizarBalas(p, delta);
         }
 
-        if (!alive[0] || !alive[1]) {
-            winner = (!alive[0] && !alive[1]) ? 0 : (alive[0] ? 1 : 2);
-            endTime = elapsed;
-            finishRound();
+        if (!vivo[0] || !vivo[1]) {
+            ganador = (!vivo[0] && !vivo[1]) ? 0 : (vivo[0] ? 1 : 2);
+            tiempoFinal = transcurrido;
+            terminarRonda();
         }
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
+    protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
-        batch.draw(background, 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+        batch.draw(fondo, 0, 0, ANCHO_VIRTUAL, ALTO_VIRTUAL);
 
         for (int p = 0; p < 2; p++) {
-            for (Cannonball b : balls.get(p)) {
-                batch.draw(ball, b.x, b.y, b.size, b.size);
+            for (BalaCanon b : balas.get(p)) {
+                batch.draw(bala, b.x, b.y, b.tamano, b.tamano);
             }
-            batch.setColor(alive[p] ? Color.WHITE : HIT_COLOR);
-            batch.draw(playerShips[p], playerX[p], PLAYER_Y, PLAYER_SIZE, PLAYER_SIZE);
+            batch.setColor(vivo[p] ? Color.WHITE : COLOR_GOLPE);
+            batch.draw(barcos[p], barcoX[p], BARCO_Y, TAMANO_BARCO, TAMANO_BARCO);
             batch.setColor(Color.WHITE);
         }
 
-        font.getData().setScale(1.0f);
-        font.setColor(1f, 1f, 1f, 1f);
-        font.draw(batch, "P1: A / D", 24f, 24f);
-        font.draw(batch, "P2: FLECHAS", 590f, 24f);
+        fuente.getData().setScale(1.0f);
+        fuente.setColor(1f, 1f, 1f, 1f);
+        fuente.draw(batch, "P1: A / D", 24f, 24f);
+        fuente.draw(batch, "P2: FLECHAS", 590f, 24f);
         batch.end();
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(0.9f, 0.9f, 0.9f, 1f);
-        shapeRenderer.line(HALF_WIDTH, 16f, HALF_WIDTH, 432f);
-        shapeRenderer.end();
+        formas.begin(ShapeRenderer.ShapeType.Line);
+        formas.setColor(0.9f, 0.9f, 0.9f, 1f);
+        formas.line(MITAD_ANCHO, 16f, MITAD_ANCHO, 432f);
+        formas.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
-        if (winner == 0) return "¡EMPATE EN LA RONDA!";
+    protected String determinarGanador() {
+        if (ganador == 0) return "¡EMPATE EN LA RONDA!";
 
-        int points = winnerPoints();
-        if (winner == 1) p1GlobalWins += points;
-        else p2GlobalWins += points;
-        return "¡JUGADOR " + winner + " GANA!  +" + points + (points == 1 ? " pt" : " pts");
+        int puntos = puntosGanador();
+        if (ganador == 1) victoriasP1 += puntos;
+        else victoriasP2 += puntos;
+        return "¡JUGADOR " + ganador + " GANA!  +" + puntos + (puntos == 1 ? " pt" : " pts");
     }
 
     @Override
-    protected void onRoundReset() {
-        elapsed = 0f;
-        endTime = 0f;
-        nextEvent = 0;
-        winner = 0;
+    protected void reiniciarRonda() {
+        transcurrido = 0f;
+        tiempoFinal = 0f;
+        siguienteEvento = 0;
+        ganador = 0;
         for (int p = 0; p < 2; p++) {
-            alive[p] = true;
-            playerX[p] = arenaLeft(p) + (ARENA_WIDTH - PLAYER_SIZE) / 2f;
-            balls.get(p).clear();
+            vivo[p] = true;
+            barcoX[p] = zonaIzquierda(p) + (ANCHO_ZONA - TAMANO_BARCO) / 2f;
+            balas.get(p).clear();
         }
-        generateSchedule();
+        generarPatron();
     }
 
-    @Override protected String getP1StatusText() { return statusText(0, p1GlobalWins); }
-    @Override protected String getP2StatusText() { return statusText(1, p2GlobalWins); }
+    @Override protected String getTextoP1() { return textoEstado(0, victoriasP1); }
+    @Override protected String getTextoP2() { return textoEstado(1, victoriasP2); }
 
     @Override
-    protected String getScoreSummary() {
-        return "P1 (" + (alive[0] ? "sobrevivió" : "hundido")
-            + ") vs P2 (" + (alive[1] ? "sobrevivió" : "hundido") + ")";
+    protected String getResumen() {
+        return "P1 (" + (vivo[0] ? "sobrevivió" : "hundido")
+            + ") vs P2 (" + (vivo[1] ? "sobrevivió" : "hundido") + ")";
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        background.dispose();
-        ball.dispose();
-        for (Texture t : playerShips) t.dispose();
+        fondo.dispose();
+        bala.dispose();
+        for (Texture t : barcos) t.dispose();
     }
 
-    private void generateSchedule() {
-        events.clear();
-        float t = FIRST_SPAWN_DELAY;
-        while (t < ROUND_DURATION) {
-            events.add(new SpawnEvent(t, MathUtils.random(), MathUtils.random(BALL_MIN_SIZE, BALL_MAX_SIZE)));
-            t += MathUtils.lerp(SPAWN_INTERVAL_START, SPAWN_INTERVAL_END, t / ROUND_DURATION);
+    private void generarPatron() {
+        eventos.clear();
+        float t = PRIMERA_BALA;
+        while (t < DURACION_RONDA) {
+            eventos.add(new EventoBala(t, MathUtils.random(), MathUtils.random(TAMANO_BALA_MIN, TAMANO_BALA_MAX)));
+            t += MathUtils.lerp(INTERVALO_BALAS_INICIO, INTERVALO_BALAS_FIN, t / DURACION_RONDA);
         }
     }
 
-    private void spawnBalls() {
-        while (nextEvent < events.size() && events.get(nextEvent).time <= elapsed) {
-            SpawnEvent e = events.get(nextEvent++);
+    private void lanzarBalas() {
+        while (siguienteEvento < eventos.size() && eventos.get(siguienteEvento).tiempo <= transcurrido) {
+            EventoBala e = eventos.get(siguienteEvento++);
             for (int p = 0; p < 2; p++) {
-                float x = arenaLeft(p) + e.xNorm * (ARENA_WIDTH - e.size);
-                balls.get(p).add(new Cannonball(x, BALL_SPAWN_Y, e.size));
+                float x = zonaIzquierda(p) + e.xNorm * (ANCHO_ZONA - e.tamano);
+                balas.get(p).add(new BalaCanon(x, BALAS_Y, e.tamano));
             }
         }
     }
 
-    private void movePlayer(int p, float delta) {
-        if (!alive[p]) return;
-        if (Gdx.input.isKeyPressed(KEYS[p][0])) playerX[p] -= PLAYER_SPEED * delta;
-        if (Gdx.input.isKeyPressed(KEYS[p][1])) playerX[p] += PLAYER_SPEED * delta;
-        float left = arenaLeft(p);
-        playerX[p] = MathUtils.clamp(playerX[p], left, left + ARENA_WIDTH - PLAYER_SIZE);
+    private void moverBarco(int p, float delta) {
+        if (!vivo[p]) return;
+        if (Gdx.input.isKeyPressed(TECLAS[p][0])) barcoX[p] -= VELOCIDAD_BARCO * delta;
+        if (Gdx.input.isKeyPressed(TECLAS[p][1])) barcoX[p] += VELOCIDAD_BARCO * delta;
+        float izquierda = zonaIzquierda(p);
+        barcoX[p] = MathUtils.clamp(barcoX[p], izquierda, izquierda + ANCHO_ZONA - TAMANO_BARCO);
     }
 
-    private void updateBalls(int p, float delta) {
-        List<Cannonball> list = balls.get(p);
-        float fall = fallSpeed() * delta;
-        for (int i = list.size() - 1; i >= 0; i--) {
-            Cannonball b = list.get(i);
-            b.y -= fall;
-            if (alive[p] && hits(p, b)) alive[p] = false;
-            if (b.y + b.size < PLAYER_Y) list.remove(i);
+    private void actualizarBalas(int p, float delta) {
+        List<BalaCanon> lista = balas.get(p);
+        float caida = velocidadCaida() * delta;
+        for (int i = lista.size() - 1; i >= 0; i--) {
+            BalaCanon b = lista.get(i);
+            b.y -= caida;
+            if (vivo[p] && golpea(p, b)) vivo[p] = false;
+            if (b.y + b.tamano < BARCO_Y) lista.remove(i);
         }
     }
 
-    private boolean hits(int p, Cannonball b) {
-        playerBox.set(playerX[p] + HITBOX_MARGIN, PLAYER_Y + HITBOX_MARGIN,
-            PLAYER_SIZE - 2 * HITBOX_MARGIN, PLAYER_SIZE - 2 * HITBOX_MARGIN);
-        ballBox.set(b.x + HITBOX_MARGIN, b.y + HITBOX_MARGIN,
-            b.size - 2 * HITBOX_MARGIN, b.size - 2 * HITBOX_MARGIN);
-        return playerBox.overlaps(ballBox);
+    private boolean golpea(int p, BalaCanon b) {
+        cajaBarco.set(barcoX[p] + MARGEN_GOLPE, BARCO_Y + MARGEN_GOLPE,
+            TAMANO_BARCO - 2 * MARGEN_GOLPE, TAMANO_BARCO - 2 * MARGEN_GOLPE);
+        cajaBala.set(b.x + MARGEN_GOLPE, b.y + MARGEN_GOLPE,
+            b.tamano - 2 * MARGEN_GOLPE, b.tamano - 2 * MARGEN_GOLPE);
+        return cajaBarco.overlaps(cajaBala);
     }
 
-    private float fallSpeed() {
-        float progress = MathUtils.clamp(elapsed / ROUND_DURATION, 0f, 1f);
-        return MathUtils.lerp(FALL_SPEED_START, FALL_SPEED_END, (float) Math.pow(progress, DIFFICULTY_CURVE));
+    private float velocidadCaida() {
+        float progreso = MathUtils.clamp(transcurrido / DURACION_RONDA, 0f, 1f);
+        return MathUtils.lerp(VELOCIDAD_CAIDA_INICIO, VELOCIDAD_CAIDA_FIN, (float) Math.pow(progreso, CURVA_DIFICULTAD));
     }
 
-    private int winnerPoints() {
-        int points = MAX_POINTS - (int) (endTime / ROUND_DURATION * MAX_POINTS);
-        return MathUtils.clamp(points, 1, MAX_POINTS);
+    private int puntosGanador() {
+        int puntos = PUNTOS_MAX - (int) (tiempoFinal / DURACION_RONDA * PUNTOS_MAX);
+        return MathUtils.clamp(puntos, 1, PUNTOS_MAX);
     }
 
-    private String statusText(int p, int wins) {
-        return "P" + (p + 1) + ": " + (alive[p] ? "A FLOTE" : "HUNDIDO") + " (Wins: " + wins + ")";
+    private String textoEstado(int p, int victorias) {
+        return "P" + (p + 1) + ": " + (vivo[p] ? "A FLOTE" : "HUNDIDO") + " (Victorias: " + victorias + ")";
     }
 
-    private float arenaLeft(int p) {
-        return p * HALF_WIDTH + ARENA_MARGIN;
+    private float zonaIzquierda(int p) {
+        return p * MITAD_ANCHO + MARGEN_ZONA;
     }
 }

@@ -13,202 +13,202 @@ import java.util.List;
 
 public class SnakeScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;
-    private static final float MOVE_INTERVAL = 0.098f;
-    private static final int GRID = 14;
-    private static final float TILE_SIZE = 16f;
-    private static final float[] ARENA_X = {88f, 488f};
-    private static final float ARENA_Y = 108f;
-    private static final int START_LENGTH = 3;
-    private static final int[] START_X = {4, GRID - 5};
-    private static final int[] START_DIR = {3, 1};
-    private static final int[][] KEYS = {
+    private static final float DURACION_RONDA = 10f;
+    private static final float INTERVALO_MOVIMIENTO = 0.098f;
+    private static final int GRILLA = 14;
+    private static final float TAMANO_CASILLA = 16f;
+    private static final float[] ZONA_X = {88f, 488f};
+    private static final float ZONA_Y = 108f;
+    private static final int LARGO_INICIAL = 3;
+    private static final int[] INICIO_X = {4, GRILLA - 5};
+    private static final int[] DIR_INICIAL = {3, 1};
+    private static final int[][] TECLAS = {
         {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D},
         {Input.Keys.UP, Input.Keys.LEFT, Input.Keys.DOWN, Input.Keys.RIGHT}
     };
 
     private static final int[] DX = {0, -1, 0, 1};
     private static final int[] DY = {1, 0, -1, 0};
-    private static final String[] DIR_NAMES = {"Up", "Left", "Down", "Right"};
-    private static final int[] BODY_MASKS = {5, 10, 6, 3, 12, 9};
-    private static final String[] BODY_SUFFIXES = {"", "_1", "_2", "_3", "_4", "_5"};
+    private static final String[] NOMBRES_DIR = {"Up", "Left", "Down", "Right"};
+    private static final int[] MASCARAS_CUERPO = {5, 10, 6, 3, 12, 9};
+    private static final String[] SUFIJOS_CUERPO = {"", "_1", "_2", "_3", "_4", "_5"};
 
-    private final List<Texture> textures = new ArrayList<>();
-    private final Texture tile1 = load("snake/tiles/Tile1.png");
-    private final Texture tile2 = load("snake/tiles/Tile2.png");
-    private final Texture egg = load("snake/egg.png");
-    private final Texture[][] heads = new Texture[2][4];
-    private final Texture[][] tails = new Texture[2][4];
-    private final Texture[][] bodies = new Texture[2][16];
+    private final List<Texture> texturas = new ArrayList<>();
+    private final Texture casilla1 = cargar("snake/tiles/Tile1.png");
+    private final Texture casilla2 = cargar("snake/tiles/Tile2.png");
+    private final Texture huevo = cargar("snake/egg.png");
+    private final Texture[][] cabezas = new Texture[2][4];
+    private final Texture[][] colas = new Texture[2][4];
+    private final Texture[][] cuerpos = new Texture[2][16];
 
-    private final List<List<int[]>> snakes = new ArrayList<>();
+    private final List<List<int[]>> serpientes = new ArrayList<>();
     private final int[] dir = new int[2];
-    private final int[] nextDir = new int[2];
-    private final int[] grow = new int[2];
-    private final int[] score = new int[2];
-    private final int[] foodX = new int[2];
-    private final int[] foodY = new int[2];
-    private float moveTimer;
+    private final int[] sigDir = new int[2];
+    private final int[] crecer = new int[2];
+    private final int[] puntaje = new int[2];
+    private final int[] comidaX = new int[2];
+    private final int[] comidaY = new int[2];
+    private float tiempoMovimiento;
 
-    public SnakeScreen(Game game) {
-        super(game);
+    public SnakeScreen(Game juego) {
+        super(juego);
         for (int p = 0; p < 2; p++) {
             String n = "P" + (p + 1);
             for (int d = 0; d < 4; d++) {
-                heads[p][d] = load("snake/head/Cabeza" + n + "_" + DIR_NAMES[d] + ".png");
-                tails[p][d] = load("snake/tail/Cola" + n + "_" + DIR_NAMES[d] + ".png");
+                cabezas[p][d] = cargar("snake/head/Cabeza" + n + "_" + NOMBRES_DIR[d] + ".png");
+                colas[p][d] = cargar("snake/tail/Cola" + n + "_" + NOMBRES_DIR[d] + ".png");
             }
-            for (int i = 0; i < BODY_MASKS.length; i++) {
-                bodies[p][BODY_MASKS[i]] = load("snake/Body/Body" + n + BODY_SUFFIXES[i] + ".png");
+            for (int i = 0; i < MASCARAS_CUERPO.length; i++) {
+                cuerpos[p][MASCARAS_CUERPO[i]] = cargar("snake/Body/Body" + n + SUFIJOS_CUERPO[i] + ".png");
             }
-            snakes.add(new ArrayList<int[]>());
-            respawn(p);
+            serpientes.add(new ArrayList<int[]>());
+            reaparecer(p);
         }
     }
 
-    private Texture load(String path) {
-        Texture t = new Texture(path);
-        textures.add(t);
+    private Texture cargar(String ruta) {
+        Texture t = new Texture(ruta);
+        texturas.add(t);
         return t;
     }
 
-    @Override protected float getRoundDuration() { return ROUND_DURATION; }
+    @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
-    protected void updateGame(float delta) {
+    protected void actualizarJuego(float delta) {
         for (int p = 0; p < 2; p++) {
             for (int d = 0; d < 4; d++) {
-                if (Gdx.input.isKeyJustPressed(KEYS[p][d]) && d != (dir[p] + 2) % 4) nextDir[p] = d;
+                if (Gdx.input.isKeyJustPressed(TECLAS[p][d]) && d != (dir[p] + 2) % 4) sigDir[p] = d;
             }
         }
-        moveTimer += delta;
-        if (moveTimer >= MOVE_INTERVAL) {
-            moveTimer -= MOVE_INTERVAL;
-            step(0);
-            step(1);
+        tiempoMovimiento += delta;
+        if (tiempoMovimiento >= INTERVALO_MOVIMIENTO) {
+            tiempoMovimiento -= INTERVALO_MOVIMIENTO;
+            avanzar(0);
+            avanzar(1);
         }
     }
 
-    private void step(int p) {
-        List<int[]> s = snakes.get(p);
-        dir[p] = nextDir[p];
-        int[] head = s.get(s.size() - 1);
-        int x = head[0] + DX[dir[p]];
-        int y = head[1] + DY[dir[p]];
+    private void avanzar(int p) {
+        List<int[]> s = serpientes.get(p);
+        dir[p] = sigDir[p];
+        int[] cabeza = s.get(s.size() - 1);
+        int x = cabeza[0] + DX[dir[p]];
+        int y = cabeza[1] + DY[dir[p]];
         s.add(new int[]{x, y});
-        if (grow[p] > 0) grow[p]--;
+        if (crecer[p] > 0) crecer[p]--;
         else s.remove(0);
 
-        if (x == foodX[p] && y == foodY[p]) {
-            grow[p]++;
-            score[p]++;
-            placeFood(p);
+        if (x == comidaX[p] && y == comidaY[p]) {
+            crecer[p]++;
+            puntaje[p]++;
+            ubicarComida(p);
         }
-        boolean outside = x < 0 || y < 0 || x >= GRID || y >= GRID;
-        if (outside || hitsItself(s)) respawn(p);
+        boolean afuera = x < 0 || y < 0 || x >= GRILLA || y >= GRILLA;
+        if (afuera || seChoca(s)) reaparecer(p);
     }
 
-    private boolean hitsItself(List<int[]> s) {
-        int[] head = s.get(s.size() - 1);
+    private boolean seChoca(List<int[]> s) {
+        int[] cabeza = s.get(s.size() - 1);
         for (int i = 0; i < s.size() - 1; i++) {
-            if (s.get(i)[0] == head[0] && s.get(i)[1] == head[1]) return true;
+            if (s.get(i)[0] == cabeza[0] && s.get(i)[1] == cabeza[1]) return true;
         }
         return false;
     }
 
-    private void respawn(int p) {
-        List<int[]> s = snakes.get(p);
+    private void reaparecer(int p) {
+        List<int[]> s = serpientes.get(p);
         s.clear();
-        dir[p] = nextDir[p] = START_DIR[p];
-        for (int i = START_LENGTH - 1; i >= 0; i--) {
-            s.add(new int[]{START_X[p] - DX[dir[p]] * i, GRID / 2 - DY[dir[p]] * i});
+        dir[p] = sigDir[p] = DIR_INICIAL[p];
+        for (int i = LARGO_INICIAL - 1; i >= 0; i--) {
+            s.add(new int[]{INICIO_X[p] - DX[dir[p]] * i, GRILLA / 2 - DY[dir[p]] * i});
         }
-        grow[p] = 0;
-        score[p] = 0;
-        placeFood(p);
+        crecer[p] = 0;
+        puntaje[p] = 0;
+        ubicarComida(p);
     }
 
-    private void placeFood(int p) {
-        int attempts = 0;
+    private void ubicarComida(int p) {
+        int intentos = 0;
         do {
-            foodX[p] = MathUtils.random(GRID - 1);
-            foodY[p] = MathUtils.random(GRID - 1);
-        } while (occupies(p, foodX[p], foodY[p]) && ++attempts < 100);
+            comidaX[p] = MathUtils.random(GRILLA - 1);
+            comidaY[p] = MathUtils.random(GRILLA - 1);
+        } while (ocupa(p, comidaX[p], comidaY[p]) && ++intentos < 100);
     }
 
-    private boolean occupies(int p, int x, int y) {
-        for (int[] c : snakes.get(p)) {
+    private boolean ocupa(int p, int x, int y) {
+        for (int[] c : serpientes.get(p)) {
             if (c[0] == x && c[1] == y) return true;
         }
         return false;
     }
 
-    private int dirTo(int[] from, int[] to) {
+    private int direccionHacia(int[] desde, int[] hacia) {
         for (int d = 0; d < 4; d++) {
-            if (from[0] + DX[d] == to[0] && from[1] + DY[d] == to[1]) return d;
+            if (desde[0] + DX[d] == hacia[0] && desde[1] + DY[d] == hacia[1]) return d;
         }
         return 0;
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
+    protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
         for (int p = 0; p < 2; p++) {
-            for (int x = 0; x < GRID; x++) {
-                for (int y = 0; y < GRID; y++) drawCell(batch, (x + y) % 2 == 0 ? tile1 : tile2, p, x, y);
+            for (int x = 0; x < GRILLA; x++) {
+                for (int y = 0; y < GRILLA; y++) dibujarCasilla(batch, (x + y) % 2 == 0 ? casilla1 : casilla2, p, x, y);
             }
-            drawCell(batch, egg, p, foodX[p], foodY[p]);
+            dibujarCasilla(batch, huevo, p, comidaX[p], comidaY[p]);
 
-            List<int[]> s = snakes.get(p);
-            int last = s.size() - 1;
-            for (int i = 0; i <= last; i++) {
+            List<int[]> s = serpientes.get(p);
+            int ultimo = s.size() - 1;
+            for (int i = 0; i <= ultimo; i++) {
                 int[] c = s.get(i);
                 Texture t;
-                if (i == last) t = heads[p][dir[p]];
-                else if (i == 0) t = tails[p][dirTo(c, s.get(1))];
-                else t = bodies[p][(1 << dirTo(c, s.get(i - 1))) | (1 << dirTo(c, s.get(i + 1)))];
-                if (t != null) drawCell(batch, t, p, c[0], c[1]);
+                if (i == ultimo) t = cabezas[p][dir[p]];
+                else if (i == 0) t = colas[p][direccionHacia(c, s.get(1))];
+                else t = cuerpos[p][(1 << direccionHacia(c, s.get(i - 1))) | (1 << direccionHacia(c, s.get(i + 1)))];
+                if (t != null) dibujarCasilla(batch, t, p, c[0], c[1]);
             }
         }
         batch.end();
 
-        float size = GRID * TILE_SIZE;
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(0.25f, 0.25f, 0.25f, 1f);
-        for (float x : ARENA_X) shapeRenderer.rect(x - 1f, ARENA_Y - 1f, size + 2f, size + 2f);
-        shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
-        shapeRenderer.line(VIRTUAL_WIDTH / 2f, ARENA_Y, VIRTUAL_WIDTH / 2f, ARENA_Y + size);
-        shapeRenderer.end();
+        float size = GRILLA * TAMANO_CASILLA;
+        formas.begin(ShapeRenderer.ShapeType.Line);
+        formas.setColor(0.25f, 0.25f, 0.25f, 1f);
+        for (float x : ZONA_X) formas.rect(x - 1f, ZONA_Y - 1f, size + 2f, size + 2f);
+        formas.setColor(0.35f, 0.35f, 0.35f, 1f);
+        formas.line(ANCHO_VIRTUAL / 2f, ZONA_Y, ANCHO_VIRTUAL / 2f, ZONA_Y + size);
+        formas.end();
     }
 
-    private void drawCell(SpriteBatch batch, Texture t, int p, int x, int y) {
-        batch.draw(t, ARENA_X[p] + x * TILE_SIZE, ARENA_Y + y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-    }
-
-    @Override
-    protected String determineRoundWinner() {
-        if (score[0] == score[1]) return "¡EMPATE EN LA RONDA!";
-        int winner = (score[0] > score[1]) ? 0 : 1;
-        int pts = (Math.abs(score[0] - score[1]) >= 2 || score[winner] >= 3) ? 2 : 1;
-        if (winner == 0) p1GlobalWins += pts;
-        else p2GlobalWins += pts;
-        return "¡JUGADOR " + (winner + 1) + " GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
+    private void dibujarCasilla(SpriteBatch batch, Texture t, int p, int x, int y) {
+        batch.draw(t, ZONA_X[p] + x * TAMANO_CASILLA, ZONA_Y + y * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA);
     }
 
     @Override
-    protected void onRoundReset() {
-        moveTimer = 0f;
-        respawn(0);
-        respawn(1);
+    protected String determinarGanador() {
+        if (puntaje[0] == puntaje[1]) return "¡EMPATE EN LA RONDA!";
+        int ganador = (puntaje[0] > puntaje[1]) ? 0 : 1;
+        int pts = (Math.abs(puntaje[0] - puntaje[1]) >= 2 || puntaje[ganador] >= 3) ? 2 : 1;
+        if (ganador == 0) victoriasP1 += pts;
+        else victoriasP2 += pts;
+        return "¡JUGADOR " + (ganador + 1) + " GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
     }
 
-    @Override protected String getP1StatusText() { return "P1: " + score[0] + " pts (Wins: " + p1GlobalWins + ")"; }
-    @Override protected String getP2StatusText() { return "P2: " + score[1] + " pts (Wins: " + p2GlobalWins + ")"; }
-    @Override protected String getScoreSummary() { return "Puntaje de ronda: P1 (" + score[0] + ") vs P2 (" + score[1] + ")"; }
+    @Override
+    protected void reiniciarRonda() {
+        tiempoMovimiento = 0f;
+        reaparecer(0);
+        reaparecer(1);
+    }
+
+    @Override protected String getTextoP1() { return "P1: " + puntaje[0] + " pts (Victorias: " + victoriasP1 + ")"; }
+    @Override protected String getTextoP2() { return "P2: " + puntaje[1] + " pts (Victorias: " + victoriasP2 + ")"; }
+    @Override protected String getResumen() { return "Puntaje de ronda: P1 (" + puntaje[0] + ") vs P2 (" + puntaje[1] + ")"; }
 
     @Override
     public void dispose() {
         super.dispose();
-        for (Texture t : textures) t.dispose();
+        for (Texture t : texturas) t.dispose();
     }
 }
