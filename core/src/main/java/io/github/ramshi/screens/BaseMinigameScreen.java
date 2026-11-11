@@ -50,6 +50,22 @@ public abstract class BaseMinigameScreen implements Screen {
     private static final Color COLOR_CONSIGNA = new Color(1f, 0.85f, 0.2f, 1f);
     private static final Color COLOR_P1 = new Color(0.3f, 0.9f, 0.3f, 1f);
     private static final Color COLOR_P2 = new Color(0.3f, 0.7f, 1f, 1f);
+    private static final float RELOJ_X = 400f;
+    private static final float RELOJ_Y = 450f;
+    private static final float RELOJ_RADIO = 24f;
+    private static final float BORDE_RELOJ = 3f;
+    private static final float SEPARACION_RELOJ = 6f;
+    private static final float BARRA_Y = 470f;
+    private static final float ALTO_BARRA = 8f;
+    private static final float SESION_Y = 418f;
+    private static final float SEGUNDOS_ALERTA = 3f;
+    private static final Color COLOR_RELOJ = new Color(1f, 0.85f, 0.2f, 1f);
+    private static final Color COLOR_RELOJ_ALERTA = new Color(1f, 0.3f, 0.3f, 1f);
+    private static final Color COLOR_FONDO_RELOJ = new Color(0.1f, 0.1f, 0.12f, 0.9f);
+    private static final Color COLOR_PISTA = new Color(0f, 0f, 0f, 0.45f);
+    private static final Color COLOR_VERDE = new Color(0.25f, 0.85f, 0.3f, 1f);
+    private static final Color COLOR_AMARILLO = new Color(1f, 0.85f, 0.2f, 1f);
+    private static final Color COLOR_ROJO = new Color(0.95f, 0.25f, 0.2f, 1f);
 
     protected final Game juego;
     protected final GameSession sesion;
@@ -71,6 +87,7 @@ public abstract class BaseMinigameScreen implements Screen {
     private int puntosGanadosP2 = 0;
     private Texture corazon;
     private Texture corazonVacio;
+    private final Color colorBarra = new Color();
 
     protected BaseMinigameScreen(Game juego) {
         this.juego = juego;
@@ -163,6 +180,8 @@ public abstract class BaseMinigameScreen implements Screen {
             formas.end();
         }
 
+        dibujarFondoReloj();
+
         batch.begin();
         for (int p = 0; p < 2 && controles.length > 0; p++) {
             Controles.dibujarLeyenda(batch, controles, p, centroJugador(p), LEYENDA_Y);
@@ -172,23 +191,46 @@ public abstract class BaseMinigameScreen implements Screen {
             fuente.setColor(Color.WHITE);
             usarFuente(Main.fuenteChica);
             dibujarCentrado("Juego " + (sesion.getIndice() + 1) + "/" + sesion.getTotalJuegos()
-                + "    Total:  P1 " + sesion.totalP1() + " - " + sesion.totalP2() + " P2", 478f);
+                + "    Total:  P1 " + sesion.totalP1() + " - " + sesion.totalP2() + " P2", SESION_Y);
         }
+
+        usarFuente(Main.fuenteCartel);
+        fuente.setColor(tiempoRestante <= SEGUNDOS_ALERTA && !rondaTerminada ? COLOR_RELOJ_ALERTA : COLOR_RELOJ);
+        GlyphLayout numero = new GlyphLayout(fuente, String.valueOf((int) Math.ceil(tiempoRestante)));
+        fuente.draw(batch, numero, RELOJ_X - numero.width / 2f, RELOJ_Y + numero.height / 2f);
 
         usarFuente(Main.fuenteMediana);
         fuente.setColor(COLOR_P1);
         fuente.draw(batch, getTextoP1(), MARGEN_HUD, ALTURA_HUD);
-
-        int segundos = (int) Math.ceil(tiempoRestante);
-        if (tiempoRestante <= 5f && !rondaTerminada) fuente.setColor(1f, 0.3f, 0.3f, 1f);
-        else fuente.setColor(1f, 0.9f, 0.2f, 1f);
-        dibujarCentrado("TIEMPO: " + segundos + "s", ALTURA_HUD);
 
         fuente.setColor(COLOR_P2);
         dibujarDerecha(getTextoP2(), ALTURA_HUD);
 
         if (getVidaMaxima() > 0) dibujarCorazones();
         batch.end();
+    }
+
+    private void dibujarFondoReloj() {
+        float fraccion = Math.max(0f, tiempoRestante / getDuracionRonda());
+        float largoMax = RELOJ_X - RELOJ_RADIO - SEPARACION_RELOJ;
+        float largo = largoMax * fraccion;
+        float inicioDerecha = RELOJ_X + RELOJ_RADIO + SEPARACION_RELOJ;
+        Color color = fraccion > 0.5f
+            ? colorBarra.set(COLOR_AMARILLO).lerp(COLOR_VERDE, (fraccion - 0.5f) * 2f)
+            : colorBarra.set(COLOR_ROJO).lerp(COLOR_AMARILLO, fraccion * 2f);
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(COLOR_PISTA);
+        formas.rect(0f, BARRA_Y, largoMax, ALTO_BARRA);
+        formas.rect(inicioDerecha, BARRA_Y, largoMax, ALTO_BARRA);
+        formas.setColor(color);
+        formas.rect(largoMax - largo, BARRA_Y, largo, ALTO_BARRA);
+        formas.rect(inicioDerecha, BARRA_Y, largo, ALTO_BARRA);
+        formas.circle(RELOJ_X, RELOJ_Y, RELOJ_RADIO + BORDE_RELOJ, 40);
+        formas.setColor(COLOR_FONDO_RELOJ);
+        formas.circle(RELOJ_X, RELOJ_Y, RELOJ_RADIO, 40);
+        formas.end();
     }
 
     private void dibujarCorazones() {

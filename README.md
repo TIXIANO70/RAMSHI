@@ -86,11 +86,11 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 ### 3.2 Durante el juego
 
 - **Arriba a la izquierda:** estado del jugador 1 (verde).
-- **Arriba al centro:** el tiempo. Se pone **rojo en los últimos 5 segundos**.
+- **Arriba al centro:** el **reloj**, un círculo con los segundos que quedan (del 10 al 1) en grande y amarillo; se pone **rojo en los últimos 3 segundos**. A los costados, sobre el borde de arriba, dos barras que se van **cortando desde los extremos hacia el reloj** y cambian de **verde a amarillo y a rojo**; cuando llegan al centro se terminó el tiempo.
 - **Arriba a la derecha:** estado del jugador 2 (celeste).
 - **Corazones** (solo en los juegos con vidas: Quickdraw y Duelo de Tanques): uno por vida, centrados en la mitad de cada jugador. Las vidas perdidas se ven como corazones vacíos.
 - **Barra de abajo:** recordatorio de los controles de cada jugador (tecla en chico + acción).
-- En modo Jugar, en la línea de más arriba: "Juego N/M" y el total de la partida.
+- En modo Jugar, debajo del reloj: "Juego N/M" y el total de la partida.
 
 ### 3.3 Al terminar el minijuego (2,5 s)
 
@@ -384,6 +384,8 @@ Todos los valores que se pueden ajustar están como **constantes al principio de
 |---|---|---|---|
 | `BaseMinigameScreen` | `SEGUNDOS_INTRO` | 1.5 | Duración del cartel de inicio |
 | `BaseMinigameScreen` | `SEGUNDOS_RESULTADO` | 2.5 | Duración de la pantalla de fin de ronda |
+| `BaseMinigameScreen` | `SEGUNDOS_ALERTA` | 3 | Desde qué segundo el número del reloj se pone rojo |
+| `BaseMinigameScreen` | `RELOJ_RADIO` / `ALTO_BARRA` | 24 / 8 | Tamaño del reloj y grosor de las barras de tiempo |
 | `MainMenuScreen` | `MIN_RONDAS` / `MAX_RONDAS` / `RONDAS_INICIALES` | 3 / 15 / 8 | Rondas del modo Jugar |
 | Cada minijuego | `DURACION_RONDA` | 10 | Duración del juego |
 | Snake | `INTERVALO_INICIAL` / `INTERVALO_FINAL` | 0.098 / 0.065 | Velocidad de la serpiente |
