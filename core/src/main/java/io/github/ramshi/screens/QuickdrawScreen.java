@@ -11,10 +11,7 @@ import com.badlogic.gdx.math.MathUtils;
 public class QuickdrawScreen extends BaseMinigameScreen{
     private int healthP1=3;
     private int healthP2=3;
-    private final Texture heart;
-    private final Texture empty_heart;
-    private final Texture blue_shotgun;
-    private final Texture red_shotgun;
+
     private float P1_X = 0f;
     private float P2_X = 600f;
     private float gunY = 180f;
@@ -33,6 +30,11 @@ public class QuickdrawScreen extends BaseMinigameScreen{
     private int heartH = heartW;
     private String[] P1_keys = {"W","A","S","D"};
     private String[] P2_keys = {"UP","LEFT","DOWN","RIGHT"};
+    private final Texture heart;
+    private final Texture empty_heart;
+    private final Texture blue_shotgun;
+    private final Texture red_shotgun;
+    private final Texture desert;
     public QuickdrawScreen(Game game){
         super(game);
         this.heart = new Texture("quickdraw/heart.png");
@@ -43,6 +45,8 @@ public class QuickdrawScreen extends BaseMinigameScreen{
         this.blue_shotgun.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
         this.red_shotgun = new Texture("quickdraw/red_shotgun.png");
         this.red_shotgun.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        this.desert = new Texture("quickdraw/desert.png");
+        this.desert.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
     }
 
     @Override
@@ -135,7 +139,7 @@ public class QuickdrawScreen extends BaseMinigameScreen{
     @Override
     protected void drawGame(SpriteBatch batch) {
         batch.begin();
-
+        batch.draw(desert, 0,0,VIRTUAL_WIDTH,VIRTUAL_HEIGHT);
         batch.draw(blue_shotgun, P1_X, gunY, gunW, gunH);
         batch.draw(red_shotgun, P2_X, gunY, gunW, gunH);
         for(int i=0; i<healthP1;i++){
@@ -189,6 +193,7 @@ public class QuickdrawScreen extends BaseMinigameScreen{
     @Override
     public void dispose(){
         super.dispose();
+        if(desert!=null) desert.dispose();
         if(red_shotgun != null) red_shotgun.dispose();
         if(blue_shotgun != null) blue_shotgun.dispose();
         if(heart != null) heart.dispose();
