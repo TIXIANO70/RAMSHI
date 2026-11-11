@@ -139,7 +139,7 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 
 | # | Minijuego | Consigna | Controles P1 / P2 | Cómo se gana | 3 pts | 2 pts | 1 pt |
 |---|---|---|---|---|---|---|---|
-| 1 | Snake | ¡COMÉ! | WASD / flechas | Más huevos al final | Gana por 4+ | por 2-3 | por 1 |
+| 1 | Snake | ¡COMÉ! | WASD / flechas | Mejor récord de huevos | Gana por 4+ | por 2-3 | por 1 |
 | 2 | Secuencia de luces | ¡REPETÍ! | WASD / flechas | Más secuencias completadas | 3 de 3 | 2 | 1 |
 | 3 | Lluvia de cañonazos | ¡ESQUIVÁ! | A D / ← → | El rival se hunde primero | antes de 3,3 s | antes de 6,6 s | después |
 | 4 | Tira y afloja | ¡TIRÁ! | A D / ← → (alternando) | Llevar la soga a tu línea | llega antes de 3,3 s | antes de 6,6 s | después, o soga de su lado al final |
@@ -157,7 +157,7 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 #### 1. Snake — `SnakeScreen`
 - Cada jugador tiene **su propia arena de 14 × 14** y su serpiente (arranca con 3 tramos).
 - Comer el huevo hace crecer la serpiente y suma 1 huevo.
-- Chocar contra la pared o contra uno mismo hace **reaparecer la serpiente con 0 huevos**.
+- Chocar contra la pared o contra uno mismo hace **reaparecer la serpiente con 0 huevos**, pero se guarda el **récord**: la mayor cantidad de huevos que llegó a tener en la ronda. **Los puntos se calculan con el récord**, así que chocar no te hace perder lo que ya lograste.
 - **La serpiente acelera** durante la ronda (de 0,098 s a 0,065 s por paso).
 - No se puede dar media vuelta.
 
