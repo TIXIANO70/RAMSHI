@@ -30,6 +30,8 @@ public class TankDuelScreen extends BaseMinigameScreen {
     private static final float TIEMPO_RECARGA = 0.40f;
     private static final int VIDA_MAXIMA = 3;
     private static final float MARGEN_ARENA = 40f;
+    private static final int PUNTOS_VICTORIA = 1; // gana por tener más vida al final
+    private static final int PUNTOS_KO = 2;       // destruye al rival
 
     // Teclas: {Arriba, Abajo, Izquierda, Derecha, Disparo}
     private static final int[][] TECLAS = {
@@ -213,14 +215,12 @@ public class TankDuelScreen extends BaseMinigameScreen {
 
     @Override
     protected String determineRoundWinner() {
-        if (hp[0] > hp[1]) {
-            p1GlobalWins += 2;
-            return "¡JUGADOR 1 GANA (2 PUNTOS)!";
-        } else if (hp[1] > hp[0]) {
-            p2GlobalWins += 2;
-            return "¡JUGADOR 2 GANA (2 PUNTOS)!";
-        }
-        return "¡EMPATE EN EL DUELO DE TANQUES!";
+        if (hp[0] == hp[1]) return "¡EMPATE EN EL DUELO DE TANQUES!";
+        int ganador = (hp[0] > hp[1]) ? 0 : 1;
+        int pts = (hp[1 - ganador] <= 0) ? PUNTOS_KO : PUNTOS_VICTORIA;
+        if (ganador == 0) p1GlobalWins += pts;
+        else p2GlobalWins += pts;
+        return "¡JUGADOR " + (ganador + 1) + " GANA (" + pts + (pts == 1 ? " PUNTO" : " PUNTOS") + ")!";
     }
 
     @Override
