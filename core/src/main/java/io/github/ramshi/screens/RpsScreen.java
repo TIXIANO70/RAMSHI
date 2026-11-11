@@ -13,7 +13,7 @@ public class RpsScreen extends BaseMinigameScreen {
     // =====================================================================
     //  VALORES AJUSTABLES (todo lo que se pueda pedir cambiar está acá)
     // =====================================================================
-    private static final float ROUND_DURATION = 20f; // Duración total del juego (s)
+    private static final float ROUND_DURATION = 10f; // Duración total del juego (s)
 
     private static final int PIEDRA = 0;
     private static final int PAPEL  = 1;

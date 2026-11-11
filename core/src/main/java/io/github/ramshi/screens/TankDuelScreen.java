@@ -29,7 +29,7 @@ public class TankDuelScreen extends BaseMinigameScreen {
     // 1. AJUSTES MODIFICABLES PARA EL EXAMEN (CAMBIAR AQUÍ EN VIVO)
     // ====================================================================
     // >> DURACIÓN DE LA RONDA: cambiar a 15f o 30f si piden otra duración
-    private static final float ROUND_DURATION = 20f;
+    private static final float ROUND_DURATION = 10f;
 
     // >> VELOCIDAD DE LOS TANQUES: píxeles por segundo (aumentar para más rápido, ej: 260f)
     private static final float TANK_SPEED = 185f;
