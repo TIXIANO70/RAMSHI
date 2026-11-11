@@ -41,6 +41,7 @@ public abstract class BaseMinigameScreen implements Screen {
     private static final float COL_P2 = 550f;
     private static final float COL_GANADOR = 630f;
     private static final float SEGUNDOS_RESULTADO = 2.5f;
+    public static final float DURACION_FUNDIDO = 0.3f;
     private static final float MARGEN_HUD = 16f;
     private static final float ALTURA_HUD = 462f;
     private static final float ALTO_LEYENDA = 40f;
@@ -83,6 +84,7 @@ public abstract class BaseMinigameScreen implements Screen {
 
     private float tiempoIntro = SEGUNDOS_INTRO;
     private float tiempoResultado = 0f;
+    private float tiempoEntrada = DURACION_FUNDIDO;
     private int puntosGanadosP1 = 0;
     private int puntosGanadosP2 = 0;
     private Texture corazon;
@@ -168,6 +170,22 @@ public abstract class BaseMinigameScreen implements Screen {
 
         if (tiempoIntro > 0f) dibujarIntro();
         else if (rondaTerminada) dibujarFinDeRonda();
+
+        tiempoEntrada -= delta;
+        float oscuridad = tiempoEntrada / DURACION_FUNDIDO;
+        if (sesion.esModoJugar() && rondaTerminada) {
+            oscuridad = Math.max(oscuridad, (tiempoResultado - SEGUNDOS_RESULTADO + DURACION_FUNDIDO) / DURACION_FUNDIDO);
+        }
+        dibujarFundido(formas, Math.min(1f, oscuridad));
+    }
+
+    public static void dibujarFundido(ShapeRenderer formas, float oscuridad) {
+        if (oscuridad <= 0f) return;
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(0f, 0f, 0f, oscuridad);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.end();
     }
 
     public void dibujarHUD() {

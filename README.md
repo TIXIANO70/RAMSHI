@@ -104,6 +104,8 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 
 **En modo Endless** aparece un cartel con lo mismo (ganador, motivo, explicación) y las victorias totales.
 
+**Transición:** en modo Jugar, en los últimos 0,3 s de la tabla la pantalla se funde a negro, y el minijuego siguiente (o la pantalla de resultados) aparece aclarándose en otros 0,3 s.
+
 ---
 
 ## 4. Sistema de puntos
@@ -384,6 +386,7 @@ Todos los valores que se pueden ajustar están como **constantes al principio de
 |---|---|---|---|
 | `BaseMinigameScreen` | `SEGUNDOS_INTRO` | 1.5 | Duración del cartel de inicio |
 | `BaseMinigameScreen` | `SEGUNDOS_RESULTADO` | 2.5 | Duración de la pantalla de fin de ronda |
+| `BaseMinigameScreen` | `DURACION_FUNDIDO` | 0.3 | Duración del fundido a negro entre pantallas |
 | `BaseMinigameScreen` | `SEGUNDOS_ALERTA` | 3 | Desde qué segundo el número del reloj se pone rojo |
 | `BaseMinigameScreen` | `RELOJ_RADIO` / `ALTO_BARRA` | 24 / 8 | Tamaño del reloj y grosor de las barras de tiempo |
 | `MainMenuScreen` | `MIN_RONDAS` / `MAX_RONDAS` / `RONDAS_INICIALES` | 3 / 15 / 8 | Rondas del modo Jugar |

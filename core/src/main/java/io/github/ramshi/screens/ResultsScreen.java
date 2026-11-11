@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -27,6 +28,8 @@ public class ResultsScreen implements Screen {
 
     private final Game juego;
     private final SpriteBatch batch = new SpriteBatch();
+    private final ShapeRenderer formas = new ShapeRenderer();
+    private float tiempoEntrada = BaseMinigameScreen.DURACION_FUNDIDO;
     private BitmapFont fuente = Main.fuenteChica;
     private final OrthographicCamera camara = new OrthographicCamera();
     private final Viewport vista = new FitViewport(ANCHO_VIRTUAL, ALTO_VIRTUAL, camara);
@@ -124,6 +127,10 @@ public class ResultsScreen implements Screen {
             dibujarCentrado("Click o ESPACIO para volver al menu", 20f);
         }
         batch.end();
+
+        tiempoEntrada -= delta;
+        formas.setProjectionMatrix(camara.combined);
+        BaseMinigameScreen.dibujarFundido(formas, tiempoEntrada / BaseMinigameScreen.DURACION_FUNDIDO);
     }
 
     private void dibujarCentrado(String texto, float y) {
@@ -136,7 +143,10 @@ public class ResultsScreen implements Screen {
     @Override public void hide() {}
     @Override public void pause() {}
     @Override public void resume() {}
-    @Override public void dispose() { batch.dispose(); }
+    @Override public void dispose() {
+        batch.dispose();
+        formas.dispose();
+    }
 
     private void usarFuente(BitmapFont nueva) {
         nueva.setColor(fuente.getColor());
