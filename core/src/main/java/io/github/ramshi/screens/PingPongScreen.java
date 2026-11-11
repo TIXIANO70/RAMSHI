@@ -17,9 +17,9 @@ public class PingPongScreen extends BaseMinigameScreen {
     private static final float PALETA_ANCHO = 15f;
     private static final float PALETA_ALTO = 80f;
     private static final float RADIO_BOMBA = 15f;
-    private static final float VELOCIDAD_PALETA = 380f; // px/segundo
-    private static final float VELOCIDAD_BOMBA_BASE_X = 260f;
-    private static final float VELOCIDAD_BOMBA_BASE_Y = 200f;
+    private static final float VELOCIDAD_PALETA = 410f; // px/segundo
+    private static final float VELOCIDAD_BOMBA_BASE_X = 480f;
+    private static final float VELOCIDAD_BOMBA_BASE_Y = 420f;
 
     // Posiciones horizontales de las paletas
     private static final float P1_X = 30f;
