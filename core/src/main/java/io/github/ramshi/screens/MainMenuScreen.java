@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import io.github.ramshi.Main;
 import io.github.ramshi.session.GameSession;
 import io.github.ramshi.session.MinigameType;
 
@@ -47,7 +48,7 @@ public class MainMenuScreen implements Screen {
 
     private final Game juego;
     private final SpriteBatch batch = new SpriteBatch();
-    private final BitmapFont fuente = new BitmapFont();
+    private BitmapFont fuente = Main.fuenteChica;
     private final ShapeRenderer formas = new ShapeRenderer();
     private final OrthographicCamera camara = new OrthographicCamera();
     private final Viewport vista = new FitViewport(ANCHO_VIRTUAL, ALTO_VIRTUAL, camara);
@@ -120,14 +121,14 @@ public class MainMenuScreen implements Screen {
 
         batch.begin();
         fuente.setColor(1f, 0.85f, 0.2f, 1f);
-        fuente.getData().setScale(3.6f);
+        usarFuente(Main.fuenteTitulo);
         dibujarCentrado("RAMSHI", 440f);
         fuente.setColor(0.4f, 0.8f, 1f, 1f);
-        fuente.getData().setScale(1.3f);
+        usarFuente(Main.fuenteMediana);
         dibujarCentrado(pagina == Pagina.PRINCIPAL ? "MICROJUEGOS 1v1 LOCAL" : "ELEGI UN MINIJUEGO", 365f);
 
         for (Boton b : botones) {
-            fuente.getData().setScale(b.rect.height > 50f ? 1.6f : 1.2f);
+            usarFuente(b.rect.height > 50f ? Main.fuenteGrande : Main.fuenteMediana);
             fuente.setColor(b == resaltado ? Color.WHITE : Color.LIGHT_GRAY);
             GlyphLayout layout = new GlyphLayout(fuente, b.etiqueta);
             fuente.draw(batch, layout, b.rect.x + (b.rect.width - layout.width) / 2f,
@@ -135,11 +136,11 @@ public class MainMenuScreen implements Screen {
         }
         if (pagina == Pagina.PRINCIPAL) {
             fuente.setColor(Color.WHITE);
-            fuente.getData().setScale(1.3f);
+            usarFuente(Main.fuenteMediana);
             dibujarCentrado("RONDAS: " + rondas, 260f);
 
             fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
-            fuente.getData().setScale(1.0f);
+            usarFuente(Main.fuenteChica);
             dibujarCentrado("P1: WASD  |  P2: FLECHAS  |  10 SEGUNDOS POR JUEGO", 35f);
         }
         batch.end();
@@ -152,6 +153,11 @@ public class MainMenuScreen implements Screen {
         fuente.draw(batch, layout, (ANCHO_VIRTUAL - layout.width) / 2f, y);
     }
 
+    private void usarFuente(BitmapFont nueva) {
+        nueva.setColor(fuente.getColor());
+        fuente = nueva;
+    }
+
     @Override public void resize(int width, int height) { vista.update(width, height, true); }
     @Override public void show() {}
     @Override public void hide() {}
@@ -161,7 +167,6 @@ public class MainMenuScreen implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
-        fuente.dispose();
         formas.dispose();
     }
 }

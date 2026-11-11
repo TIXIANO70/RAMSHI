@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Main;
 
 public class SumoScreen extends BaseMinigameScreen {
 
@@ -267,7 +268,7 @@ public class SumoScreen extends BaseMinigameScreen {
         batch.draw(texP2, dibujoP2X, dibujoP2Y, TAMANO_SPRITE, TAMANO_SPRITE, 0, 0, 48, 48, espejoP2, false);
 
         fuente.setColor(COLOR_P1);
-        fuente.getData().setScale(1.1f);
+        usarFuente(Main.fuenteChica);
         fuente.draw(batch, "P1: [A/D] Empuja  [W] Salta", 45f, 70f);
 
         fuente.setColor(COLOR_P2);

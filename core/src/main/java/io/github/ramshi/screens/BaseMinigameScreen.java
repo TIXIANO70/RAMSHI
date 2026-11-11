@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import io.github.ramshi.Main;
 import io.github.ramshi.session.GameSession;
 import io.github.ramshi.session.MinigameType;
 
@@ -45,7 +46,7 @@ public abstract class BaseMinigameScreen implements Screen {
         this.juego = juego;
         this.sesion = GameSession.actual();
         this.batch = new SpriteBatch();
-        this.fuente = new BitmapFont();
+        this.fuente = Main.fuenteChica;
         this.formas = new ShapeRenderer();
         this.camara = new OrthographicCamera();
         this.vista = new FitViewport(ANCHO_VIRTUAL, ALTO_VIRTUAL, camara);
@@ -125,22 +126,22 @@ public abstract class BaseMinigameScreen implements Screen {
 
         if (sesion.esModoJugar()) {
             fuente.setColor(Color.WHITE);
-            fuente.getData().setScale(0.9f);
+            usarFuente(Main.fuenteChica);
             dibujarCentrado("Juego " + (sesion.getIndice() + 1) + "/" + sesion.getTotalJuegos()
                 + "    Total:  P1 " + sesion.totalP1() + " - " + sesion.totalP2() + " P2", 478f);
         }
 
-        fuente.getData().setScale(1.2f);
+        usarFuente(Main.fuenteMediana);
         fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
         fuente.draw(batch, getTextoP1(), 24f, 462f);
 
         int segundos = (int) Math.ceil(tiempoRestante);
         if (tiempoRestante <= 5f && !rondaTerminada) fuente.setColor(1f, 0.3f, 0.3f, 1f);
         else fuente.setColor(1f, 0.9f, 0.2f, 1f);
-        fuente.getData().setScale(1.4f);
+        usarFuente(Main.fuenteMediana);
         fuente.draw(batch, "TIEMPO: " + segundos + "s", 340f, 462f);
 
-        fuente.getData().setScale(1.2f);
+        usarFuente(Main.fuenteMediana);
         fuente.setColor(0.3f, 0.7f, 1f, 1f);
         fuente.draw(batch, getTextoP2(), 590f, 462f);
 
@@ -152,12 +153,12 @@ public abstract class BaseMinigameScreen implements Screen {
         MinigameType tipo = sesion.tipoActual();
         batch.begin();
         fuente.setColor(Color.WHITE);
-        fuente.getData().setScale(2f);
+        usarFuente(Main.fuenteCartel);
         dibujarCentrado(tipo != null ? tipo.getNombre() : "", 275f);
         fuente.setColor(1f, 0.85f, 0.2f, 1f);
-        fuente.getData().setScale(1.3f);
+        usarFuente(Main.fuenteMediana);
         dibujarCentrado("¡PREPARATE!", 215f);
-        fuente.getData().setScale(1.2f);
+        usarFuente(Main.fuenteMediana);
         batch.end();
     }
 
@@ -166,15 +167,15 @@ public abstract class BaseMinigameScreen implements Screen {
         batch.begin();
 
         fuente.setColor(Color.WHITE);
-        fuente.getData().setScale(1.5f);
+        usarFuente(Main.fuenteGrande);
         dibujarCentrado(mensajeGanador, 320f);
 
         fuente.setColor(0.85f, 0.85f, 0.85f, 1f);
-        fuente.getData().setScale(1.1f);
+        usarFuente(Main.fuenteChica);
         dibujarCentrado(getResumen(), 275f);
 
         fuente.setColor(1f, 0.85f, 0.2f, 1f);
-        fuente.getData().setScale(1.2f);
+        usarFuente(Main.fuenteMediana);
         if (sesion.esModoJugar()) {
             dibujarCentrado("PARTIDA:  P1 [" + (sesion.totalP1() + puntosGanadosP1) + "]  -  P2 ["
                 + (sesion.totalP2() + puntosGanadosP2) + "]", 235f);
@@ -183,11 +184,11 @@ public abstract class BaseMinigameScreen implements Screen {
         }
 
         fuente.setColor(0.7f, 1f, 0.7f, 1f);
-        fuente.getData().setScale(1.0f);
+        usarFuente(Main.fuenteChica);
         dibujarCentrado(sesion.esModoJugar() ? "Siguiente juego en un instante..."
             : "[ ESPACIO ] Siguiente Ronda       [ ESC ] Menu Principal", 175f);
 
-        fuente.getData().setScale(1.2f);
+        usarFuente(Main.fuenteMediana);
         batch.end();
     }
 
@@ -210,13 +211,17 @@ public abstract class BaseMinigameScreen implements Screen {
     @Override public void dispose() {
         batch.dispose();
         formas.dispose();
-        fuente.dispose();
     }
     @Override public void show() {}
     @Override public void resize(int width, int height) { vista.update(width, height, true); }
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
+
+    protected void usarFuente(BitmapFont nueva) {
+        nueva.setColor(fuente.getColor());
+        fuente = nueva;
+    }
 
     protected String sumarPuntos(int jugador, int puntos) {
         if (jugador == 1) victoriasP1 += puntos;

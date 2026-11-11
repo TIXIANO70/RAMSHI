@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Main;
 
 public class StopItScreen extends BaseMinigameScreen {
 
@@ -126,14 +127,14 @@ public class StopItScreen extends BaseMinigameScreen {
         formas.end();
 
         batch.begin();
-        fuente.getData().setScale(1.3f);
+        usarFuente(Main.fuenteMediana);
         for (int p = 0; p < 2; p++) {
             if (frenado[p]) {
                 fuente.setColor(ultimoColor[p]);
                 dibujarCentradoEn(batch, ultimoTexto[p], BARRA_X[p], BARRA_ANCHO, 320f);
             }
         }
-        fuente.getData().setScale(1.0f);
+        usarFuente(Main.fuenteChica);
         fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
         fuente.draw(batch, "P1: [W] frenar", 24f, 24f);
         fuente.draw(batch, "P2: [FLECHA ARRIBA] frenar", 520f, 24f);

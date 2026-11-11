@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import io.github.ramshi.Main;
 import io.github.ramshi.session.GameSession;
 
 public class ResultsScreen implements Screen {
@@ -26,7 +27,7 @@ public class ResultsScreen implements Screen {
 
     private final Game juego;
     private final SpriteBatch batch = new SpriteBatch();
-    private final BitmapFont fuente = new BitmapFont();
+    private BitmapFont fuente = Main.fuenteChica;
     private final OrthographicCamera camara = new OrthographicCamera();
     private final Viewport vista = new FitViewport(ANCHO_VIRTUAL, ALTO_VIRTUAL, camara);
     private final GameSession sesion;
@@ -82,14 +83,14 @@ public class ResultsScreen implements Screen {
         batch.begin();
 
         fuente.setColor(1f, 0.85f, 0.2f, 1f);
-        fuente.getData().setScale(2.2f);
+        usarFuente(Main.fuenteCartel);
         dibujarCentrado(textoGanador, 465f);
         fuente.setColor(Color.WHITE);
-        fuente.getData().setScale(1.1f);
+        usarFuente(Main.fuenteChica);
         dibujarCentrado(textoMotivo, 422f);
         dibujarCentrado("Juegos ganados:  P1 " + juegosP1 + " - " + juegosP2 + " P2", 400f);
 
-        fuente.getData().setScale(1.0f);
+        usarFuente(Main.fuenteChica);
         fuente.setColor(Color.LIGHT_GRAY);
         float y = 372f;
         fuente.draw(batch, "#", COL_NUM, y);
@@ -135,5 +136,10 @@ public class ResultsScreen implements Screen {
     @Override public void hide() {}
     @Override public void pause() {}
     @Override public void resume() {}
-    @Override public void dispose() { batch.dispose(); fuente.dispose(); }
+    @Override public void dispose() { batch.dispose(); }
+
+    private void usarFuente(BitmapFont nueva) {
+        nueva.setColor(fuente.getColor());
+        fuente = nueva;
+    }
 }

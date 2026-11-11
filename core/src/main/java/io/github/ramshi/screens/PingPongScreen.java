@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Main;
 
 public class PingPongScreen extends BaseMinigameScreen {
 
@@ -122,7 +123,7 @@ public class PingPongScreen extends BaseMinigameScreen {
 
         batch.begin();
         fuente.setColor(COLOR_P1);
-        fuente.getData().setScale(1.2f);
+        usarFuente(Main.fuenteMediana);
         fuente.draw(batch, "P1: " + puntajeP1 + "  [W/S]", 50f, 60f);
         fuente.setColor(COLOR_P2);
         fuente.draw(batch, "P2: " + puntajeP2 + "  [FLECHAS]", ANCHO_VIRTUAL - 210f, 60f);
