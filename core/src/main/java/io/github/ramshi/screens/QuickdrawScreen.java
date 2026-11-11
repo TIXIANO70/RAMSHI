@@ -50,95 +50,72 @@ public class QuickdrawScreen extends BaseMinigameScreen{
         this.desert.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
     }
 
-    @Override
-    protected float getRoundDuration() {
-        return 10;
+    private Texture cargarTextura(String ruta) {
+        Texture t = new Texture(ruta);
+        t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        return t;
     }
 
+    @Override protected float getDuracionRonda() { return DURACION_RONDA; }
+
     @Override
-    protected void updateGame(float delta) {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            shoot(1,1);
+    protected void actualizarJuego(float delta) {
+        for (int p = 0; p < 2; p++) {
+            for (int k = 0; k < 4; k++) {
+                if (Gdx.input.isKeyJustPressed(TECLAS[p][k])) disparar(p + 1, k + 1);
+            }
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-            shoot(1,2);
+        tiempoGatillo += delta;
+        if (contarReaccion) {
+            tiempoReaccion += delta;
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-            shoot(1,3);
+        if (tiempoReaccion > TIEMPO_REACCION) {
+            contarReaccion = false;
+            tiempoReaccion = 0;
+            yaDisparo = false;
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
-            shoot(1,4);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
-            shoot(2,1);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-            shoot(2,2);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
-            shoot(2,3);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-            shoot(2,4);
-        }
-        triggerTimer+=delta;
-        if(addReactionTimer){
-            reactionTimer+=delta;
-        }
-        if(reactionTimer>reactionInterval){
-            addReactionTimer=false;
-            reactionTimer=0;
-            shooted = false;
-        }
-        if(triggerInterval<triggerTimer){
-            triggerTimer-=triggerInterval;
-            if(!canShoot){
-                triggerInterval = 1+MathUtils.random(0.1f,2f);
-                unlockTrigger();
+        if (intervaloGatillo < tiempoGatillo) {
+            tiempoGatillo -= intervaloGatillo;
+            if (!puedeDisparar) {
+                intervaloGatillo = INTERVALO_BASE + MathUtils.random(AZAR_MIN, AZAR_MAX);
+                habilitarGatillo();
             }
         }
     }
-    private void takeHealth(int player){
-        if(player==1 && !shooted){
-            healthP1--;
-            shooted = false;
-        }else if(player ==2 && !shooted){
-            healthP2--;
-            shooted = false;
-        }
-    }
-    private void shoot(int player, int key) {
 
-        if(key==shootOption && canShoot){
-            canShoot=false;
-            if(player==1){
-                takeHealth(2);
-            }else{
-                takeHealth(1);
-            }
-        }else{
-            if(player==1){
-                takeHealth(1);
-            }else{
-                takeHealth(2);
-            }
-        }
-        if(!addReactionTimer){
-            addReactionTimer=true;
-            shooted = true;
-        }
-        if(healthP1==0 || healthP2==0){
-            finishRound();
+    private void quitarVida(int jugador) {
+        if (jugador == 1 && !yaDisparo) {
+            vidaP1--;
+            yaDisparo = false;
+        } else if (jugador == 2 && !yaDisparo) {
+            vidaP2--;
+            yaDisparo = false;
         }
     }
 
-    private void unlockTrigger() {
-        shootOption = MathUtils.random(1,4);
-        canShoot=true;
+    private void disparar(int jugador, int tecla) {
+        if (tecla == opcionDisparo && puedeDisparar) {
+            puedeDisparar = false;
+            quitarVida(jugador == 1 ? 2 : 1);
+        } else {
+            quitarVida(jugador);
+        }
+        if (!contarReaccion) {
+            contarReaccion = true;
+            yaDisparo = true;
+        }
+        if (vidaP1 == 0 || vidaP2 == 0) {
+            terminarRonda();
+        }
+    }
+
+    private void habilitarGatillo() {
+        opcionDisparo = MathUtils.random(1, 4);
+        puedeDisparar = true;
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
+    protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
         batch.draw(desert, 0,0,VIRTUAL_WIDTH,VIRTUAL_HEIGHT);
         batch.draw(blue_shotgun, P1_X, gunY, gunW, gunH);
@@ -146,53 +123,36 @@ public class QuickdrawScreen extends BaseMinigameScreen{
         for(int i=0; i<healthP1;i++){
             batch.draw(heart, P1_X+i*48, heartY, heartW, heartH);
         }
-        for(int i=0; i<healthP2;i++){
-            batch.draw(heart, P2_X+i*48, heartY, heartW, heartH);
+        for (int i = 0; i < vidaP2; i++) {
+            batch.draw(corazon, P2_X + i * SEPARACION_CORAZON, CORAZON_Y, TAMANO_CORAZON, TAMANO_CORAZON);
         }
-        if(canShoot){
-            font.draw(batch,P1_keys[shootOption-1],400,200);
-            font.draw(batch,P2_keys[shootOption-1],400,250);
+        if (puedeDisparar) {
+            fuente.draw(batch, NOMBRES_TECLAS_P1[opcionDisparo - 1], 400, 200);
+            fuente.draw(batch, NOMBRES_TECLAS_P2[opcionDisparo - 1], 400, 250);
         }
         batch.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
-        if(healthP1>healthP2){
-            p1GlobalWins++;
-            return "GANA JUGADOR 1";
-        }else if(healthP1<healthP2){
-            p2GlobalWins++;
-            return "GANA JUGADOR 2!";
-        }else{
-            return "EMPATE";
-        }
+    protected String determinarGanador() {
+        if (vidaP1 == vidaP2) return "¡EMPATE!";
+        return (vidaP1 > vidaP2) ? sumarPuntos(1, Math.max(1, vidaP1)) : sumarPuntos(2, Math.max(1, vidaP2));
     }
 
     @Override
-    protected void onRoundReset() {
-        healthP1=3;
-        healthP2=3;
-        triggerInterval=1;
-        triggerTimer=0;
+    protected void reiniciarRonda() {
+        vidaP1 = VIDA_MAXIMA;
+        vidaP2 = VIDA_MAXIMA;
+        intervaloGatillo = PRIMER_INTERVALO;
+        tiempoGatillo = 0;
     }
 
-    @Override
-    protected String getP1StatusText() {
-        return "Health: "+healthP1;
-    }
+    @Override protected String getTextoP1() { return "Vida: " + vidaP1; }
+    @Override protected String getTextoP2() { return "Vida: " + vidaP2; }
+    @Override protected String getResumen() { return "P1(" + vidaP1 + "hp) vs P2(" + vidaP2 + "hp)"; }
 
     @Override
-    protected String getP2StatusText() {
-        return "Health: "+healthP2;
-    }
-
-    @Override
-    protected String getScoreSummary() {
-        return "P1("+healthP1+"hp) vs P2("+healthP2+"hp)";
-    }
-    @Override
-    public void dispose(){
+    public void dispose() {
         super.dispose();
         if(desert!=null) desert.dispose();
         if(red_shotgun != null) red_shotgun.dispose();

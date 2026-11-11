@@ -3,155 +3,149 @@ package io.github.ramshi.screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Main;
 
 public class TugOfWarScreen extends BaseMinigameScreen {
 
-    // ---- Duración (static final = constante de compilación, ver nota abajo) ----
-    private static final float ROUND_DURATION = 10f;
+    private static final float DURACION_RONDA = 10f;
+    private static final int PUNTOS_SIN_KO = 1;
+    private static final int[][] TECLAS = {
+        {Input.Keys.A, Input.Keys.D},
+        {Input.Keys.LEFT, Input.Keys.RIGHT}
+    };
+    private static final float PASO_TIRON = 5f;
+    private static final float DESPLAZAMIENTO_MAX = 150f;
+    private static final float SUAVIZADO = 12f;
+    private static final float CENTRO_X = ANCHO_VIRTUAL / 2f;
+    private static final float SOGA_Y = 235f;
+    private static final float SOGA_ALTO = 10f;
+    private static final float MITAD_SOGA = 140f;
+    private static final float JUGADOR_ANCHO = 64f;
+    private static final float JUGADOR_ALTO = 90f;
 
-    // ---- Controles (cambialos acá si querés otras teclas) ----
-    private static final int P1_KEY = Input.Keys.A;
-    private static final int P2_KEY = Input.Keys.LEFT;
+    private float sogaObjetivo = 0f;
+    private float sogaMostrada = 0f;
 
-    // ---- Mecánica ----
-    private static final float PULL_STEP = 5f;     // píxeles que mueve cada pulsación
-    private static final float MAX_OFFSET = 150f;  // desplazamiento máximo = línea de victoria
-    private static final float SMOOTHING = 12f;    // qué tan rápido "alcanza" el dibujo a la lógica
+    private final int[] tirones = new int[2];
+    private final int[] ultimaTecla = {-1, -1};
 
-    // ---- Layout (el mundo virtual es 800x480) ----
-    private static final float CENTER_X = VIRTUAL_WIDTH / 2f;
-    private static final float ROPE_Y = 235f;
-    private static final float ROPE_H = 10f;
-    private static final float ROPE_HALF = 140f;
-    private static final float PLAYER_W = 64f;
-    private static final float PLAYER_H = 90f;
+    private final Texture fondo = cargarTextura("tugofwar/tugofwar_bg.png");
 
-    // Negativo = soga hacia P1 (izquierda), positivo = hacia P2 (derecha)
-    private float ropeTarget = 0f;  // posición LÓGICA (decide el ganador)
-    private float ropeShown = 0f;   // posición DIBUJADA (suavizada con delta)
+    public TugOfWarScreen(Game juego) {
+        super(juego);
+    }
 
-    private int p1Pulls = 0;
-    private int p2Pulls = 0;
-
-    public TugOfWarScreen(Game game) {
-        super(game);
+    private Texture cargarTextura(String ruta) {
+        Texture t = new Texture(ruta);
+        t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        return t;
     }
 
     @Override
-    protected float getRoundDuration() {
-        return ROUND_DURATION;
+    protected float getDuracionRonda() {
+        return DURACION_RONDA;
     }
 
     @Override
-    protected void updateGame(float delta) {
-        if (Gdx.input.isKeyJustPressed(P1_KEY)) {
-            ropeTarget -= PULL_STEP;
-            p1Pulls++;
+    protected void actualizarJuego(float delta) {
+        for (int p = 0; p < 2; p++) {
+            for (int k = 0; k < 2; k++) {
+                if (Gdx.input.isKeyJustPressed(TECLAS[p][k]) && k != ultimaTecla[p]) {
+                    ultimaTecla[p] = k;
+                    sogaObjetivo += (p == 0) ? -PASO_TIRON : PASO_TIRON;
+                    tirones[p]++;
+                }
+            }
         }
-        if (Gdx.input.isKeyJustPressed(P2_KEY)) {
-            ropeTarget += PULL_STEP;
-            p2Pulls++;
-        }
-        ropeTarget = MathUtils.clamp(ropeTarget, -MAX_OFFSET, MAX_OFFSET);
+        sogaObjetivo = MathUtils.clamp(sogaObjetivo, -DESPLAZAMIENTO_MAX, DESPLAZAMIENTO_MAX);
 
-        // Suavizado independiente del framerate
-        ropeShown = MathUtils.lerp(ropeShown, ropeTarget, Math.min(1f, SMOOTHING * delta));
+        sogaMostrada = MathUtils.lerp(sogaMostrada, sogaObjetivo, Math.min(1f, SUAVIZADO * delta));
 
-        // Victoria por KO: alguien llevó la soga hasta su línea
-        if (Math.abs(ropeTarget) >= MAX_OFFSET) {
-            ropeShown = ropeTarget;
-            finishRound();
+        if (Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX) {
+            sogaMostrada = sogaObjetivo;
+            terminarRonda();
         }
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
-        float ropeCenter = CENTER_X + ropeShown;
-
-        shapeRenderer.begin(ShapeType.Filled);
-
-        // Suelo
-        shapeRenderer.setColor(0.22f, 0.40f, 0.18f, 1f);
-        shapeRenderer.rect(0f, 150f, VIRTUAL_WIDTH, 180f);
-
-        // Línea central
-        shapeRenderer.setColor(1f, 1f, 1f, 1f);
-        shapeRenderer.rect(CENTER_X - 1f, 150f, 2f, 180f);
-
-        // Líneas de victoria (la bandera de la soga tiene que tocarlas)
-        shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
-        shapeRenderer.rect(CENTER_X - MAX_OFFSET - 2f, 150f, 4f, 180f);
-        shapeRenderer.setColor(0.3f, 0.7f, 1f, 1f);
-        shapeRenderer.rect(CENTER_X + MAX_OFFSET - 2f, 150f, 4f, 180f);
-
-        // Soga
-        shapeRenderer.setColor(0.55f, 0.38f, 0.18f, 1f);
-        shapeRenderer.rect(ropeCenter - ROPE_HALF, ROPE_Y, ROPE_HALF * 2f, ROPE_H);
-
-        // Bandera del centro de la soga
-        shapeRenderer.setColor(0.9f, 0.15f, 0.15f, 1f);
-        shapeRenderer.rect(ropeCenter - 4f, ROPE_Y - 10f, 8f, ROPE_H + 20f);
-
-        // Jugadores agarrados de cada punta
-        shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
-        shapeRenderer.rect(ropeCenter - ROPE_HALF - PLAYER_W, ROPE_Y - 40f, PLAYER_W, PLAYER_H);
-        shapeRenderer.setColor(0.3f, 0.7f, 1f, 1f);
-        shapeRenderer.rect(ropeCenter + ROPE_HALF, ROPE_Y - 40f, PLAYER_W, PLAYER_H);
-
-        shapeRenderer.end();
-
-        // Texto de ayuda
+    protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
-        font.getData().setScale(1.1f);
-        font.setColor(0.3f, 0.9f, 0.3f, 1f);
-        font.draw(batch, "P1: machaca [A]", 60f, 100f);
-        font.setColor(0.3f, 0.7f, 1f, 1f);
-        font.draw(batch, "P2: machaca [FLECHA IZQ]", 480f, 100f);
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        batch.end();
+
+        float centroSoga = CENTRO_X + sogaMostrada;
+
+        formas.begin(ShapeType.Filled);
+
+        formas.setColor(1f, 1f, 1f, 1f);
+        formas.rect(CENTRO_X - 1f, 150f, 2f, 180f);
+
+        formas.setColor(0.3f, 0.9f, 0.3f, 1f);
+        formas.rect(CENTRO_X - DESPLAZAMIENTO_MAX - 2f, 150f, 4f, 180f);
+        formas.setColor(0.3f, 0.7f, 1f, 1f);
+        formas.rect(CENTRO_X + DESPLAZAMIENTO_MAX - 2f, 150f, 4f, 180f);
+
+        formas.setColor(0.55f, 0.38f, 0.18f, 1f);
+        formas.rect(centroSoga - MITAD_SOGA, SOGA_Y, MITAD_SOGA * 2f, SOGA_ALTO);
+
+        formas.setColor(0.9f, 0.15f, 0.15f, 1f);
+        formas.rect(centroSoga - 4f, SOGA_Y - 10f, 8f, SOGA_ALTO + 20f);
+
+        formas.setColor(0.3f, 0.9f, 0.3f, 1f);
+        formas.rect(centroSoga - MITAD_SOGA - JUGADOR_ANCHO, SOGA_Y - 40f, JUGADOR_ANCHO, JUGADOR_ALTO);
+        formas.setColor(0.3f, 0.7f, 1f, 1f);
+        formas.rect(centroSoga + MITAD_SOGA, SOGA_Y - 40f, JUGADOR_ANCHO, JUGADOR_ALTO);
+
+        formas.end();
+
+        batch.begin();
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
+        fuente.draw(batch, "P1: alterna [A] [D]", 60f, 100f);
+        fuente.setColor(0.3f, 0.7f, 1f, 1f);
+        dibujarDerecha("P2: alterna [IZQ] [DER]", 100f);
         batch.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
-        if (ropeTarget < -0.01f) {
-            p1GlobalWins++;
-            return "¡JUGADOR 1 GANA LA RONDA!";
-        } else if (ropeTarget > 0.01f) {
-            p2GlobalWins++;
-            return "¡JUGADOR 2 GANA LA RONDA!";
-        } else {
-            return "¡EMPATE EN LA RONDA!";
-        }
+    protected String determinarGanador() {
+        if (Math.abs(sogaObjetivo) < 0.01f) return "¡EMPATE EN LA RONDA!";
+        int ganador = (sogaObjetivo < 0f) ? 1 : 2;
+        int pts = (Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX) ? puntosPorTiempo() : PUNTOS_SIN_KO;
+        return sumarPuntos(ganador, pts);
     }
 
     @Override
-    protected void onRoundReset() {
-        ropeTarget = 0f;
-        ropeShown = 0f;
-        p1Pulls = 0;
-        p2Pulls = 0;
+    protected void reiniciarRonda() {
+        sogaObjetivo = 0f;
+        sogaMostrada = 0f;
+        tirones[0] = tirones[1] = 0;
+        ultimaTecla[0] = ultimaTecla[1] = -1;
     }
 
     @Override
-    protected String getP1StatusText() {
-        return "P1 [A] (Wins: " + p1GlobalWins + ")";
+    protected String getTextoP1() {
+        return "P1 [A/D] (Victorias: " + victoriasP1 + ")";
     }
 
     @Override
-    protected String getP2StatusText() {
-        return "P2 [IZQ] (Wins: " + p2GlobalWins + ")";
+    protected String getTextoP2() {
+        return "P2 [IZQ/DER] (Victorias: " + victoriasP2 + ")";
     }
 
     @Override
-    protected String getScoreSummary() {
-        return "Tirones: P1 (" + p1Pulls + ") vs P2 (" + p2Pulls + ")";
+    protected String getResumen() {
+        return "Tirones: P1 (" + tirones[0] + ") vs P2 (" + tirones[1] + ")";
     }
 
     @Override
     public void dispose() {
-        super.dispose(); // libera batch, shapeRenderer y font de la base
-        // Cuando agreguemos Texture, se liberan acá (ver sección de sprites)
+        super.dispose();
+        fondo.dispose();
     }
 }

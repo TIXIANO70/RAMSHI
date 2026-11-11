@@ -6,27 +6,29 @@ import io.github.ramshi.screens.*;
 
 import java.util.function.Function;
 
-/** Catálogo de minijuegos. Para agregar uno: una línea acá. */
 public enum MinigameType {
     SNAKE("Snake", SnakeScreen::new),
-    LIGHTS("Secuencia de luces", LightsScreen::new),
-    SHIPS("Lluvia de cañonazos", ShipsScreen::new),
-    TUG_OF_WAR("Tira y afloja", TugOfWarScreen::new),
-    QUICKDRAW("Quickdraw", QuickdrawScreen::new),   // comentar si faltan los PNG
-    RACE("Carrera", RaceScreen::new),               // comentar si faltan los PNG
-    RPS("Piedra, papel o tijera", RpsScreen::new),
-    PINGPONG("Ping Pong Bomba", PingPongScreen::new),
-    SUMO("Lucha de Sumo", SumoScreen::new);
+    LUCES("Secuencia de luces", LightsScreen::new),
+    BARCOS("Lluvia de cañonazos", ShipsScreen::new),
+    TIRA_Y_AFLOJA("Tira y afloja", TugOfWarScreen::new),
+    QUICKDRAW("Quickdraw", QuickdrawScreen::new),
+    CARRERA("Carrera", RaceScreen::new),
+    PIEDRA_PAPEL_TIJERA("Piedra, papel o tijera", RpsScreen::new),
+    TANQUES("Duelo de Tanques", TankDuelScreen::new),
+    PAPA_CALIENTE("La Papa Caliente", BombTagScreen::new),
+    PING_PONG("Ping Pong Bomba", PingPongScreen::new),
+    SUMO("Lucha de Sumo", SumoScreen::new),
+    STOP_IT("Stop It!", StopItScreen::new);
 
-    private final String displayName;
-    private final Function<Game, Screen> factory;
+    private final String nombre;
+    private final Function<Game, Screen> fabrica;
 
-    MinigameType(String displayName, Function<Game, Screen> factory) {
-        this.displayName = displayName;
-        this.factory = factory;
+    MinigameType(String nombre, Function<Game, Screen> fabrica) {
+        this.nombre = nombre;
+        this.fabrica = fabrica;
     }
 
-    public String getDisplayName() { return displayName; }
+    public String getNombre() { return nombre; }
 
-    public Screen create(Game game) { return factory.apply(game); }
+    public Screen crear(Game juego) { return fabrica.apply(juego); }
 }
