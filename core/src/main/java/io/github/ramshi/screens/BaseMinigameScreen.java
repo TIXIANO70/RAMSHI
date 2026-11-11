@@ -5,11 +5,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -21,10 +24,32 @@ public abstract class BaseMinigameScreen implements Screen {
     public static final float ANCHO_VIRTUAL = 800f;
     public static final float ALTO_VIRTUAL = 480f;
 
-    private static final float SEGUNDOS_INTRO = 1.2f;
+    private static final float SEGUNDOS_INTRO = 1.5f;
+    private static final float TAMANO_CORAZON = 40f;
+    private static final float SEPARACION_CORAZON = 8f;
+    private static final float CORAZONES_Y = 398f;
+    private static final float GANADOR_Y = 462f;
+    private static final float MOTIVO_Y = 418f;
+    private static final float EXPLICACION_Y = 392f;
+    private static final float ANCHO_EXPLICACION = 700f;
+    private static final float TABLA_Y = 336f;
+    private static final float ALTO_FILA = 17f;
+    private static final float TOTAL_Y = 58f;
+    private static final float COL_NUMERO = 60f;
+    private static final float COL_NOMBRE = 100f;
+    private static final float COL_P1 = 470f;
+    private static final float COL_P2 = 550f;
+    private static final float COL_GANADOR = 630f;
     private static final float SEGUNDOS_RESULTADO = 2.5f;
     private static final float MARGEN_HUD = 16f;
     private static final float ALTURA_HUD = 462f;
+    private static final float ALTO_LEYENDA = 40f;
+    private static final float LEYENDA_Y = 4f;
+    private static final float CONSIGNA_Y = 380f;
+    private static final float CONTROLES_Y = 230f;
+    private static final Color COLOR_CONSIGNA = new Color(1f, 0.85f, 0.2f, 1f);
+    private static final Color COLOR_P1 = new Color(0.3f, 0.9f, 0.3f, 1f);
+    private static final Color COLOR_P2 = new Color(0.3f, 0.7f, 1f, 1f);
 
     protected final Game juego;
     protected final GameSession sesion;
@@ -38,11 +63,14 @@ public abstract class BaseMinigameScreen implements Screen {
     protected int victoriasP1;
     protected int victoriasP2;
     protected String mensajeGanador;
+    protected String explicacion = "";
 
     private float tiempoIntro = SEGUNDOS_INTRO;
     private float tiempoResultado = 0f;
     private int puntosGanadosP1 = 0;
     private int puntosGanadosP2 = 0;
+    private Texture corazon;
+    private Texture corazonVacio;
 
     protected BaseMinigameScreen(Game juego) {
         this.juego = juego;
@@ -62,9 +90,11 @@ public abstract class BaseMinigameScreen implements Screen {
         int antesP1 = victoriasP1;
         int antesP2 = victoriasP2;
         rondaTerminada = true;
+        explicacion = "";
         mensajeGanador = determinarGanador();
         puntosGanadosP1 = victoriasP1 - antesP1;
         puntosGanadosP2 = victoriasP2 - antesP2;
+        if (puntosGanadosP1 == 0 && puntosGanadosP2 == 0 && explicacion.isEmpty()) explicacion = "Empate: nadie suma puntos.";
         tiempoResultado = 0f;
     }
 
@@ -124,7 +154,19 @@ public abstract class BaseMinigameScreen implements Screen {
     }
 
     public void dibujarHUD() {
+        Controles.Control[] controles = getControles();
+        if (controles.length > 0) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            formas.begin(ShapeRenderer.ShapeType.Filled);
+            formas.setColor(0f, 0f, 0f, 0.55f);
+            formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_LEYENDA);
+            formas.end();
+        }
+
         batch.begin();
+        for (int p = 0; p < 2 && controles.length > 0; p++) {
+            Controles.dibujarLeyenda(batch, controles, p, centroJugador(p), LEYENDA_Y);
+        }
 
         if (sesion.esModoJugar()) {
             fuente.setColor(Color.WHITE);
@@ -134,7 +176,7 @@ public abstract class BaseMinigameScreen implements Screen {
         }
 
         usarFuente(Main.fuenteMediana);
-        fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
+        fuente.setColor(COLOR_P1);
         fuente.draw(batch, getTextoP1(), MARGEN_HUD, ALTURA_HUD);
 
         int segundos = (int) Math.ceil(tiempoRestante);
@@ -142,51 +184,180 @@ public abstract class BaseMinigameScreen implements Screen {
         else fuente.setColor(1f, 0.9f, 0.2f, 1f);
         dibujarCentrado("TIEMPO: " + segundos + "s", ALTURA_HUD);
 
-        fuente.setColor(0.3f, 0.7f, 1f, 1f);
+        fuente.setColor(COLOR_P2);
         dibujarDerecha(getTextoP2(), ALTURA_HUD);
 
+        if (getVidaMaxima() > 0) dibujarCorazones();
         batch.end();
+    }
+
+    private void dibujarCorazones() {
+        if (corazon == null) {
+            corazon = new Texture("quickdraw/heart.png");
+            corazonVacio = new Texture("quickdraw/empty_heart.png");
+            corazon.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            corazonVacio.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        }
+        int maximo = getVidaMaxima();
+        float ancho = maximo * TAMANO_CORAZON + (maximo - 1) * SEPARACION_CORAZON;
+        for (int p = 0; p < 2; p++) {
+            float x = centroJugador(p) - ancho / 2f;
+            for (int i = 0; i < maximo; i++) {
+                Texture t = (i < getVida(p)) ? corazon : corazonVacio;
+                batch.draw(t, x + i * (TAMANO_CORAZON + SEPARACION_CORAZON), CORAZONES_Y, TAMANO_CORAZON, TAMANO_CORAZON);
+            }
+        }
+    }
+
+    protected int getVidaMaxima() {
+        return 0;
+    }
+
+    protected int getVida(int jugador) {
+        return 0;
     }
 
     private void dibujarIntro() {
-        dibujarCaja(160f, 170f, 480f, 140f);
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(0.03f, 0.03f, 0.06f, 0.88f);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.setColor(1f, 0.84f, 0f, 1f);
+        formas.rect(ANCHO_VIRTUAL / 2f - 1f, 40f, 2f, 360f);
+        formas.end();
+
         MinigameType tipo = sesion.tipoActual();
+        Controles.Control[] controles = getControles();
         batch.begin();
+        usarFuente(Main.fuenteGrande);
         fuente.setColor(Color.WHITE);
-        usarFuente(Main.fuenteCartel);
-        dibujarCentrado(tipo != null ? tipo.getNombre() : "", 275f);
-        fuente.setColor(1f, 0.85f, 0.2f, 1f);
-        usarFuente(Main.fuenteMediana);
-        dibujarCentrado("¡PREPARATE!", 215f);
-        usarFuente(Main.fuenteMediana);
+        dibujarCentrado(tipo != null ? tipo.getNombre() : "", ALTURA_HUD);
+        for (int p = 0; p < 2; p++) {
+            usarFuente(Main.fuenteCartel);
+            fuente.setColor(COLOR_CONSIGNA);
+            dibujarCentradoEn(getConsigna(), centroJugador(p), CONSIGNA_Y);
+            usarFuente(Main.fuenteMediana);
+            fuente.setColor(p == 0 ? COLOR_P1 : COLOR_P2);
+            dibujarCentradoEn("JUGADOR " + (p + 1), centroJugador(p), CONSIGNA_Y - 44f);
+            if (controles.length > 0) Controles.dibujarGrande(batch, controles, p, centroJugador(p), CONTROLES_Y);
+        }
         batch.end();
     }
 
+    private float centroJugador(int p) {
+        return ANCHO_VIRTUAL * (p == 0 ? 0.25f : 0.75f);
+    }
+
+    private void dibujarCentradoEn(String texto, float centroX, float y) {
+        GlyphLayout layout = new GlyphLayout(fuente, texto);
+        fuente.draw(batch, layout, centroX - layout.width / 2f, y);
+    }
+
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[0];
+    }
+
+    protected String getConsigna() {
+        return "¡PREPARATE!";
+    }
+
+    private void dibujarTablaPartida() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(0.03f, 0.03f, 0.06f, 0.93f);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.setColor(0.12f, 0.12f, 0.18f, 1f);
+        formas.rect(40f, EXPLICACION_Y - 42f, ANCHO_VIRTUAL - 80f, MOTIVO_Y - EXPLICACION_Y + 50f);
+        formas.end();
+
+        batch.begin();
+        usarFuente(Main.fuenteCartel);
+        fuente.setColor(COLOR_CONSIGNA);
+        dibujarCentrado(mensajeGanador, GANADOR_Y);
+        usarFuente(Main.fuenteMediana);
+        fuente.setColor(Color.WHITE);
+        dibujarCentrado(getResumen(), MOTIVO_Y);
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(0.85f, 0.85f, 0.9f, 1f);
+        dibujarExplicacion(EXPLICACION_Y);
+
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(Color.LIGHT_GRAY);
+        float y = TABLA_Y;
+        fuente.draw(batch, "#", COL_NUMERO, y);
+        fuente.draw(batch, "MINIJUEGO", COL_NOMBRE, y);
+        fuente.draw(batch, "P1", COL_P1, y);
+        fuente.draw(batch, "P2", COL_P2, y);
+        fuente.draw(batch, "GANÓ", COL_GANADOR, y);
+
+        int fila = 0;
+        for (GameSession.Resultado r : sesion.getResultados()) {
+            y -= ALTO_FILA;
+            dibujarFila(++fila, r.tipo.getNombre(), r.puntosP1, r.puntosP2, y, Color.WHITE);
+        }
+        y -= ALTO_FILA;
+        MinigameType actual = sesion.tipoActual();
+        dibujarFila(++fila, actual != null ? actual.getNombre() : "", puntosGanadosP1, puntosGanadosP2, y, COLOR_CONSIGNA);
+
+        usarFuente(Main.fuenteMediana);
+        fuente.setColor(COLOR_CONSIGNA);
+        fuente.draw(batch, "TOTAL", COL_NOMBRE, TOTAL_Y);
+        fuente.setColor(COLOR_P1);
+        fuente.draw(batch, String.valueOf(sesion.totalP1() + puntosGanadosP1), COL_P1, TOTAL_Y);
+        fuente.setColor(COLOR_P2);
+        fuente.draw(batch, String.valueOf(sesion.totalP2() + puntosGanadosP2), COL_P2, TOTAL_Y);
+
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(0.7f, 1f, 0.7f, 1f);
+        dibujarCentrado("Juego " + fila + " de " + sesion.getTotalJuegos() + "  -  siguiente en un instante...", 24f);
+        batch.end();
+    }
+
+    private void dibujarExplicacion(float y) {
+        GlyphLayout layout = new GlyphLayout(fuente, explicacion, fuente.getColor(), ANCHO_EXPLICACION, Align.center, true);
+        fuente.draw(batch, layout, (ANCHO_VIRTUAL - ANCHO_EXPLICACION) / 2f, y);
+    }
+
+    private void dibujarFila(int numero, String nombre, int p1, int p2, float y, Color color) {
+        fuente.setColor(color);
+        fuente.draw(batch, String.valueOf(numero), COL_NUMERO, y);
+        fuente.draw(batch, nombre, COL_NOMBRE, y);
+        fuente.setColor(COLOR_P1);
+        fuente.draw(batch, "+" + p1, COL_P1, y);
+        fuente.setColor(COLOR_P2);
+        fuente.draw(batch, "+" + p2, COL_P2, y);
+        fuente.setColor(color);
+        fuente.draw(batch, p1 > p2 ? "P1" : (p2 > p1 ? "P2" : "-"), COL_GANADOR, y);
+    }
+
     public void dibujarFinDeRonda() {
-        dibujarCaja(160f, 130f, 480f, 220f);
+        if (sesion.esModoJugar()) {
+            dibujarTablaPartida();
+            return;
+        }
+        dibujarCaja(100f, 110f, 600f, 260f);
         batch.begin();
 
         fuente.setColor(Color.WHITE);
         usarFuente(Main.fuenteGrande);
-        dibujarCentrado(mensajeGanador, 320f);
+        dibujarCentrado(mensajeGanador, 350f);
 
-        fuente.setColor(0.85f, 0.85f, 0.85f, 1f);
+        fuente.setColor(Color.WHITE);
+        usarFuente(Main.fuenteMediana);
+        dibujarCentrado(getResumen(), 310f);
+
+        fuente.setColor(0.85f, 0.85f, 0.9f, 1f);
         usarFuente(Main.fuenteChica);
-        dibujarCentrado(getResumen(), 275f);
+        GlyphLayout textoExplicacion = new GlyphLayout(fuente, explicacion, fuente.getColor(), 560f, Align.center, true);
+        fuente.draw(batch, textoExplicacion, 120f, 280f);
 
         fuente.setColor(1f, 0.85f, 0.2f, 1f);
         usarFuente(Main.fuenteMediana);
-        if (sesion.esModoJugar()) {
-            dibujarCentrado("PARTIDA:  P1 [" + (sesion.totalP1() + puntosGanadosP1) + "]  -  P2 ["
-                + (sesion.totalP2() + puntosGanadosP2) + "]", 235f);
-        } else {
-            dibujarCentrado("VICTORIAS TOTALES:  P1 [" + victoriasP1 + "]  -  P2 [" + victoriasP2 + "]", 235f);
-        }
+        dibujarCentrado("VICTORIAS TOTALES:  P1 [" + victoriasP1 + "]  -  P2 [" + victoriasP2 + "]", 200f);
 
         fuente.setColor(0.7f, 1f, 0.7f, 1f);
         usarFuente(Main.fuenteChica);
-        dibujarCentrado(sesion.esModoJugar() ? "Siguiente juego en un instante..."
-            : "[ ESPACIO ] Siguiente Ronda       [ ESC ] Menu Principal", 175f);
+        dibujarCentrado("[ ESPACIO ] Siguiente Ronda       [ ESC ] Menu Principal", 145f);
 
         usarFuente(Main.fuenteMediana);
         batch.end();
@@ -216,6 +387,10 @@ public abstract class BaseMinigameScreen implements Screen {
     @Override public void dispose() {
         batch.dispose();
         formas.dispose();
+        if (corazon != null) {
+            corazon.dispose();
+            corazonVacio.dispose();
+        }
     }
     @Override public void show() {}
     @Override public void resize(int width, int height) { vista.update(width, height, true); }
@@ -232,6 +407,14 @@ public abstract class BaseMinigameScreen implements Screen {
         if (jugador == 1) victoriasP1 += puntos;
         else victoriasP2 += puntos;
         return "¡JUGADOR " + jugador + " GANA (+" + puntos + (puntos == 1 ? " PUNTO" : " PUNTOS") + ")!";
+    }
+
+    protected String segundosJugados() {
+        return String.format("%.1f s", getDuracionRonda() - tiempoRestante);
+    }
+
+    protected String reglaTiempo() {
+        return "(antes de 3,3 s = 3 pts, antes de 6,6 s = 2, después = 1)";
     }
 
     protected int puntosPorTiempo() {

@@ -53,6 +53,15 @@ public class StopItScreen extends BaseMinigameScreen {
         reiniciarEstado();
     }
 
+    @Override protected String getConsigna() { return "¡FRENÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.una("frenar", Controles.W, Controles.ARRIBA)
+        };
+    }
+
     private Texture cargarTextura(String ruta) {
         Texture t = new Texture(ruta);
         t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
@@ -148,10 +157,6 @@ public class StopItScreen extends BaseMinigameScreen {
                 dibujarCentradoEn(batch, ultimoTexto[p], BARRA_X[p], BARRA_ANCHO, 320f);
             }
         }
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
-        fuente.draw(batch, "P1: [W] frenar", 24f, 24f);
-        dibujarDerecha("P2: [FLECHA ARRIBA] frenar", 24f);
         batch.end();
     }
 
@@ -174,6 +179,7 @@ public class StopItScreen extends BaseMinigameScreen {
         int pts = 1;
         if (diferencia >= DIFERENCIA_PARA_3) pts = 3;
         else if (diferencia >= DIFERENCIA_PARA_2) pts = 2;
+        explicacion = "Sumó " + Math.max(puntaje[0], puntaje[1]) + " contra " + Math.min(puntaje[0], puntaje[1]) + " (ventaja de " + diferencia + "): 6 o más = 3 pts, 3 a 5 = 2, 1 o 2 = 1.";
         return sumarPuntos(puntaje[0] > puntaje[1] ? 1 : 2, pts);
     }
 

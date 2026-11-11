@@ -38,8 +38,9 @@ public class BombTagScreen extends BaseMinigameScreen {
         { Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D, Input.Keys.SPACE },
         { Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.ENTER }
     };
-    private static final String[] TEXTO_HUD = { "P1: WASD | [ESPACIO] ", "P2: FLECHAS | [ENTER] " };
-    private static final float HUD_X = 55f;
+
+    private static final float HUD_X = 16f;
+    private static final float DASH_Y = 62f;
     private static final Color[] COLORES_HUD = { new Color(1f, 0.3f, 0.6f, 1f), new Color(0f, 0.85f, 1f, 1f) };
 
     private final Rectangle[] pilares = {
@@ -98,6 +99,16 @@ public class BombTagScreen extends BaseMinigameScreen {
         inmunidad = INMUNIDAD_INICIAL;
         particulas.clear();
         portador = corredores[MathUtils.random(1)];
+    }
+
+    @Override protected String getConsigna() { return "¡PASALA!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.cruz("mover"),
+            Controles.una("dash", Controles.ESPACIO, Controles.ENTER)
+        };
     }
 
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
@@ -210,7 +221,8 @@ public class BombTagScreen extends BaseMinigameScreen {
             batch.draw(r.sprite, r.pos.x - TAMANO_JUGADOR / 2f, r.pos.y - TAMANO_JUGADOR / 2f, TAMANO_JUGADOR, TAMANO_JUGADOR);
             String textoDash = (r.recargaDash <= 0f) ? "DASH LISTO" : String.format("DASH: %.1fs", r.recargaDash);
             fuente.setColor(COLORES_HUD[r.indice]);
-            if (r.indice == 0) fuente.draw(batch, TEXTO_HUD[0] + textoDash, HUD_X, 32f);
+            if (r.indice == 0) fuente.draw(batch, textoDash, HUD_X, DASH_Y);
+            else dibujarDerecha(textoDash, DASH_Y);
         }
 
         Vector2 bomba = portador.pos;
@@ -234,6 +246,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         int pts = 1;
         if (proporcion > PROPORCION_PARA_3) pts = 3;
         else if (proporcion > PROPORCION_PARA_2) pts = 2;
+        explicacion = "P" + (portador.indice + 1) + " tuvo la bomba el " + Math.round(proporcion * 100) + "% del tiempo (más de 70% = 3 pts, más de 50% = 2, si no 1).";
         return sumarPuntos(2 - portador.indice, pts);
     }
 

@@ -97,6 +97,16 @@ public class TankDuelScreen extends BaseMinigameScreen {
         balas.clear();
     }
 
+    @Override protected String getConsigna() { return "¡DESTRUÍ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.cruz("mover"),
+            Controles.una("disparar", Controles.ESPACIO, Controles.ENTER)
+        };
+    }
+
     @Override
     protected float getDuracionRonda() {
         return DURACION_RONDA;
@@ -188,13 +198,6 @@ public class TankDuelScreen extends BaseMinigameScreen {
             spritesTanque[p].setRotation(angulo[p]);
             spritesTanque[p].draw(batch);
         }
-
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(1f, 0.35f, 0.45f, 1f);
-        fuente.draw(batch, "P1 HP: " + vida[0] + "/" + VIDA_MAXIMA + "  [WASD / ESPACIO]", 50f, 30f);
-
-        fuente.setColor(0.2f, 0.75f, 1f, 1f);
-        dibujarDerecha("P2 HP: " + vida[1] + "/" + VIDA_MAXIMA + "  [FLECHAS / ENTER]", 30f);
         batch.end();
     }
 
@@ -204,6 +207,9 @@ public class TankDuelScreen extends BaseMinigameScreen {
         int ganador = (vida[0] > vida[1]) ? 0 : 1;
         int pts = PUNTOS_VICTORIA;
         if (vida[1 - ganador] <= 0) pts = (vida[ganador] == VIDA_MAXIMA) ? PUNTOS_KO_PERFECTO : PUNTOS_KO;
+        if (pts == PUNTOS_KO_PERFECTO) explicacion = "Destruyó al rival sin perder ninguna vida: 3 puntos.";
+        else if (pts == PUNTOS_KO) explicacion = "Destruyó al rival, pero perdió vidas: 2 puntos.";
+        else explicacion = "Nadie fue destruido: terminó con más vidas (" + vida[ganador] + " contra " + vida[1 - ganador] + "): 1 punto.";
         return sumarPuntos(ganador + 1, pts);
     }
 
@@ -212,14 +218,17 @@ public class TankDuelScreen extends BaseMinigameScreen {
         reiniciarDuelo();
     }
 
+    @Override protected int getVidaMaxima() { return VIDA_MAXIMA; }
+    @Override protected int getVida(int jugador) { return vida[jugador]; }
+
     @Override
     protected String getTextoP1() {
-        return "P1: HP " + vida[0] + " (Victorias: " + victoriasP1 + ")";
+        return "P1 (Victorias: " + victoriasP1 + ")";
     }
 
     @Override
     protected String getTextoP2() {
-        return "P2: HP " + vida[1] + " (Victorias: " + victoriasP2 + ")";
+        return "P2 (Victorias: " + victoriasP2 + ")";
     }
 
     @Override

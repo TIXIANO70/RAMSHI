@@ -69,6 +69,15 @@ public class PingPongScreen extends BaseMinigameScreen {
         return MathUtils.clamp(y, 0f, ALTO_VIRTUAL - PALETA_ALTO);
     }
 
+    @Override protected String getConsigna() { return "¡DEVOLVÉ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("mover", Controles.W, Controles.S, Controles.ARRIBA, Controles.ABAJO)
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
@@ -126,14 +135,6 @@ public class PingPongScreen extends BaseMinigameScreen {
         formas.setColor(COLOR_BOMBA);
         formas.circle(bombaX, bombaY, RADIO_BOMBA);
         formas.end();
-
-        batch.begin();
-        fuente.setColor(COLOR_P1);
-        usarFuente(Main.fuenteMediana);
-        fuente.draw(batch, "P1: " + puntajeP1 + "  [W/S]", 50f, 60f);
-        fuente.setColor(COLOR_P2);
-        dibujarDerecha("P2: " + puntajeP2 + "  [FLECHAS]", 60f);
-        batch.end();
     }
 
     @Override
@@ -143,6 +144,9 @@ public class PingPongScreen extends BaseMinigameScreen {
         int golesGanador = Math.max(puntajeP1, puntajeP2), golesPerdedor = Math.min(puntajeP1, puntajeP2);
         int pts = 1;
         if (golesGanador >= GOLES_PARA_GANAR) pts = (golesPerdedor == 0) ? 3 : 2;
+        explicacion = (golesGanador >= GOLES_PARA_GANAR)
+            ? "Ganó " + golesGanador + " a " + golesPerdedor + " (2-0 = 3 pts, 2-1 = 2 pts)."
+            : "Iba ganando " + golesGanador + " a " + golesPerdedor + " cuando se acabó el tiempo: 1 punto.";
         return sumarPuntos(ganador, pts);
     }
 

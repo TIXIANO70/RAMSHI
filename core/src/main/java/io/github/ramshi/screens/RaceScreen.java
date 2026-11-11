@@ -91,6 +91,15 @@ public class RaceScreen extends BaseMinigameScreen {
         return pistaX + TAMANO_AUTO_ORIGINAL / 2f * escalaX + TAMANO_AUTO_ORIGINAL * carril * escalaX;
     }
 
+    @Override protected String getConsigna() { return "¡ESQUIVÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("carril", Controles.A, Controles.D, Controles.IZQUIERDA, Controles.DERECHA)
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
@@ -157,8 +166,8 @@ public class RaceScreen extends BaseMinigameScreen {
 
         usarFuente(Main.fuenteChica);
         fuente.setColor(Color.WHITE);
-        fuente.draw(batch, "Velocidad: " + (int) velocidadP1, P1_X + 8f, 30);
-        fuente.draw(batch, "Velocidad: " + (int) velocidadP2, P2_X + 8f, 30);
+        fuente.draw(batch, "Velocidad: " + (int) velocidadP1, P1_X + 8f, 62f);
+        fuente.draw(batch, "Velocidad: " + (int) velocidadP2, P2_X + 8f, 62f);
 
         for (Obstaculo obs : obstaculosP1) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);
         for (Obstaculo obs : obstaculosP2) batch.draw(obstaculoTex, obs.x, obs.y, obs.w, obs.h);
@@ -172,6 +181,8 @@ public class RaceScreen extends BaseMinigameScreen {
         int pts = 1;
         if (mayor >= menor * VENTAJA_PARA_3) pts = 3;
         else if (mayor >= menor * VENTAJA_PARA_2) pts = 2;
+        String ventaja = (menor > 0) ? "+" + Math.round((mayor / menor - 1f) * 100) + "%" : "el rival no avanzó";
+        explicacion = "Recorrió " + (int) mayor + " m contra " + (int) menor + " m (" + ventaja + "). +50% = 3 pts, +20% = 2, si no 1.";
         return sumarPuntos(distanciaP1 > distanciaP2 ? 1 : 2, pts);
     }
 

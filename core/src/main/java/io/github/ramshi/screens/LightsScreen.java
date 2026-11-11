@@ -85,6 +85,15 @@ public class LightsScreen extends BaseMinigameScreen {
         return new TextureRegion(t, RECORTE_BORDE, RECORTE_BORDE, RECORTE_TAMANO, RECORTE_TAMANO);
     }
 
+    @Override protected String getConsigna() { return "¡REPETÍ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.cruz("repetir")
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_TOTAL; }
 
     @Override
@@ -151,10 +160,6 @@ public class LightsScreen extends BaseMinigameScreen {
             GlyphLayout layout = new GlyphLayout(fuente, mensajeFase());
             fuente.draw(batch, layout, (ANCHO_VIRTUAL - layout.width) / 2f, 420f);
         }
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
-        fuente.draw(batch, "P1: W A S D", 24f, 24f);
-        dibujarDerecha("P2: FLECHAS", 24f);
         batch.end();
     }
 
@@ -163,9 +168,8 @@ public class LightsScreen extends BaseMinigameScreen {
         int p1 = rondasGanadas[0], p2 = rondasGanadas[1];
         if (p1 == p2) return "¡EMPATE! (" + p1 + "-" + p2 + ")";
         int ganador = (p1 > p2) ? 1 : 2, pts = Math.max(p1, p2);
-        if (ganador == 1) victoriasP1 += pts;
-        else victoriasP2 += pts;
-        return "¡JUGADOR " + ganador + " GANA! (" + pts + "-" + Math.min(p1, p2) + ")  +" + pts + " pts";
+        explicacion = "Ganó " + pts + " de " + TOTAL_RONDAS + " secuencias (" + pts + "-" + Math.min(p1, p2) + "): 1 punto por cada secuencia ganada.";
+        return sumarPuntos(ganador, pts);
     }
 
     @Override

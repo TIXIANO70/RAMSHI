@@ -75,6 +75,15 @@ public class SnakeScreen extends BaseMinigameScreen {
         return t;
     }
 
+    @Override protected String getConsigna() { return "¡COMÉ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.cruz("mover")
+        };
+    }
+
     @Override protected float getDuracionRonda() { return DURACION_RONDA; }
 
     @Override
@@ -196,6 +205,7 @@ public class SnakeScreen extends BaseMinigameScreen {
         int pts = 1;
         if (diferencia >= DIFERENCIA_PARA_3) pts = 3;
         else if (diferencia >= DIFERENCIA_PARA_2) pts = 2;
+        explicacion = "Comió " + Math.max(puntaje[0], puntaje[1]) + " huevos contra " + Math.min(puntaje[0], puntaje[1]) + " (ventaja de " + diferencia + "): 4 o más = 3 pts, 2 o 3 = 2, 1 = 1.";
         return sumarPuntos(puntaje[0] > puntaje[1] ? 1 : 2, pts);
     }
 

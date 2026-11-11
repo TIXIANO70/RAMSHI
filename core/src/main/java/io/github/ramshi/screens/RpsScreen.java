@@ -70,6 +70,17 @@ public class RpsScreen extends BaseMinigameScreen {
         mensajeMano = "";
     }
 
+    @Override protected String getConsigna() { return "¡GANÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.una("piedra", Controles.A, Controles.IZQUIERDA).conIcono("rps/piedra.png"),
+            Controles.una("papel", Controles.S, Controles.ABAJO).conIcono("rps/papel.png"),
+            Controles.una("tijera", Controles.D, Controles.DERECHA).conIcono("rps/tijera.png")
+        };
+    }
+
     @Override
     protected float getDuracionRonda() {
         return DURACION_RONDA;
@@ -125,11 +136,6 @@ public class RpsScreen extends BaseMinigameScreen {
             fuente.draw(batch, NOMBRES[eleccionP1], P1_X + 20f, 150f);
             fuente.draw(batch, NOMBRES[eleccionP2], P2_X + 20f, 150f);
         }
-
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.7f, 0.7f, 0.7f, 1f);
-        fuente.draw(batch, "P1: [A] Piedra  [S] Papel  [D] Tijera", 40f, 60f);
-        dibujarDerecha("P2: [IZQ] Piedra  [ABAJO] Papel  [DER] Tijera", 60f);
         batch.end();
     }
 
@@ -137,6 +143,7 @@ public class RpsScreen extends BaseMinigameScreen {
     protected String determinarGanador() {
         if (puntajeP1 == puntajeP2) return "¡EMPATE!";
         int pts = Math.min(PUNTOS_MAXIMOS, Math.max(puntajeP1, puntajeP2));
+        explicacion = "Ganó " + Math.max(puntajeP1, puntajeP2) + " manos contra " + Math.min(puntajeP1, puntajeP2) + ": 1 punto por mano ganada (máximo 3).";
         return sumarPuntos(puntajeP1 > puntajeP2 ? 1 : 2, pts);
     }
 

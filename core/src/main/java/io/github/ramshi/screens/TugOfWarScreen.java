@@ -40,6 +40,15 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         super(juego);
     }
 
+    @Override protected String getConsigna() { return "¡TIRÁ!"; }
+
+    @Override
+    protected Controles.Control[] getControles() {
+        return new Controles.Control[] {
+            Controles.dos("alternar", Controles.A, Controles.D, Controles.IZQUIERDA, Controles.DERECHA)
+        };
+    }
+
     private Texture cargarTextura(String ruta) {
         Texture t = new Texture(ruta);
         t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
@@ -102,21 +111,17 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         formas.rect(centroSoga + MITAD_SOGA, SOGA_Y - 40f, JUGADOR_ANCHO, JUGADOR_ALTO);
 
         formas.end();
-
-        batch.begin();
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
-        fuente.draw(batch, "P1: alterna [A] [D]", 60f, 100f);
-        fuente.setColor(0.3f, 0.7f, 1f, 1f);
-        dibujarDerecha("P2: alterna [IZQ] [DER]", 100f);
-        batch.end();
     }
 
     @Override
     protected String determinarGanador() {
         if (Math.abs(sogaObjetivo) < 0.01f) return "¡EMPATE EN LA RONDA!";
         int ganador = (sogaObjetivo < 0f) ? 1 : 2;
-        int pts = (Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX) ? puntosPorTiempo() : PUNTOS_SIN_KO;
+        boolean llego = Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX;
+        int pts = llego ? puntosPorTiempo() : PUNTOS_SIN_KO;
+        explicacion = llego
+            ? "Llevó la soga hasta su línea a los " + segundosJugados() + " " + reglaTiempo()
+            : "Nadie llegó a la línea: la soga quedó de su lado al terminar el tiempo, 1 punto.";
         return sumarPuntos(ganador, pts);
     }
 
@@ -130,12 +135,12 @@ public class TugOfWarScreen extends BaseMinigameScreen {
 
     @Override
     protected String getTextoP1() {
-        return "P1 [A/D] (Victorias: " + victoriasP1 + ")";
+        return "P1 (Victorias: " + victoriasP1 + ")";
     }
 
     @Override
     protected String getTextoP2() {
-        return "P2 [IZQ/DER] (Victorias: " + victoriasP2 + ")";
+        return "P2 (Victorias: " + victoriasP2 + ")";
     }
 
     @Override
