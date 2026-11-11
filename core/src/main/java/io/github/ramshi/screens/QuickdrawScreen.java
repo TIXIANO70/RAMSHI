@@ -11,16 +11,17 @@ import com.badlogic.gdx.math.MathUtils;
 public class QuickdrawScreen extends BaseMinigameScreen{
     private int healthP1=3;
     private int healthP2=3;
+    private float triggerInterval=1;
+    private float reactionInterval=0.5f;
+
 
     private float P1_X = 0f;
     private float P2_X = 600f;
     private float gunY = 180f;
     private float gunH = 128f;
     private float gunW = gunH;
-    private float triggerInterval=1;
     private float triggerTimer;
     private boolean canShoot;
-    private float reactionInterval=0.5f;
     private float reactionTimer;
     private boolean addReactionTimer=false;
     private boolean shooted;
