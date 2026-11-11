@@ -40,10 +40,11 @@ public class LightsScreen extends BaseMinigameScreen {
     private static final int TOTAL_RONDAS = LARGOS_SECUENCIA.length;
     private static final float MITAD_ANCHO = ANCHO_VIRTUAL / 2f;
     private static final float FILA_ARRIBA_Y = FILA_ABAJO_Y + TAMANO_TECLA + SEPARACION_TECLA;
-    private static final String[][] NOMBRES_TECLA = {
-        {"w", "a", "s", "d"},
-        {"up", "left", "down", "right"}
+    private static final int[][] TILES_TECLA = {
+        {86, 120, 121, 122},
+        {166, 169, 168, 167}
     };
+    private static final int DESPLAZAMIENTO_RELLENA = 272;
 
     private final Texture[][] teclaApagada = new Texture[2][4];
     private final Texture[][] teclaEncendida = new Texture[2][4];
@@ -62,11 +63,15 @@ public class LightsScreen extends BaseMinigameScreen {
         super(juego);
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
-                teclaApagada[p][i] = cargarTextura("lights/key_" + NOMBRES_TECLA[p][i] + "_off.png");
-                teclaEncendida[p][i] = cargarTextura("lights/key_" + NOMBRES_TECLA[p][i] + "_on.png");
+                teclaApagada[p][i] = cargarTextura(rutaTile(TILES_TECLA[p][i]));
+                teclaEncendida[p][i] = cargarTextura(rutaTile(TILES_TECLA[p][i] + DESPLAZAMIENTO_RELLENA));
             }
         }
         reiniciarRonda();
+    }
+
+    private String rutaTile(int numero) {
+        return String.format("ui/kenney/white/tile_%04d.png", numero);
     }
 
     private Texture cargarTextura(String ruta) {

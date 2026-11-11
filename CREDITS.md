@@ -10,4 +10,4 @@
 
 | Recurso | Autor | Licencia | Origen |
 |---|---|---|---|
-| | | | |
+| Input Prompts Pixel 1-Bit (`assets/ui/kenney/`, teclas de Secuencia de luces) | Kenney | CC0 (ver `assets/ui/kenney/License.txt`) | https://kenney.nl |
