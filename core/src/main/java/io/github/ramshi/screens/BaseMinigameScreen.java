@@ -213,7 +213,7 @@ public abstract class BaseMinigameScreen implements Screen {
     private void dibujarFondoReloj() {
         float fraccion = Math.max(0f, tiempoRestante / getDuracionRonda());
         float largoMax = RELOJ_X - RELOJ_RADIO - SEPARACION_RELOJ;
-        float largo = largoMax * fraccion;
+        float largo = (int) (largoMax * fraccion);
         float inicioDerecha = RELOJ_X + RELOJ_RADIO + SEPARACION_RELOJ;
         Color color = fraccion > 0.5f
             ? colorBarra.set(COLOR_AMARILLO).lerp(COLOR_VERDE, (fraccion - 0.5f) * 2f)
@@ -225,8 +225,10 @@ public abstract class BaseMinigameScreen implements Screen {
         formas.rect(0f, BARRA_Y, largoMax, ALTO_BARRA);
         formas.rect(inicioDerecha, BARRA_Y, largoMax, ALTO_BARRA);
         formas.setColor(color);
-        formas.rect(largoMax - largo, BARRA_Y, largo, ALTO_BARRA);
-        formas.rect(inicioDerecha, BARRA_Y, largo, ALTO_BARRA);
+        if (largo > 0f) {
+            formas.rect(largoMax - largo, BARRA_Y, largo, ALTO_BARRA);
+            formas.rect(inicioDerecha, BARRA_Y, largo, ALTO_BARRA);
+        }
         formas.circle(RELOJ_X, RELOJ_Y, RELOJ_RADIO + BORDE_RELOJ, 40);
         formas.setColor(COLOR_FONDO_RELOJ);
         formas.circle(RELOJ_X, RELOJ_Y, RELOJ_RADIO, 40);
