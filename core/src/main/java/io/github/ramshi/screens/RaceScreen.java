@@ -29,6 +29,8 @@ public class RaceScreen extends BaseMinigameScreen {
     private static final float P2_X = 432f;
     private static final float AUTO_Y = 80f;
     private static final float TAMANO_AUTO_ORIGINAL = 32f;
+    private static final float MARGEN_GOLPE = 10f;
+    private static final float PARTE_TRASERA_LIBRE = 0.35f;
     private static final int[][] TECLAS = {
         {Input.Keys.A, Input.Keys.D},
         {Input.Keys.LEFT, Input.Keys.RIGHT}
@@ -76,6 +78,12 @@ public class RaceScreen extends BaseMinigameScreen {
         return t;
     }
 
+    private Rectangle hitbox(float autoX) {
+        float trasera = tamanoAuto * PARTE_TRASERA_LIBRE;
+        return new Rectangle(autoX + MARGEN_GOLPE, AUTO_Y + trasera,
+            tamanoAuto - 2 * MARGEN_GOLPE, tamanoAuto - trasera - MARGEN_GOLPE);
+    }
+
     private float carrilX(float pistaX, int carril) {
         return pistaX + TAMANO_AUTO_ORIGINAL / 2f * escalaX + TAMANO_AUTO_ORIGINAL * carril * escalaX;
     }
@@ -120,8 +128,12 @@ public class RaceScreen extends BaseMinigameScreen {
             Obstaculo obs = lista.get(i);
             obs.y -= caida;
             obs.rect.set(obs.x, obs.y, obs.w, obs.h);
-            if (auto.overlaps(obs.rect)) velocidad = 0f;
-            if (obs.y + obs.h < 0) lista.remove(i);
+            if (auto.overlaps(obs.rect)) {
+                velocidad = 0f;
+                lista.remove(i);
+            } else if (obs.y + obs.h < 0) {
+                lista.remove(i);
+            }
         }
         return velocidad;
     }
@@ -136,9 +148,9 @@ public class RaceScreen extends BaseMinigameScreen {
         }
 
         batch.draw(auto1, autoX1, AUTO_Y, tamanoAuto, tamanoAuto);
-        rectP1 = new Rectangle(autoX1, AUTO_Y, tamanoAuto, tamanoAuto);
+        rectP1 = hitbox(autoX1);
         batch.draw(auto2, autoX2, AUTO_Y, tamanoAuto, tamanoAuto);
-        rectP2 = new Rectangle(autoX2, AUTO_Y, tamanoAuto, tamanoAuto);
+        rectP2 = hitbox(autoX2);
 
         fuente.draw(batch, "Velocidad: " + velocidadP1, P1_X, 30);
         fuente.draw(batch, "Velocidad: " + velocidadP2, P2_X, 30);
