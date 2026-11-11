@@ -118,7 +118,7 @@ public class ShipsScreen extends BaseMinigameScreen {
         usarFuente(Main.fuenteChica);
         fuente.setColor(1f, 1f, 1f, 1f);
         fuente.draw(batch, "P1: A / D", 24f, 24f);
-        fuente.draw(batch, "P2: FLECHAS", 590f, 24f);
+        dibujarDerecha("P2: FLECHAS", 24f);
         batch.end();
 
         formas.begin(ShapeRenderer.ShapeType.Line);

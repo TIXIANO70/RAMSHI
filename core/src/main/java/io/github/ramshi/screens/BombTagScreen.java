@@ -39,7 +39,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         { Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.ENTER }
     };
     private static final String[] TEXTO_HUD = { "P1: WASD | [ESPACIO] ", "P2: FLECHAS | [ENTER] " };
-    private static final float[] HUD_X = { 55f, ANCHO_VIRTUAL - 290f };
+    private static final float HUD_X = 55f;
     private static final Color[] COLORES_HUD = { new Color(1f, 0.3f, 0.6f, 1f), new Color(0f, 0.85f, 1f, 1f) };
 
     private final Rectangle[] pilares = {
@@ -210,7 +210,7 @@ public class BombTagScreen extends BaseMinigameScreen {
             batch.draw(r.sprite, r.pos.x - TAMANO_JUGADOR / 2f, r.pos.y - TAMANO_JUGADOR / 2f, TAMANO_JUGADOR, TAMANO_JUGADOR);
             String textoDash = (r.recargaDash <= 0f) ? "DASH LISTO" : String.format("DASH: %.1fs", r.recargaDash);
             fuente.setColor(COLORES_HUD[r.indice]);
-            fuente.draw(batch, TEXTO_HUD[r.indice] + textoDash, HUD_X[r.indice], 32f);
+            if (r.indice == 0) fuente.draw(batch, TEXTO_HUD[0] + textoDash, HUD_X, 32f);
         }
 
         Vector2 bomba = portador.pos;

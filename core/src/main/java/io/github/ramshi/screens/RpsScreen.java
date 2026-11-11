@@ -125,7 +125,7 @@ public class RpsScreen extends BaseMinigameScreen {
         usarFuente(Main.fuenteChica);
         fuente.setColor(0.7f, 0.7f, 0.7f, 1f);
         fuente.draw(batch, "P1: [A] Piedra  [S] Papel  [D] Tijera", 40f, 60f);
-        fuente.draw(batch, "P2: [IZQ] Piedra  [ABAJO] Papel  [DER] Tijera", 430f, 60f);
+        dibujarDerecha("P2: [IZQ] Piedra  [ABAJO] Papel  [DER] Tijera", 60f);
         batch.end();
     }
 

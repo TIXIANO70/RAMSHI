@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -23,7 +24,7 @@ public class LightsScreen extends BaseMinigameScreen {
     private static final float TIEMPO_RESULTADO = 0.4f;
     private static final float TIEMPO_DESTELLO = 0.15f;
     private static final boolean REINICIAR_AL_FALLAR = true;
-    private static final float TAMANO_TECLA = 80f;
+    private static final float TAMANO_TECLA = 78f;
     private static final float SEPARACION_TECLA = 8f;
     private static final float FILA_ABAJO_Y = 150f;
     private static final int[][] TECLAS = {
@@ -45,9 +46,11 @@ public class LightsScreen extends BaseMinigameScreen {
         {166, 169, 168, 167}
     };
     private static final int DESPLAZAMIENTO_RELLENA = 272;
+    private static final int RECORTE_BORDE = 1;
+    private static final int RECORTE_TAMANO = 13;
 
-    private final Texture[][] teclaApagada = new Texture[2][4];
-    private final Texture[][] teclaEncendida = new Texture[2][4];
+    private final TextureRegion[][] teclaApagada = new TextureRegion[2][4];
+    private final TextureRegion[][] teclaEncendida = new TextureRegion[2][4];
 
     private final int[] secuencia = new int[Arrays.stream(LARGOS_SECUENCIA).max().getAsInt()];
     private final int[] progreso = new int[2];
@@ -74,10 +77,10 @@ public class LightsScreen extends BaseMinigameScreen {
         return String.format("ui/kenney/white/tile_%04d.png", numero);
     }
 
-    private Texture cargarTextura(String ruta) {
+    private TextureRegion cargarTextura(String ruta) {
         Texture t = new Texture(ruta);
         t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        return t;
+        return new TextureRegion(t, RECORTE_BORDE, RECORTE_BORDE, RECORTE_TAMANO, RECORTE_TAMANO);
     }
 
     @Override protected float getDuracionRonda() { return DURACION_TOTAL; }
@@ -145,7 +148,7 @@ public class LightsScreen extends BaseMinigameScreen {
         usarFuente(Main.fuenteChica);
         fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
         fuente.draw(batch, "P1: W A S D", 24f, 24f);
-        fuente.draw(batch, "P2: FLECHAS", 590f, 24f);
+        dibujarDerecha("P2: FLECHAS", 24f);
         batch.end();
     }
 
@@ -175,8 +178,8 @@ public class LightsScreen extends BaseMinigameScreen {
         super.dispose();
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
-                teclaApagada[p][i].dispose();
-                teclaEncendida[p][i].dispose();
+                teclaApagada[p][i].getTexture().dispose();
+                teclaEncendida[p][i].getTexture().dispose();
             }
         }
     }

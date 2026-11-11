@@ -126,7 +126,7 @@ public class PingPongScreen extends BaseMinigameScreen {
         usarFuente(Main.fuenteMediana);
         fuente.draw(batch, "P1: " + puntajeP1 + "  [W/S]", 50f, 60f);
         fuente.setColor(COLOR_P2);
-        fuente.draw(batch, "P2: " + puntajeP2 + "  [FLECHAS]", ANCHO_VIRTUAL - 210f, 60f);
+        dibujarDerecha("P2: " + puntajeP2 + "  [FLECHAS]", 60f);
         batch.end();
     }
 

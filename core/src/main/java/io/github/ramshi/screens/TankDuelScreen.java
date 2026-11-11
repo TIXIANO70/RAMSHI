@@ -194,7 +194,7 @@ public class TankDuelScreen extends BaseMinigameScreen {
         fuente.draw(batch, "P1 HP: " + vida[0] + "/" + VIDA_MAXIMA + "  [WASD / ESPACIO]", 50f, 30f);
 
         fuente.setColor(0.2f, 0.75f, 1f, 1f);
-        fuente.draw(batch, "P2 HP: " + vida[1] + "/" + VIDA_MAXIMA + "  [FLECHAS / ENTER]", ANCHO_VIRTUAL - 360f, 30f);
+        dibujarDerecha("P2 HP: " + vida[1] + "/" + VIDA_MAXIMA + "  [FLECHAS / ENTER]", 30f);
         batch.end();
     }
 

@@ -272,7 +272,7 @@ public class SumoScreen extends BaseMinigameScreen {
         fuente.draw(batch, "P1: [A/D] Empuja  [W] Salta", 45f, 70f);
 
         fuente.setColor(COLOR_P2);
-        fuente.draw(batch, "P2: [FLECHAS] Empuja  [ARRIBA] Salta", ANCHO_VIRTUAL - 295f, 70f);
+        dibujarDerecha("P2: [FLECHAS] Empuja  [ARRIBA] Salta", 70f);
 
         batch.end();
 
