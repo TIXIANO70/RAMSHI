@@ -33,6 +33,7 @@ public class RpsScreen extends BaseMinigameScreen {
     private static final float MANO_Y = 180f;
     private static final String[] NOMBRES = {"PIEDRA", "PAPEL", "TIJERA"};
     private final Texture[] texturas = new Texture[3];
+    private final Texture fondo;
 
     private int puntajeP1 = 0;
     private int puntajeP2 = 0;
@@ -44,6 +45,8 @@ public class RpsScreen extends BaseMinigameScreen {
 
     public RpsScreen(Game juego) {
         super(juego);
+        fondo = new Texture("rps/rps_bg.png");
+        fondo.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
         texturas[PIEDRA] = new Texture("rps/piedra.png");
         texturas[PAPEL]  = new Texture("rps/papel.png");
         texturas[TIJERA] = new Texture("rps/tijera.png");
@@ -107,6 +110,7 @@ public class RpsScreen extends BaseMinigameScreen {
         int mostradaP2 = revelado ? eleccionP2 : ELECCION_INICIAL;
 
         batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
         batch.draw(texturas[mostradaP1], P1_X, MANO_Y, TAMANO_SPRITE, TAMANO_SPRITE);
         batch.draw(texturas[mostradaP2], P2_X, MANO_Y, TAMANO_SPRITE, TAMANO_SPRITE);
 
@@ -161,6 +165,7 @@ public class RpsScreen extends BaseMinigameScreen {
     @Override
     public void dispose() {
         super.dispose();
+        if (fondo != null) fondo.dispose();
         for (Texture t : texturas) {
             if (t != null) t.dispose();
         }

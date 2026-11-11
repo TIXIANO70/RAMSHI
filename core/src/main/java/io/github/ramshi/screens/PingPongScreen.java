@@ -4,6 +4,8 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
@@ -32,6 +34,8 @@ public class PingPongScreen extends BaseMinigameScreen {
     private static final Color COLOR_P2 = new Color(0f, 204 / 255f, 255 / 255f, 1f);
     private static final Color COLOR_BOMBA = new Color(255 / 255f, 140 / 255f, 0f, 1f);
 
+    private final Texture fondo = cargarTextura("pingpong/pingpong_bg.png");
+
     private int puntajeP1 = 0;
     private int puntajeP2 = 0;
     private float p1Y = (ALTO_VIRTUAL - PALETA_ALTO) / 2f;
@@ -44,6 +48,12 @@ public class PingPongScreen extends BaseMinigameScreen {
     public PingPongScreen(Game juego) {
         super(juego);
         reiniciarPelota(1);
+    }
+
+    private Texture cargarTextura(String ruta) {
+        Texture t = new Texture(ruta);
+        t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        return t;
     }
 
     private void reiniciarPelota(int quienSaca) {
@@ -104,15 +114,11 @@ public class PingPongScreen extends BaseMinigameScreen {
 
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
+        batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        batch.end();
+
         formas.begin(ShapeType.Filled);
-        formas.setColor(COLOR_FONDO);
-        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
-
-        formas.setColor(COLOR_LINEA);
-        for (float y = 0; y < ALTO_VIRTUAL; y += 24f) {
-            formas.rect(ANCHO_VIRTUAL / 2f - 2f, y, 4f, 14f);
-        }
-
         formas.setColor(COLOR_P1);
         formas.rect(P1_X, p1Y, PALETA_ANCHO, PALETA_ALTO);
         formas.setColor(COLOR_P2);
@@ -152,4 +158,10 @@ public class PingPongScreen extends BaseMinigameScreen {
     @Override protected String getTextoP1() { return "P1: " + puntajeP1 + " (Victorias: " + victoriasP1 + ")"; }
     @Override protected String getTextoP2() { return "P2: " + puntajeP2 + " (Victorias: " + victoriasP2 + ")"; }
     @Override protected String getResumen() { return "Goles de Bomba: P1 [" + puntajeP1 + "]  -  P2 [" + puntajeP2 + "]"; }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        fondo.dispose();
+    }
 }

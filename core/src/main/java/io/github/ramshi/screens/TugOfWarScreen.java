@@ -3,6 +3,8 @@ package io.github.ramshi.screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
@@ -32,8 +34,16 @@ public class TugOfWarScreen extends BaseMinigameScreen {
     private final int[] tirones = new int[2];
     private final int[] ultimaTecla = {-1, -1};
 
+    private final Texture fondo = cargarTextura("tugofwar/tugofwar_bg.png");
+
     public TugOfWarScreen(Game juego) {
         super(juego);
+    }
+
+    private Texture cargarTextura(String ruta) {
+        Texture t = new Texture(ruta);
+        t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        return t;
     }
 
     @Override
@@ -64,12 +74,13 @@ public class TugOfWarScreen extends BaseMinigameScreen {
 
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
+        batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        batch.end();
+
         float centroSoga = CENTRO_X + sogaMostrada;
 
         formas.begin(ShapeType.Filled);
-
-        formas.setColor(0.22f, 0.40f, 0.18f, 1f);
-        formas.rect(0f, 150f, ANCHO_VIRTUAL, 180f);
 
         formas.setColor(1f, 1f, 1f, 1f);
         formas.rect(CENTRO_X - 1f, 150f, 2f, 180f);
@@ -135,5 +146,6 @@ public class TugOfWarScreen extends BaseMinigameScreen {
     @Override
     public void dispose() {
         super.dispose();
+        fondo.dispose();
     }
 }
