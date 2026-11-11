@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import io.github.ramshi.Main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +115,7 @@ public class ShipsScreen extends BaseMinigameScreen {
             batch.setColor(Color.WHITE);
         }
 
-        fuente.getData().setScale(1.0f);
+        usarFuente(Main.fuenteChica);
         fuente.setColor(1f, 1f, 1f, 1f);
         fuente.draw(batch, "P1: A / D", 24f, 24f);
         fuente.draw(batch, "P2: FLECHAS", 590f, 24f);

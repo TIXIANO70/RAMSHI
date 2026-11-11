@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import io.github.ramshi.Main;
 
 public class RpsScreen extends BaseMinigameScreen {
 
@@ -110,18 +111,18 @@ public class RpsScreen extends BaseMinigameScreen {
         batch.draw(texturas[mostradaP2], P2_X, MANO_Y, TAMANO_SPRITE, TAMANO_SPRITE);
 
         fuente.setColor(Color.WHITE);
-        fuente.getData().setScale(2.2f);
+        usarFuente(Main.fuenteCartel);
         if (!revelado) {
             int paso = Math.min(PASOS_CUENTA, (int) (tiempoMano / TIEMPO_PASO) + 1);
             fuente.draw(batch, String.valueOf(paso), 390f, 260f);
         } else {
-            fuente.getData().setScale(1.4f);
+            usarFuente(Main.fuenteMediana);
             fuente.draw(batch, mensajeMano, 340f, 360f);
             fuente.draw(batch, NOMBRES[eleccionP1], P1_X + 20f, 150f);
             fuente.draw(batch, NOMBRES[eleccionP2], P2_X + 20f, 150f);
         }
 
-        fuente.getData().setScale(1.0f);
+        usarFuente(Main.fuenteChica);
         fuente.setColor(0.7f, 0.7f, 0.7f, 1f);
         fuente.draw(batch, "P1: [A] Piedra  [S] Papel  [D] Tijera", 40f, 60f);
         fuente.draw(batch, "P2: [IZQ] Piedra  [ABAJO] Papel  [DER] Tijera", 430f, 60f);

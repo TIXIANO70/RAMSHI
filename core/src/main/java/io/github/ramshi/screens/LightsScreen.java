@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Main;
 
 import java.util.Arrays;
 
@@ -130,13 +131,13 @@ public class LightsScreen extends BaseMinigameScreen {
         }
         batch.setColor(Color.WHITE);
 
-        fuente.getData().setScale(1.4f);
+        usarFuente(Main.fuenteMediana);
         fuente.setColor(Color.WHITE);
         if (!rondaTerminada) {
             GlyphLayout layout = new GlyphLayout(fuente, mensajeFase());
             fuente.draw(batch, layout, (ANCHO_VIRTUAL - layout.width) / 2f, 420f);
         }
-        fuente.getData().setScale(1.0f);
+        usarFuente(Main.fuenteChica);
         fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
         fuente.draw(batch, "P1: W A S D", 24f, 24f);
         fuente.draw(batch, "P2: FLECHAS", 590f, 24f);

@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import io.github.ramshi.Main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -204,7 +205,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         batch.draw(fondoTex, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
         for (Rectangle r : pilares) batch.draw(pilarTex, r.x, r.y, r.width, r.height);
 
-        fuente.getData().setScale(1.1f);
+        usarFuente(Main.fuenteChica);
         for (Corredor r : corredores) {
             batch.draw(r.sprite, r.pos.x - TAMANO_JUGADOR / 2f, r.pos.y - TAMANO_JUGADOR / 2f, TAMANO_JUGADOR, TAMANO_JUGADOR);
             String textoDash = (r.recargaDash <= 0f) ? "DASH LISTO" : String.format("DASH: %.1fs", r.recargaDash);
@@ -214,7 +215,7 @@ public class BombTagScreen extends BaseMinigameScreen {
 
         Vector2 bomba = portador.pos;
         batch.draw(bombaTex, bomba.x - TAMANO_BOMBA / 2f, bomba.y + 14f + MathUtils.sin(pulsoBomba) * 3f, TAMANO_BOMBA, TAMANO_BOMBA);
-        fuente.getData().setScale(1.2f);
+        usarFuente(Main.fuenteMediana);
         fuente.setColor(COLORES_HUD[portador.indice]);
         fuente.draw(batch, "¡P" + (portador.indice + 1) + " TIENE LA BOMBA! ¡PASALA!", ANCHO_VIRTUAL / 2f - 135f, 465f);
         batch.end();

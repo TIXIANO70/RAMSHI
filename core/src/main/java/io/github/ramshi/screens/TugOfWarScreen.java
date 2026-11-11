@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Main;
 
 public class TugOfWarScreen extends BaseMinigameScreen {
 
@@ -92,7 +93,7 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         formas.end();
 
         batch.begin();
-        fuente.getData().setScale(1.1f);
+        usarFuente(Main.fuenteChica);
         fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
         fuente.draw(batch, "P1: alterna [A] [D]", 60f, 100f);
         fuente.setColor(0.3f, 0.7f, 1f, 1f);

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import io.github.ramshi.Main;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,7 +189,7 @@ public class TankDuelScreen extends BaseMinigameScreen {
             spritesTanque[p].draw(batch);
         }
 
-        fuente.getData().setScale(1.1f);
+        usarFuente(Main.fuenteChica);
         fuente.setColor(1f, 0.35f, 0.45f, 1f);
         fuente.draw(batch, "P1 HP: " + vida[0] + "/" + VIDA_MAXIMA + "  [WASD / ESPACIO]", 50f, 30f);
 
