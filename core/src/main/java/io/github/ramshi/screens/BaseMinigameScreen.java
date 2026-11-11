@@ -27,6 +27,16 @@ public abstract class BaseMinigameScreen implements Screen {
     private static final float TAMANO_CORAZON = 40f;
     private static final float SEPARACION_CORAZON = 8f;
     private static final float CORAZONES_Y = 398f;
+    private static final float GANADOR_Y = 462f;
+    private static final float MOTIVO_Y = 418f;
+    private static final float TABLA_Y = 370f;
+    private static final float ALTO_FILA = 18f;
+    private static final float TOTAL_Y = 66f;
+    private static final float COL_NUMERO = 60f;
+    private static final float COL_NOMBRE = 100f;
+    private static final float COL_P1 = 470f;
+    private static final float COL_P2 = 550f;
+    private static final float COL_GANADOR = 630f;
     private static final float SEGUNDOS_RESULTADO = 2.5f;
     private static final float MARGEN_HUD = 16f;
     private static final float ALTURA_HUD = 462f;
@@ -245,7 +255,72 @@ public abstract class BaseMinigameScreen implements Screen {
         return "¡PREPARATE!";
     }
 
+    private void dibujarTablaPartida() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(0.03f, 0.03f, 0.06f, 0.93f);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.setColor(0.12f, 0.12f, 0.18f, 1f);
+        formas.rect(40f, MOTIVO_Y - 30f, ANCHO_VIRTUAL - 80f, 36f);
+        formas.end();
+
+        batch.begin();
+        usarFuente(Main.fuenteCartel);
+        fuente.setColor(COLOR_CONSIGNA);
+        dibujarCentrado(mensajeGanador, GANADOR_Y);
+        usarFuente(Main.fuenteMediana);
+        fuente.setColor(Color.WHITE);
+        dibujarCentrado(getResumen(), MOTIVO_Y);
+
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(Color.LIGHT_GRAY);
+        float y = TABLA_Y;
+        fuente.draw(batch, "#", COL_NUMERO, y);
+        fuente.draw(batch, "MINIJUEGO", COL_NOMBRE, y);
+        fuente.draw(batch, "P1", COL_P1, y);
+        fuente.draw(batch, "P2", COL_P2, y);
+        fuente.draw(batch, "GANÓ", COL_GANADOR, y);
+
+        int fila = 0;
+        for (GameSession.Resultado r : sesion.getResultados()) {
+            y -= ALTO_FILA;
+            dibujarFila(++fila, r.tipo.getNombre(), r.puntosP1, r.puntosP2, y, Color.WHITE);
+        }
+        y -= ALTO_FILA;
+        MinigameType actual = sesion.tipoActual();
+        dibujarFila(++fila, actual != null ? actual.getNombre() : "", puntosGanadosP1, puntosGanadosP2, y, COLOR_CONSIGNA);
+
+        usarFuente(Main.fuenteMediana);
+        fuente.setColor(COLOR_CONSIGNA);
+        fuente.draw(batch, "TOTAL", COL_NOMBRE, TOTAL_Y);
+        fuente.setColor(COLOR_P1);
+        fuente.draw(batch, String.valueOf(sesion.totalP1() + puntosGanadosP1), COL_P1, TOTAL_Y);
+        fuente.setColor(COLOR_P2);
+        fuente.draw(batch, String.valueOf(sesion.totalP2() + puntosGanadosP2), COL_P2, TOTAL_Y);
+
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(0.7f, 1f, 0.7f, 1f);
+        dibujarCentrado("Juego " + fila + " de " + sesion.getTotalJuegos() + "  -  siguiente en un instante...", 24f);
+        batch.end();
+    }
+
+    private void dibujarFila(int numero, String nombre, int p1, int p2, float y, Color color) {
+        fuente.setColor(color);
+        fuente.draw(batch, String.valueOf(numero), COL_NUMERO, y);
+        fuente.draw(batch, nombre, COL_NOMBRE, y);
+        fuente.setColor(COLOR_P1);
+        fuente.draw(batch, "+" + p1, COL_P1, y);
+        fuente.setColor(COLOR_P2);
+        fuente.draw(batch, "+" + p2, COL_P2, y);
+        fuente.setColor(color);
+        fuente.draw(batch, p1 > p2 ? "P1" : (p2 > p1 ? "P2" : "-"), COL_GANADOR, y);
+    }
+
     public void dibujarFinDeRonda() {
+        if (sesion.esModoJugar()) {
+            dibujarTablaPartida();
+            return;
+        }
         dibujarCaja(160f, 130f, 480f, 220f);
         batch.begin();
 

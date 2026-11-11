@@ -29,20 +29,28 @@ public class Controles {
     private static final float ANCHO_MAX_GRANDE = 340f;
     private static final float ALTO_MAX_CHICA = 32f;
     private static final float SEPARACION_TECLAS = 0.25f;
-    private static final float SEPARACION_CONTROLES = 1.5f;
-    private static final float SEPARACION_LEYENDA = 20f;
+    private static final float SEPARACION_CONTROLES = 2f;
+    private static final float SEPARACION_LEYENDA = 28f;
     private static final float SEPARACION_TEXTO = 6f;
+    private static final float TAMANO_ICONO_GRANDE = 64f;
+    private static final float TAMANO_ICONO_CHICO = 32f;
     private static final Color COLOR_TEXTO = new Color(1f, 1f, 1f, 1f);
 
     public static class Control {
         final String accion;
         final boolean cruz;
         final int[][][][] teclas;
+        String icono;
 
         Control(String accion, boolean cruz, int[][][] p1, int[][][] p2) {
             this.accion = accion;
             this.cruz = cruz;
             this.teclas = new int[][][][] {p1, p2};
+        }
+
+        public Control conIcono(String ruta) {
+            icono = ruta;
+            return this;
         }
     }
 
@@ -58,16 +66,20 @@ public class Controles {
         return new Control(accion, true, new int[][][] {W, A, S, D}, new int[][][] {ARRIBA, IZQUIERDA, ABAJO, DERECHA});
     }
 
-    private static final Map<Integer, Texture> texturas = new HashMap<>();
+    private static final Map<String, Texture> texturas = new HashMap<>();
 
-    private static Texture textura(int numero) {
-        Texture t = texturas.get(numero);
+    private static Texture textura(String ruta) {
+        Texture t = texturas.get(ruta);
         if (t == null) {
-            t = new Texture(String.format(RUTA_TILE, numero));
+            t = new Texture(ruta);
             t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-            texturas.put(numero, t);
+            texturas.put(ruta, t);
         }
         return t;
+    }
+
+    private static Texture textura(int numero) {
+        return textura(String.format(RUTA_TILE, numero));
     }
 
     public static void liberar() {
@@ -132,8 +144,13 @@ public class Controles {
         for (Control c : controles) {
             float anchoControl = ancho(c, jugador) * lado;
             dibujarControl(batch, c, jugador, x, base, escala);
-            GlyphLayout texto = new GlyphLayout(fuente, c.accion);
-            fuente.draw(batch, texto, x + (anchoControl - texto.width) / 2f, base - SEPARACION_TEXTO * 2);
+            if (c.icono != null) {
+                float iconoY = base - SEPARACION_TEXTO * 2 - TAMANO_ICONO_GRANDE;
+                batch.draw(textura(c.icono), x + (anchoControl - TAMANO_ICONO_GRANDE) / 2f, iconoY, TAMANO_ICONO_GRANDE, TAMANO_ICONO_GRANDE);
+            } else {
+                GlyphLayout texto = new GlyphLayout(fuente, c.accion);
+                fuente.draw(batch, texto, x + (anchoControl - texto.width) / 2f, base - SEPARACION_TEXTO * 2);
+            }
             x += anchoControl + SEPARACION_CONTROLES * lado;
         }
     }
@@ -147,15 +164,21 @@ public class Controles {
         for (int i = 0; i < controles.length; i++) {
             escalas[i] = Math.max(1, (int) (ALTO_MAX_CHICA / (alto(controles[i], jugador) * TAMANO_TILE)));
             textos[i] = new GlyphLayout(fuente, controles[i].accion);
-            total += ancho(controles[i], jugador) * TAMANO_TILE * escalas[i] + SEPARACION_TEXTO + textos[i].width;
+            float anchoEtiqueta = (controles[i].icono != null) ? TAMANO_ICONO_CHICO : textos[i].width;
+            total += ancho(controles[i], jugador) * TAMANO_TILE * escalas[i] + SEPARACION_TEXTO + anchoEtiqueta;
         }
         float x = centroX - total / 2f;
         for (int i = 0; i < controles.length; i++) {
             float anchoControl = ancho(controles[i], jugador) * TAMANO_TILE * escalas[i];
             dibujarControl(batch, controles[i], jugador, x, y, escalas[i]);
             x += anchoControl + SEPARACION_TEXTO;
-            fuente.draw(batch, textos[i], x, y + (ALTO_MAX_CHICA + textos[i].height) / 2f);
-            x += textos[i].width + SEPARACION_LEYENDA;
+            if (controles[i].icono != null) {
+                batch.draw(textura(controles[i].icono), x, y, TAMANO_ICONO_CHICO, TAMANO_ICONO_CHICO);
+                x += TAMANO_ICONO_CHICO + SEPARACION_LEYENDA;
+            } else {
+                fuente.draw(batch, textos[i], x, y + (ALTO_MAX_CHICA + textos[i].height) / 2f);
+                x += textos[i].width + SEPARACION_LEYENDA;
+            }
         }
     }
 }

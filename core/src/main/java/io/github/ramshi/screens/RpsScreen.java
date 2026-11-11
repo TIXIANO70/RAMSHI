@@ -72,9 +72,9 @@ public class RpsScreen extends BaseMinigameScreen {
     @Override
     protected Controles.Control[] getControles() {
         return new Controles.Control[] {
-            Controles.una("piedra", Controles.A, Controles.IZQUIERDA),
-            Controles.una("papel", Controles.S, Controles.ABAJO),
-            Controles.una("tijera", Controles.D, Controles.DERECHA)
+            Controles.una("piedra", Controles.A, Controles.IZQUIERDA).conIcono("rps/piedra.png"),
+            Controles.una("papel", Controles.S, Controles.ABAJO).conIcono("rps/papel.png"),
+            Controles.una("tijera", Controles.D, Controles.DERECHA).conIcono("rps/tijera.png")
         };
     }
 
