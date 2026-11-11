@@ -9,100 +9,100 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class TugOfWarScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;
-    private static final int P1_KEY = Input.Keys.A;
-    private static final int P2_KEY = Input.Keys.LEFT;
-    private static final float PULL_STEP = 5f;
-    private static final float MAX_OFFSET = 150f;
-    private static final float SMOOTHING = 12f;
-    private static final float CENTER_X = VIRTUAL_WIDTH / 2f;
-    private static final float ROPE_Y = 235f;
-    private static final float ROPE_H = 10f;
-    private static final float ROPE_HALF = 140f;
-    private static final float PLAYER_W = 64f;
-    private static final float PLAYER_H = 90f;
+    private static final float DURACION_RONDA = 10f;
+    private static final int TECLA_P1 = Input.Keys.A;
+    private static final int TECLA_P2 = Input.Keys.LEFT;
+    private static final float PASO_TIRON = 5f;
+    private static final float DESPLAZAMIENTO_MAX = 150f;
+    private static final float SUAVIZADO = 12f;
+    private static final float CENTRO_X = ANCHO_VIRTUAL / 2f;
+    private static final float SOGA_Y = 235f;
+    private static final float SOGA_ALTO = 10f;
+    private static final float MITAD_SOGA = 140f;
+    private static final float JUGADOR_ANCHO = 64f;
+    private static final float JUGADOR_ALTO = 90f;
 
-    private float ropeTarget = 0f;
-    private float ropeShown = 0f;
+    private float sogaObjetivo = 0f;
+    private float sogaMostrada = 0f;
 
-    private int p1Pulls = 0;
-    private int p2Pulls = 0;
+    private int tironesP1 = 0;
+    private int tironesP2 = 0;
 
-    public TugOfWarScreen(Game game) {
-        super(game);
+    public TugOfWarScreen(Game juego) {
+        super(juego);
     }
 
     @Override
-    protected float getRoundDuration() {
-        return ROUND_DURATION;
+    protected float getDuracionRonda() {
+        return DURACION_RONDA;
     }
 
     @Override
-    protected void updateGame(float delta) {
-        if (Gdx.input.isKeyJustPressed(P1_KEY)) {
-            ropeTarget -= PULL_STEP;
-            p1Pulls++;
+    protected void actualizarJuego(float delta) {
+        if (Gdx.input.isKeyJustPressed(TECLA_P1)) {
+            sogaObjetivo -= PASO_TIRON;
+            tironesP1++;
         }
-        if (Gdx.input.isKeyJustPressed(P2_KEY)) {
-            ropeTarget += PULL_STEP;
-            p2Pulls++;
+        if (Gdx.input.isKeyJustPressed(TECLA_P2)) {
+            sogaObjetivo += PASO_TIRON;
+            tironesP2++;
         }
-        ropeTarget = MathUtils.clamp(ropeTarget, -MAX_OFFSET, MAX_OFFSET);
+        sogaObjetivo = MathUtils.clamp(sogaObjetivo, -DESPLAZAMIENTO_MAX, DESPLAZAMIENTO_MAX);
 
-        ropeShown = MathUtils.lerp(ropeShown, ropeTarget, Math.min(1f, SMOOTHING * delta));
+        sogaMostrada = MathUtils.lerp(sogaMostrada, sogaObjetivo, Math.min(1f, SUAVIZADO * delta));
 
-        if (Math.abs(ropeTarget) >= MAX_OFFSET) {
-            ropeShown = ropeTarget;
-            finishRound();
+        if (Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX) {
+            sogaMostrada = sogaObjetivo;
+            terminarRonda();
         }
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
-        float ropeCenter = CENTER_X + ropeShown;
+    protected void dibujarJuego(SpriteBatch batch) {
+        float centroSoga = CENTRO_X + sogaMostrada;
 
-        shapeRenderer.begin(ShapeType.Filled);
+        formas.begin(ShapeType.Filled);
 
-        shapeRenderer.setColor(0.22f, 0.40f, 0.18f, 1f);
-        shapeRenderer.rect(0f, 150f, VIRTUAL_WIDTH, 180f);
+        formas.setColor(0.22f, 0.40f, 0.18f, 1f);
+        formas.rect(0f, 150f, ANCHO_VIRTUAL, 180f);
 
-        shapeRenderer.setColor(1f, 1f, 1f, 1f);
-        shapeRenderer.rect(CENTER_X - 1f, 150f, 2f, 180f);
+        formas.setColor(1f, 1f, 1f, 1f);
+        formas.rect(CENTRO_X - 1f, 150f, 2f, 180f);
 
-        shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
-        shapeRenderer.rect(CENTER_X - MAX_OFFSET - 2f, 150f, 4f, 180f);
-        shapeRenderer.setColor(0.3f, 0.7f, 1f, 1f);
-        shapeRenderer.rect(CENTER_X + MAX_OFFSET - 2f, 150f, 4f, 180f);
+        formas.setColor(0.3f, 0.9f, 0.3f, 1f);
+        formas.rect(CENTRO_X - DESPLAZAMIENTO_MAX - 2f, 150f, 4f, 180f);
+        formas.setColor(0.3f, 0.7f, 1f, 1f);
+        formas.rect(CENTRO_X + DESPLAZAMIENTO_MAX - 2f, 150f, 4f, 180f);
 
-        shapeRenderer.setColor(0.55f, 0.38f, 0.18f, 1f);
-        shapeRenderer.rect(ropeCenter - ROPE_HALF, ROPE_Y, ROPE_HALF * 2f, ROPE_H);
+        formas.setColor(0.55f, 0.38f, 0.18f, 1f);
+        formas.rect(centroSoga - MITAD_SOGA, SOGA_Y, MITAD_SOGA * 2f, SOGA_ALTO);
 
-        shapeRenderer.setColor(0.9f, 0.15f, 0.15f, 1f);
-        shapeRenderer.rect(ropeCenter - 4f, ROPE_Y - 10f, 8f, ROPE_H + 20f);
+        formas.setColor(0.9f, 0.15f, 0.15f, 1f);
+        formas.rect(centroSoga - 4f, SOGA_Y - 10f, 8f, SOGA_ALTO + 20f);
 
-        shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
-        shapeRenderer.rect(ropeCenter - ROPE_HALF - PLAYER_W, ROPE_Y - 40f, PLAYER_W, PLAYER_H);
-        shapeRenderer.setColor(0.3f, 0.7f, 1f, 1f);
-        shapeRenderer.rect(ropeCenter + ROPE_HALF, ROPE_Y - 40f, PLAYER_W, PLAYER_H);
+        formas.setColor(0.3f, 0.9f, 0.3f, 1f);
+        formas.rect(centroSoga - MITAD_SOGA - JUGADOR_ANCHO, SOGA_Y - 40f, JUGADOR_ANCHO, JUGADOR_ALTO);
+        formas.setColor(0.3f, 0.7f, 1f, 1f);
+        formas.rect(centroSoga + MITAD_SOGA, SOGA_Y - 40f, JUGADOR_ANCHO, JUGADOR_ALTO);
 
-        shapeRenderer.end();
+        formas.end();
 
         batch.begin();
-        font.getData().setScale(1.1f);
-        font.setColor(0.3f, 0.9f, 0.3f, 1f);
-        font.draw(batch, "P1: machaca [A]", 60f, 100f);
-        font.setColor(0.3f, 0.7f, 1f, 1f);
-        font.draw(batch, "P2: machaca [FLECHA IZQ]", 480f, 100f);
+        fuente.getData().setScale(1.1f);
+        fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
+        fuente.draw(batch, "P1: machaca [A]", 60f, 100f);
+        fuente.setColor(0.3f, 0.7f, 1f, 1f);
+        fuente.draw(batch, "P2: machaca [FLECHA IZQ]", 480f, 100f);
         batch.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
-        if (ropeTarget < -0.01f) {
-            p1GlobalWins++;
+    protected String determinarGanador() {
+        if (sogaObjetivo < -0.01f) {
+            victoriasP1++;
             return "¡JUGADOR 1 GANA LA RONDA!";
-        } else if (ropeTarget > 0.01f) {
-            p2GlobalWins++;
+        } else if (sogaObjetivo > 0.01f) {
+            victoriasP2++;
             return "¡JUGADOR 2 GANA LA RONDA!";
         } else {
             return "¡EMPATE EN LA RONDA!";
@@ -110,26 +110,26 @@ public class TugOfWarScreen extends BaseMinigameScreen {
     }
 
     @Override
-    protected void onRoundReset() {
-        ropeTarget = 0f;
-        ropeShown = 0f;
-        p1Pulls = 0;
-        p2Pulls = 0;
+    protected void reiniciarRonda() {
+        sogaObjetivo = 0f;
+        sogaMostrada = 0f;
+        tironesP1 = 0;
+        tironesP2 = 0;
     }
 
     @Override
-    protected String getP1StatusText() {
-        return "P1 [A] (Wins: " + p1GlobalWins + ")";
+    protected String getTextoP1() {
+        return "P1 [A] (Victorias: " + victoriasP1 + ")";
     }
 
     @Override
-    protected String getP2StatusText() {
-        return "P2 [IZQ] (Wins: " + p2GlobalWins + ")";
+    protected String getTextoP2() {
+        return "P2 [IZQ] (Victorias: " + victoriasP2 + ")";
     }
 
     @Override
-    protected String getScoreSummary() {
-        return "Tirones: P1 (" + p1Pulls + ") vs P2 (" + p2Pulls + ")";
+    protected String getResumen() {
+        return "Tirones: P1 (" + tironesP1 + ") vs P2 (" + tironesP2 + ")";
     }
 
     @Override

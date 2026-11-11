@@ -23,137 +23,136 @@ import java.util.List;
 
 public class MainMenuScreen implements Screen {
 
-    public static final float VIRTUAL_WIDTH = 800f;
-    public static final float VIRTUAL_HEIGHT = 480f;
+    public static final float ANCHO_VIRTUAL = 800f;
+    public static final float ALTO_VIRTUAL = 480f;
 
-    // ===== AJUSTES =====
-    private static final int MIN_ROUNDS = 3;       // mínimo de juegos en modo Jugar
-    private static final int MAX_ROUNDS = 15;      // máximo (la pantalla de resultados entra hasta 15)
-    private static final int DEFAULT_ROUNDS = 8;   // valor inicial del selector
-    private static final float BTN_W = 260f;
-    private static final float BTN_H = 55f;
+    private static final int MIN_RONDAS = 3;
+    private static final int MAX_RONDAS = 15;
+    private static final int RONDAS_INICIALES = 8;
+    private static final float BOTON_ANCHO = 260f;
+    private static final float BOTON_ALTO = 55f;
 
-    private enum Page { MAIN, ENDLESS }
+    private enum Pagina { PRINCIPAL, ENDLESS }
 
-    private static class Button {
+    private static class Boton {
         final Rectangle rect;
-        final String label;
-        final Runnable action;
-        Button(float x, float y, float w, float h, String label, Runnable action) {
+        final String etiqueta;
+        final Runnable accion;
+        Boton(float x, float y, float w, float h, String etiqueta, Runnable accion) {
             this.rect = new Rectangle(x, y, w, h);
-            this.label = label;
-            this.action = action;
+            this.etiqueta = etiqueta;
+            this.accion = accion;
         }
     }
 
-    private final Game game;
+    private final Game juego;
     private final SpriteBatch batch = new SpriteBatch();
-    private final BitmapFont font = new BitmapFont();
-    private final ShapeRenderer shapeRenderer = new ShapeRenderer();
-    private final OrthographicCamera camera = new OrthographicCamera();
-    private final Viewport viewport = new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
-    private final Vector3 mousePos = new Vector3();
-    private final List<Button> mainButtons = new ArrayList<>();
-    private final List<Button> endlessButtons = new ArrayList<>();
-    private Page page = Page.MAIN;
-    private int rounds = DEFAULT_ROUNDS;
+    private final BitmapFont fuente = new BitmapFont();
+    private final ShapeRenderer formas = new ShapeRenderer();
+    private final OrthographicCamera camara = new OrthographicCamera();
+    private final Viewport vista = new FitViewport(ANCHO_VIRTUAL, ALTO_VIRTUAL, camara);
+    private final Vector3 posMouse = new Vector3();
+    private final List<Boton> botonesPrincipales = new ArrayList<>();
+    private final List<Boton> botonesEndless = new ArrayList<>();
+    private Pagina pagina = Pagina.PRINCIPAL;
+    private int rondas = RONDAS_INICIALES;
 
-    public MainMenuScreen(Game game) {
-        this.game = game;
-        viewport.apply();
-        camera.position.set(VIRTUAL_WIDTH / 2f, VIRTUAL_HEIGHT / 2f, 0);
+    public MainMenuScreen(Game juego) {
+        this.juego = juego;
+        vista.apply();
+        camara.position.set(ANCHO_VIRTUAL / 2f, ALTO_VIRTUAL / 2f, 0);
 
-        float x = (VIRTUAL_WIDTH - BTN_W) / 2f;
-        mainButtons.add(new Button(x, 280f, BTN_W, BTN_H, "JUGAR",
-            () -> open(GameSession.startCampaign(rounds).firstScreen(game))));
-        mainButtons.add(new Button(270f, 232f, 55f, 40f, "-",
-            () -> rounds = Math.max(MIN_ROUNDS, rounds - 1)));
-        mainButtons.add(new Button(475f, 232f, 55f, 40f, "+",
-            () -> rounds = Math.min(MAX_ROUNDS, rounds + 1)));
-        mainButtons.add(new Button(x, 150f, BTN_W, BTN_H, "ENDLESS", () -> page = Page.ENDLESS));
-        mainButtons.add(new Button(x, 80f, BTN_W, BTN_H, "SALIR", () -> Gdx.app.exit()));
+        float x = (ANCHO_VIRTUAL - BOTON_ANCHO) / 2f;
+        botonesPrincipales.add(new Boton(x, 280f, BOTON_ANCHO, BOTON_ALTO, "JUGAR",
+            () -> abrir(GameSession.iniciarJugar(rondas).primeraPantalla(juego))));
+        botonesPrincipales.add(new Boton(270f, 232f, 55f, 40f, "-",
+            () -> rondas = Math.max(MIN_RONDAS, rondas - 1)));
+        botonesPrincipales.add(new Boton(475f, 232f, 55f, 40f, "+",
+            () -> rondas = Math.min(MAX_RONDAS, rondas + 1)));
+        botonesPrincipales.add(new Boton(x, 150f, BOTON_ANCHO, BOTON_ALTO, "ENDLESS", () -> pagina = Pagina.ENDLESS));
+        botonesPrincipales.add(new Boton(x, 80f, BOTON_ANCHO, BOTON_ALTO, "SALIR", () -> Gdx.app.exit()));
 
-        MinigameType[] types = MinigameType.values();
-        for (int i = 0; i < types.length; i++) {
-            final MinigameType type = types[i];
+        MinigameType[] tipos = MinigameType.values();
+        for (int i = 0; i < tipos.length; i++) {
+            final MinigameType tipo = tipos[i];
             float bx = (i % 2 == 0) ? 80f : 420f;
             float by = 320f - (i / 2) * 45f;
-            endlessButtons.add(new Button(bx, by, 300f, 38f, type.getDisplayName(),
-                () -> open(GameSession.startEndless(type).firstScreen(game))));
+            botonesEndless.add(new Boton(bx, by, 300f, 38f, tipo.getNombre(),
+                () -> abrir(GameSession.iniciarEndless(tipo).primeraPantalla(juego))));
         }
-        endlessButtons.add(new Button(270f, 20f, BTN_W, 40f, "VOLVER", () -> page = Page.MAIN));
+        botonesEndless.add(new Boton(270f, 20f, BOTON_ANCHO, 40f, "VOLVER", () -> pagina = Pagina.PRINCIPAL));
     }
 
-    private void open(Screen next) {
-        game.setScreen(next);
+    private void abrir(Screen siguiente) {
+        juego.setScreen(siguiente);
         dispose();
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.06f, 0.06f, 0.08f, 1f);
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
-        shapeRenderer.setProjectionMatrix(camera.combined);
+        camara.update();
+        batch.setProjectionMatrix(camara.combined);
+        formas.setProjectionMatrix(camara.combined);
 
-        if (page == Page.ENDLESS && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) page = Page.MAIN;
+        if (pagina == Pagina.ENDLESS && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) pagina = Pagina.PRINCIPAL;
 
-        List<Button> buttons = (page == Page.MAIN) ? mainButtons : endlessButtons;
-        mousePos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-        viewport.unproject(mousePos);
-        Button hovered = null;
-        for (Button b : buttons) if (b.rect.contains(mousePos.x, mousePos.y)) hovered = b;
+        List<Boton> botones = (pagina == Pagina.PRINCIPAL) ? botonesPrincipales : botonesEndless;
+        posMouse.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        vista.unproject(posMouse);
+        Boton resaltado = null;
+        for (Boton b : botones) if (b.rect.contains(posMouse.x, posMouse.y)) resaltado = b;
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        for (Button b : buttons) {
-            if (b == hovered) shapeRenderer.setColor(0.12f, 0.35f, 0.18f, 1f);
-            else shapeRenderer.setColor(0.12f, 0.16f, 0.14f, 1f);
-            shapeRenderer.rect(b.rect.x, b.rect.y, b.rect.width, b.rect.height);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        for (Boton b : botones) {
+            if (b == resaltado) formas.setColor(0.12f, 0.35f, 0.18f, 1f);
+            else formas.setColor(0.12f, 0.16f, 0.14f, 1f);
+            formas.rect(b.rect.x, b.rect.y, b.rect.width, b.rect.height);
         }
-        shapeRenderer.end();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        for (Button b : buttons) {
-            if (b == hovered) shapeRenderer.setColor(0.3f, 0.9f, 0.4f, 1f);
-            else shapeRenderer.setColor(0.3f, 0.5f, 0.35f, 1f);
-            shapeRenderer.rect(b.rect.x, b.rect.y, b.rect.width, b.rect.height);
+        formas.end();
+        formas.begin(ShapeRenderer.ShapeType.Line);
+        for (Boton b : botones) {
+            if (b == resaltado) formas.setColor(0.3f, 0.9f, 0.4f, 1f);
+            else formas.setColor(0.3f, 0.5f, 0.35f, 1f);
+            formas.rect(b.rect.x, b.rect.y, b.rect.width, b.rect.height);
         }
-        shapeRenderer.end();
+        formas.end();
 
         batch.begin();
-        font.setColor(1f, 0.85f, 0.2f, 1f);
-        font.getData().setScale(3.6f);
-        drawCentered("RAMSHI", 440f);
-        font.setColor(0.4f, 0.8f, 1f, 1f);
-        font.getData().setScale(1.3f);
-        drawCentered(page == Page.MAIN ? "MICROJUEGOS 1v1 LOCAL" : "ELEGI UN MINIJUEGO", 365f);
+        fuente.setColor(1f, 0.85f, 0.2f, 1f);
+        fuente.getData().setScale(3.6f);
+        dibujarCentrado("RAMSHI", 440f);
+        fuente.setColor(0.4f, 0.8f, 1f, 1f);
+        fuente.getData().setScale(1.3f);
+        dibujarCentrado(pagina == Pagina.PRINCIPAL ? "MICROJUEGOS 1v1 LOCAL" : "ELEGI UN MINIJUEGO", 365f);
 
-        for (Button b : buttons) {
-            font.getData().setScale(b.rect.height > 50f ? 1.6f : 1.2f);
-            font.setColor(b == hovered ? Color.WHITE : Color.LIGHT_GRAY);
-            GlyphLayout layout = new GlyphLayout(font, b.label);
-            font.draw(batch, layout, b.rect.x + (b.rect.width - layout.width) / 2f,
+        for (Boton b : botones) {
+            fuente.getData().setScale(b.rect.height > 50f ? 1.6f : 1.2f);
+            fuente.setColor(b == resaltado ? Color.WHITE : Color.LIGHT_GRAY);
+            GlyphLayout layout = new GlyphLayout(fuente, b.etiqueta);
+            fuente.draw(batch, layout, b.rect.x + (b.rect.width - layout.width) / 2f,
                 b.rect.y + (b.rect.height + layout.height) / 2f);
         }
-        if (page == Page.MAIN) {
-            font.setColor(Color.WHITE);
-            font.getData().setScale(1.3f);
-            drawCentered("RONDAS: " + rounds, 260f);
+        if (pagina == Pagina.PRINCIPAL) {
+            fuente.setColor(Color.WHITE);
+            fuente.getData().setScale(1.3f);
+            dibujarCentrado("RONDAS: " + rondas, 260f);
 
-            font.setColor(0.6f, 0.6f, 0.65f, 1f);
-            font.getData().setScale(1.0f);
-            drawCentered("P1: WASD  |  P2: FLECHAS  |  10 SEGUNDOS POR JUEGO", 35f);
+            fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
+            fuente.getData().setScale(1.0f);
+            dibujarCentrado("P1: WASD  |  P2: FLECHAS  |  10 SEGUNDOS POR JUEGO", 35f);
         }
         batch.end();
 
-        if (Gdx.input.justTouched() && hovered != null) hovered.action.run();
+        if (Gdx.input.justTouched() && resaltado != null) resaltado.accion.run();
     }
 
-    private void drawCentered(String text, float y) {
-        GlyphLayout layout = new GlyphLayout(font, text);
-        font.draw(batch, layout, (VIRTUAL_WIDTH - layout.width) / 2f, y);
+    private void dibujarCentrado(String texto, float y) {
+        GlyphLayout layout = new GlyphLayout(fuente, texto);
+        fuente.draw(batch, layout, (ANCHO_VIRTUAL - layout.width) / 2f, y);
     }
 
-    @Override public void resize(int width, int height) { viewport.update(width, height, true); }
+    @Override public void resize(int width, int height) { vista.update(width, height, true); }
     @Override public void show() {}
     @Override public void hide() {}
     @Override public void pause() {}
@@ -162,7 +161,7 @@ public class MainMenuScreen implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
-        font.dispose();
-        shapeRenderer.dispose();
+        fuente.dispose();
+        formas.dispose();
     }
 }

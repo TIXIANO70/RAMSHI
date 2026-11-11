@@ -14,239 +14,239 @@ import java.util.Arrays;
 
 public class LightsScreen extends BaseMinigameScreen {
 
-    private static final float TOTAL_DURATION = 10f;
-    private static final int[] SEQUENCE_LENGTHS = {4, 4, 5};
-    private static final float SHOW_TIME = 1f;
-    private static final float LIGHT_ON_RATIO = 0.7f;
-    private static final float COUNTDOWN_TIME = 0.4f;
-    private static final float RESULT_TIME = 0.4f;
-    private static final float FLASH_TIME = 0.15f;
-    private static final boolean RESET_ON_ERROR = true;
-    private static final float PAD_SIZE = 80f;
-    private static final float PAD_GAP = 8f;
-    private static final float ROW_BOTTOM_Y = 150f;
-    private static final int[][] KEYS = {
+    private static final float DURACION_TOTAL = 10f;
+    private static final int[] LARGOS_SECUENCIA = {4, 4, 5};
+    private static final float TIEMPO_MUESTRA = 1f;
+    private static final float PROPORCION_ENCENDIDA = 0.7f;
+    private static final float TIEMPO_CUENTA = 0.4f;
+    private static final float TIEMPO_RESULTADO = 0.4f;
+    private static final float TIEMPO_DESTELLO = 0.15f;
+    private static final boolean REINICIAR_AL_FALLAR = true;
+    private static final float TAMANO_TECLA = 80f;
+    private static final float SEPARACION_TECLA = 8f;
+    private static final float FILA_ABAJO_Y = 150f;
+    private static final int[][] TECLAS = {
         {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D},
         {Input.Keys.UP, Input.Keys.LEFT, Input.Keys.DOWN, Input.Keys.RIGHT}
     };
-    private static final Color[] PAD_COLORS = {
+    private static final Color[] COLORES_TECLA = {
         new Color(0.20f, 0.90f, 0.30f, 1f), new Color(0.95f, 0.25f, 0.25f, 1f),
         new Color(0.98f, 0.85f, 0.20f, 1f), new Color(0.25f, 0.50f, 1.00f, 1f)
     };
 
-    private enum Phase { COUNTDOWN, SHOWING, INPUT, RESULT }
+    private enum Fase { CUENTA, MOSTRANDO, INGRESO, RESULTADO }
 
-    private static final int TOTAL_ROUNDS = SEQUENCE_LENGTHS.length;
-    private static final float HALF_WIDTH = VIRTUAL_WIDTH / 2f;
-    private static final float ROW_TOP_Y = ROW_BOTTOM_Y + PAD_SIZE + PAD_GAP;
-    private static final String[][] KEY_NAMES = {
+    private static final int TOTAL_RONDAS = LARGOS_SECUENCIA.length;
+    private static final float MITAD_ANCHO = ANCHO_VIRTUAL / 2f;
+    private static final float FILA_ARRIBA_Y = FILA_ABAJO_Y + TAMANO_TECLA + SEPARACION_TECLA;
+    private static final String[][] NOMBRES_TECLA = {
         {"w", "a", "s", "d"},
         {"up", "left", "down", "right"}
     };
 
-    private final Texture[][] keyOff = new Texture[2][4];
-    private final Texture[][] keyOn = new Texture[2][4];
+    private final Texture[][] teclaApagada = new Texture[2][4];
+    private final Texture[][] teclaEncendida = new Texture[2][4];
 
-    private final int[] sequence = new int[Arrays.stream(SEQUENCE_LENGTHS).max().getAsInt()];
-    private final int[] progress = new int[2];
-    private final int[] flashPad = new int[2];
-    private final float[] flashTimer = new float[2];
-    private final int[] roundWins = new int[2];
-    private int currentRound;
-    private int subWinner;
-    private Phase phase;
-    private float stateTime;
+    private final int[] secuencia = new int[Arrays.stream(LARGOS_SECUENCIA).max().getAsInt()];
+    private final int[] progreso = new int[2];
+    private final int[] teclaDestello = new int[2];
+    private final float[] tiempoDestello = new float[2];
+    private final int[] rondasGanadas = new int[2];
+    private int rondaActual;
+    private int ganadorSubronda;
+    private Fase fase;
+    private float tiempoFase;
 
-    public LightsScreen(Game game) {
-        super(game);
+    public LightsScreen(Game juego) {
+        super(juego);
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
-                keyOff[p][i] = loadTexture("lights/key_" + KEY_NAMES[p][i] + "_off.png");
-                keyOn[p][i] = loadTexture("lights/key_" + KEY_NAMES[p][i] + "_on.png");
+                teclaApagada[p][i] = cargarTextura("lights/key_" + NOMBRES_TECLA[p][i] + "_off.png");
+                teclaEncendida[p][i] = cargarTextura("lights/key_" + NOMBRES_TECLA[p][i] + "_on.png");
             }
         }
-        onRoundReset();
+        reiniciarRonda();
     }
 
-    private Texture loadTexture(String path) {
-        Texture t = new Texture(path);
+    private Texture cargarTextura(String ruta) {
+        Texture t = new Texture(ruta);
         t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         return t;
     }
 
-    @Override protected float getRoundDuration() { return TOTAL_DURATION; }
+    @Override protected float getDuracionRonda() { return DURACION_TOTAL; }
 
     @Override
-    protected void updateGame(float delta) {
-        stateTime += delta;
-        for (int p = 0; p < 2; p++) flashTimer[p] -= delta;
+    protected void actualizarJuego(float delta) {
+        tiempoFase += delta;
+        for (int p = 0; p < 2; p++) tiempoDestello[p] -= delta;
 
-        if (phase == Phase.COUNTDOWN && stateTime >= COUNTDOWN_TIME) {
-            changePhase(Phase.SHOWING);
-        } else if (phase == Phase.SHOWING && stateTime >= SHOW_TIME) {
-            changePhase(Phase.INPUT);
-        } else if (phase == Phase.INPUT) {
-            boolean p1Done = handleInput(0);
-            boolean p2Done = handleInput(1);
-            if (p1Done || p2Done) {
-                subWinner = (p1Done && p2Done) ? 0 : (p1Done ? 1 : 2);
-                if (subWinner != 0) roundWins[subWinner - 1]++;
-                changePhase(Phase.RESULT);
+        if (fase == Fase.CUENTA && tiempoFase >= TIEMPO_CUENTA) {
+            cambiarFase(Fase.MOSTRANDO);
+        } else if (fase == Fase.MOSTRANDO && tiempoFase >= TIEMPO_MUESTRA) {
+            cambiarFase(Fase.INGRESO);
+        } else if (fase == Fase.INGRESO) {
+            boolean listoP1 = leerTeclas(0);
+            boolean listoP2 = leerTeclas(1);
+            if (listoP1 || listoP2) {
+                ganadorSubronda = (listoP1 && listoP2) ? 0 : (listoP1 ? 1 : 2);
+                if (ganadorSubronda != 0) rondasGanadas[ganadorSubronda - 1]++;
+                cambiarFase(Fase.RESULTADO);
             }
-        } else if (phase == Phase.RESULT && stateTime >= RESULT_TIME) {
-            currentRound++;
-            if (currentRound >= TOTAL_ROUNDS) finishRound();
-            else startSubRound();
+        } else if (fase == Fase.RESULTADO && tiempoFase >= TIEMPO_RESULTADO) {
+            rondaActual++;
+            if (rondaActual >= TOTAL_RONDAS) terminarRonda();
+            else iniciarSubronda();
         }
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
-        int lit = getLitPad();
+    protected void dibujarJuego(SpriteBatch batch) {
+        int encendida = teclaActual();
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
-                Color c = PAD_COLORS[i];
-                shapeRenderer.setColor(c.r * 0.25f, c.g * 0.25f, c.b * 0.25f, 1f);
-                shapeRenderer.rect(padX(p, i), padY(i), PAD_SIZE, PAD_SIZE);
+                Color c = COLORES_TECLA[i];
+                formas.setColor(c.r * 0.25f, c.g * 0.25f, c.b * 0.25f, 1f);
+                formas.rect(teclaX(p, i), teclaY(i), TAMANO_TECLA, TAMANO_TECLA);
             }
-            drawProgressBoxes(p);
+            dibujarProgreso(p);
         }
-        shapeRenderer.end();
+        formas.end();
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(0.35f, 0.35f, 0.35f, 1f);
-        shapeRenderer.line(HALF_WIDTH, 16f, HALF_WIDTH, 432f);
-        shapeRenderer.end();
+        formas.begin(ShapeRenderer.ShapeType.Line);
+        formas.setColor(0.35f, 0.35f, 0.35f, 1f);
+        formas.line(MITAD_ANCHO, 16f, MITAD_ANCHO, 432f);
+        formas.end();
 
         batch.begin();
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
-                boolean on = (lit == i) || (flashTimer[p] > 0f && flashPad[p] == i);
-                batch.setColor(on ? PAD_COLORS[i] : Color.WHITE);
-                batch.draw(on ? keyOn[p][i] : keyOff[p][i], padX(p, i), padY(i), PAD_SIZE, PAD_SIZE);
+                boolean prendida = (encendida == i) || (tiempoDestello[p] > 0f && teclaDestello[p] == i);
+                batch.setColor(prendida ? COLORES_TECLA[i] : Color.WHITE);
+                batch.draw(prendida ? teclaEncendida[p][i] : teclaApagada[p][i], teclaX(p, i), teclaY(i), TAMANO_TECLA, TAMANO_TECLA);
             }
         }
         batch.setColor(Color.WHITE);
 
-        font.getData().setScale(1.4f);
-        font.setColor(Color.WHITE);
-        if (!roundOver) {
-            GlyphLayout layout = new GlyphLayout(font, getPhaseMessage());
-            font.draw(batch, layout, (VIRTUAL_WIDTH - layout.width) / 2f, 420f);
+        fuente.getData().setScale(1.4f);
+        fuente.setColor(Color.WHITE);
+        if (!rondaTerminada) {
+            GlyphLayout layout = new GlyphLayout(fuente, mensajeFase());
+            fuente.draw(batch, layout, (ANCHO_VIRTUAL - layout.width) / 2f, 420f);
         }
-        font.getData().setScale(1.0f);
-        font.setColor(0.6f, 0.6f, 0.65f, 1f);
-        font.draw(batch, "P1: W A S D", 24f, 24f);
-        font.draw(batch, "P2: FLECHAS", 590f, 24f);
+        fuente.getData().setScale(1.0f);
+        fuente.setColor(0.6f, 0.6f, 0.65f, 1f);
+        fuente.draw(batch, "P1: W A S D", 24f, 24f);
+        fuente.draw(batch, "P2: FLECHAS", 590f, 24f);
         batch.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
-        int p1 = roundWins[0], p2 = roundWins[1];
+    protected String determinarGanador() {
+        int p1 = rondasGanadas[0], p2 = rondasGanadas[1];
         if (p1 == p2) return "¡EMPATE! (" + p1 + "-" + p2 + ")";
-        int winner = (p1 > p2) ? 1 : 2, pts = Math.max(p1, p2);
-        if (winner == 1) p1GlobalWins += pts;
-        else p2GlobalWins += pts;
-        return "¡JUGADOR " + winner + " GANA! (" + pts + "-" + Math.min(p1, p2) + ")  +" + pts + " pts";
+        int ganador = (p1 > p2) ? 1 : 2, pts = Math.max(p1, p2);
+        if (ganador == 1) victoriasP1 += pts;
+        else victoriasP2 += pts;
+        return "¡JUGADOR " + ganador + " GANA! (" + pts + "-" + Math.min(p1, p2) + ")  +" + pts + " pts";
     }
 
     @Override
-    protected void onRoundReset() {
-        roundWins[0] = roundWins[1] = 0;
-        currentRound = 0;
-        startSubRound();
+    protected void reiniciarRonda() {
+        rondasGanadas[0] = rondasGanadas[1] = 0;
+        rondaActual = 0;
+        iniciarSubronda();
     }
 
-    @Override protected String getP1StatusText() { return "P1: " + roundWins[0] + " rondas (Wins: " + p1GlobalWins + ")"; }
-    @Override protected String getP2StatusText() { return "P2: " + roundWins[1] + " rondas (Wins: " + p2GlobalWins + ")"; }
-    @Override protected String getScoreSummary() { return "Rondas ganadas: P1 (" + roundWins[0] + ") vs P2 (" + roundWins[1] + ")"; }
+    @Override protected String getTextoP1() { return "P1: " + rondasGanadas[0] + " rondas (Victorias: " + victoriasP1 + ")"; }
+    @Override protected String getTextoP2() { return "P2: " + rondasGanadas[1] + " rondas (Victorias: " + victoriasP2 + ")"; }
+    @Override protected String getResumen() { return "Rondas ganadas: P1 (" + rondasGanadas[0] + ") vs P2 (" + rondasGanadas[1] + ")"; }
 
     @Override
     public void dispose() {
         super.dispose();
         for (int p = 0; p < 2; p++) {
             for (int i = 0; i < 4; i++) {
-                keyOff[p][i].dispose();
-                keyOn[p][i].dispose();
+                teclaApagada[p][i].dispose();
+                teclaEncendida[p][i].dispose();
             }
         }
     }
 
-    private void startSubRound() {
-        for (int i = 0; i < sequenceLength(); i++) sequence[i] = MathUtils.random(0, 3);
-        progress[0] = progress[1] = 0;
-        flashTimer[0] = flashTimer[1] = 0f;
-        subWinner = 0;
-        changePhase(Phase.COUNTDOWN);
+    private void iniciarSubronda() {
+        for (int i = 0; i < largoSecuencia(); i++) secuencia[i] = MathUtils.random(0, 3);
+        progreso[0] = progreso[1] = 0;
+        tiempoDestello[0] = tiempoDestello[1] = 0f;
+        ganadorSubronda = 0;
+        cambiarFase(Fase.CUENTA);
     }
 
-    private int sequenceLength() {
-        return SEQUENCE_LENGTHS[Math.min(currentRound, TOTAL_ROUNDS - 1)];
+    private int largoSecuencia() {
+        return LARGOS_SECUENCIA[Math.min(rondaActual, TOTAL_RONDAS - 1)];
     }
 
-    private void changePhase(Phase newPhase) {
-        phase = newPhase;
-        stateTime = 0f;
+    private void cambiarFase(Fase nuevaFase) {
+        fase = nuevaFase;
+        tiempoFase = 0f;
     }
 
-    private boolean handleInput(int player) {
+    private boolean leerTeclas(int jugador) {
         for (int i = 0; i < 4; i++) {
-            if (!Gdx.input.isKeyJustPressed(KEYS[player][i])) continue;
+            if (!Gdx.input.isKeyJustPressed(TECLAS[jugador][i])) continue;
 
-            flashPad[player] = i;
-            flashTimer[player] = FLASH_TIME;
+            teclaDestello[jugador] = i;
+            tiempoDestello[jugador] = TIEMPO_DESTELLO;
 
-            if (i == sequence[progress[player]]) {
-                progress[player]++;
-                if (progress[player] == sequenceLength()) return true;
-            } else if (RESET_ON_ERROR) {
-                progress[player] = 0;
+            if (i == secuencia[progreso[jugador]]) {
+                progreso[jugador]++;
+                if (progreso[jugador] == largoSecuencia()) return true;
+            } else if (REINICIAR_AL_FALLAR) {
+                progreso[jugador] = 0;
             }
         }
         return false;
     }
 
-    private int getLitPad() {
-        if (phase != Phase.SHOWING) return -1;
-        float slot = SHOW_TIME / sequenceLength();
-        int index = (int) (stateTime / slot);
-        boolean on = index < sequenceLength() && stateTime - index * slot < slot * LIGHT_ON_RATIO;
-        return on ? sequence[index] : -1;
+    private int teclaActual() {
+        if (fase != Fase.MOSTRANDO) return -1;
+        float espacio = TIEMPO_MUESTRA / largoSecuencia();
+        int indice = (int) (tiempoFase / espacio);
+        boolean prendida = indice < largoSecuencia() && tiempoFase - indice * espacio < espacio * PROPORCION_ENCENDIDA;
+        return prendida ? secuencia[indice] : -1;
     }
 
-    private String getPhaseMessage() {
-        String round = "RONDA " + (currentRound + 1) + "/" + TOTAL_ROUNDS + " - ";
-        switch (phase) {
-            case COUNTDOWN: return round + "PREPARATE...";
-            case SHOWING:   return round + "MIRA LA SECUENCIA";
-            case INPUT:     return round + "¡REPETILA!";
-            default:        return (subWinner == 0) ? "EMPATE EN ESTA RONDA" : "PUNTO PARA EL JUGADOR " + subWinner;
+    private String mensajeFase() {
+        String ronda = "RONDA " + (rondaActual + 1) + "/" + TOTAL_RONDAS + " - ";
+        switch (fase) {
+            case CUENTA: return ronda + "PREPARATE...";
+            case MOSTRANDO:   return ronda + "MIRA LA SECUENCIA";
+            case INGRESO:     return ronda + "¡REPETILA!";
+            default:        return (ganadorSubronda == 0) ? "EMPATE EN ESTA RONDA" : "PUNTO PARA EL JUGADOR " + ganadorSubronda;
         }
     }
 
-    private void drawProgressBoxes(int player) {
-        int length = sequenceLength();
-        float box = 24f, gap = 8f;
-        float total = length * box + (length - 1) * gap;
-        float startX = player * HALF_WIDTH + (HALF_WIDTH - total) / 2f;
-        for (int i = 0; i < length; i++) {
-            if (i < progress[player]) shapeRenderer.setColor(0.3f, 0.9f, 0.3f, 1f);
-            else shapeRenderer.setColor(0.2f, 0.2f, 0.2f, 1f);
-            shapeRenderer.rect(startX + i * (box + gap), 50f, box, box);
+    private void dibujarProgreso(int jugador) {
+        int largo = largoSecuencia();
+        float caja = 24f, separacion = 8f;
+        float total = largo * caja + (largo - 1) * separacion;
+        float inicioX = jugador * MITAD_ANCHO + (MITAD_ANCHO - total) / 2f;
+        for (int i = 0; i < largo; i++) {
+            if (i < progreso[jugador]) formas.setColor(0.3f, 0.9f, 0.3f, 1f);
+            else formas.setColor(0.2f, 0.2f, 0.2f, 1f);
+            formas.rect(inicioX + i * (caja + separacion), 50f, caja, caja);
         }
     }
 
-    private float padX(int player, int pad) {
-        float cx = player * HALF_WIDTH + HALF_WIDTH / 2f;
-        if (pad == 1) return cx - PAD_SIZE * 1.5f - PAD_GAP;
-        if (pad == 3) return cx + PAD_SIZE * 0.5f + PAD_GAP;
-        return cx - PAD_SIZE / 2f;
+    private float teclaX(int jugador, int tecla) {
+        float cx = jugador * MITAD_ANCHO + MITAD_ANCHO / 2f;
+        if (tecla == 1) return cx - TAMANO_TECLA * 1.5f - SEPARACION_TECLA;
+        if (tecla == 3) return cx + TAMANO_TECLA * 0.5f + SEPARACION_TECLA;
+        return cx - TAMANO_TECLA / 2f;
     }
 
-    private float padY(int pad) {
-        return (pad == 0) ? ROW_TOP_Y : ROW_BOTTOM_Y;
+    private float teclaY(int tecla) {
+        return (tecla == 0) ? FILA_ARRIBA_Y : FILA_ABAJO_Y;
     }
 }

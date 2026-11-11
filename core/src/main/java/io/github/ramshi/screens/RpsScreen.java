@@ -10,166 +10,166 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class RpsScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;
+    private static final float DURACION_RONDA = 10f;
     private static final int PIEDRA = 0;
     private static final int PAPEL  = 1;
     private static final int TIJERA = 2;
-    private static final int DEFAULT_CHOICE = PAPEL;
-    private static final int   COUNT_STEPS = 3;
-    private static final float STEP_TIME   = 1.0f;
-    private static final float REVEAL_TIME = 1.0f;
-    private static final int HAND_POINTS       = 1;
-    private static final int WIN_GLOBAL_POINTS = 1;
-    private static final int TIE_GLOBAL_POINTS = 1;
-    private static final int P1_KEY_PIEDRA = Input.Keys.A;
-    private static final int P1_KEY_PAPEL  = Input.Keys.S;
-    private static final int P1_KEY_TIJERA = Input.Keys.D;
-    private static final int P2_KEY_PIEDRA = Input.Keys.LEFT;
-    private static final int P2_KEY_PAPEL  = Input.Keys.DOWN;
-    private static final int P2_KEY_TIJERA = Input.Keys.RIGHT;
-    private static final float SPRITE_SIZE = 128f;
+    private static final int ELECCION_INICIAL = PAPEL;
+    private static final int   PASOS_CUENTA = 3;
+    private static final float TIEMPO_PASO   = 1.0f;
+    private static final float TIEMPO_REVELAR = 1.0f;
+    private static final int PUNTOS_MANO       = 1;
+    private static final int PUNTOS_VICTORIA = 1;
+    private static final int PUNTOS_EMPATE = 1;
+    private static final int TECLA_P1_PIEDRA = Input.Keys.A;
+    private static final int TECLA_P1_PAPEL  = Input.Keys.S;
+    private static final int TECLA_P1_TIJERA = Input.Keys.D;
+    private static final int TECLA_P2_PIEDRA = Input.Keys.LEFT;
+    private static final int TECLA_P2_PAPEL  = Input.Keys.DOWN;
+    private static final int TECLA_P2_TIJERA = Input.Keys.RIGHT;
+    private static final float TAMANO_SPRITE = 128f;
     private static final float P1_X = 140f;
     private static final float P2_X = 532f;
-    private static final float HAND_Y = 180f;
-    private static final String[] NAMES = {"PIEDRA", "PAPEL", "TIJERA"};
-    private final Texture[] textures = new Texture[3];
+    private static final float MANO_Y = 180f;
+    private static final String[] NOMBRES = {"PIEDRA", "PAPEL", "TIJERA"};
+    private final Texture[] texturas = new Texture[3];
 
-    private int p1Score = 0;
-    private int p2Score = 0;
-    private int p1Choice = DEFAULT_CHOICE;
-    private int p2Choice = DEFAULT_CHOICE;
-    private float handTimer = 0f;
-    private boolean revealed = false;
-    private String handMessage = "";
+    private int puntajeP1 = 0;
+    private int puntajeP2 = 0;
+    private int eleccionP1 = ELECCION_INICIAL;
+    private int eleccionP2 = ELECCION_INICIAL;
+    private float tiempoMano = 0f;
+    private boolean revelado = false;
+    private String mensajeMano = "";
 
-    public RpsScreen(Game game) {
-        super(game);
-        textures[PIEDRA] = new Texture("rps/piedra.png");
-        textures[PAPEL]  = new Texture("rps/papel.png");
-        textures[TIJERA] = new Texture("rps/tijera.png");
-        for (Texture t : textures) {
+    public RpsScreen(Game juego) {
+        super(juego);
+        texturas[PIEDRA] = new Texture("rps/piedra.png");
+        texturas[PAPEL]  = new Texture("rps/papel.png");
+        texturas[TIJERA] = new Texture("rps/tijera.png");
+        for (Texture t : texturas) {
             t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
         }
-        resetHand();
+        reiniciarMano();
     }
 
-    private boolean wins(int a, int b) {
+    private boolean gana(int a, int b) {
         return (a == PIEDRA && b == TIJERA)
             || (a == PAPEL  && b == PIEDRA)
             || (a == TIJERA && b == PAPEL);
     }
 
-    private void resetHand() {
-        p1Choice = DEFAULT_CHOICE;
-        p2Choice = DEFAULT_CHOICE;
-        handTimer = 0f;
-        revealed = false;
-        handMessage = "";
+    private void reiniciarMano() {
+        eleccionP1 = ELECCION_INICIAL;
+        eleccionP2 = ELECCION_INICIAL;
+        tiempoMano = 0f;
+        revelado = false;
+        mensajeMano = "";
     }
 
     @Override
-    protected float getRoundDuration() {
-        return ROUND_DURATION;
+    protected float getDuracionRonda() {
+        return DURACION_RONDA;
     }
 
     @Override
-    protected void updateGame(float delta) {
-        handTimer += delta;
-        float countDuration = COUNT_STEPS * STEP_TIME;
+    protected void actualizarJuego(float delta) {
+        tiempoMano += delta;
+        float duracionCuenta = PASOS_CUENTA * TIEMPO_PASO;
 
-        if (handTimer < countDuration) {
-            if (Gdx.input.isKeyJustPressed(P1_KEY_PIEDRA)) p1Choice = PIEDRA;
-            if (Gdx.input.isKeyJustPressed(P1_KEY_PAPEL))  p1Choice = PAPEL;
-            if (Gdx.input.isKeyJustPressed(P1_KEY_TIJERA)) p1Choice = TIJERA;
+        if (tiempoMano < duracionCuenta) {
+            if (Gdx.input.isKeyJustPressed(TECLA_P1_PIEDRA)) eleccionP1 = PIEDRA;
+            if (Gdx.input.isKeyJustPressed(TECLA_P1_PAPEL))  eleccionP1 = PAPEL;
+            if (Gdx.input.isKeyJustPressed(TECLA_P1_TIJERA)) eleccionP1 = TIJERA;
 
-            if (Gdx.input.isKeyJustPressed(P2_KEY_PIEDRA)) p2Choice = PIEDRA;
-            if (Gdx.input.isKeyJustPressed(P2_KEY_PAPEL))  p2Choice = PAPEL;
-            if (Gdx.input.isKeyJustPressed(P2_KEY_TIJERA)) p2Choice = TIJERA;
-        } else if (!revealed) {
-            revealed = true;
-            if (wins(p1Choice, p2Choice)) {
-                p1Score += HAND_POINTS;
-                handMessage = "¡PUNTO P1!";
-            } else if (wins(p2Choice, p1Choice)) {
-                p2Score += HAND_POINTS;
-                handMessage = "¡PUNTO P2!";
+            if (Gdx.input.isKeyJustPressed(TECLA_P2_PIEDRA)) eleccionP2 = PIEDRA;
+            if (Gdx.input.isKeyJustPressed(TECLA_P2_PAPEL))  eleccionP2 = PAPEL;
+            if (Gdx.input.isKeyJustPressed(TECLA_P2_TIJERA)) eleccionP2 = TIJERA;
+        } else if (!revelado) {
+            revelado = true;
+            if (gana(eleccionP1, eleccionP2)) {
+                puntajeP1 += PUNTOS_MANO;
+                mensajeMano = "¡PUNTO P1!";
+            } else if (gana(eleccionP2, eleccionP1)) {
+                puntajeP2 += PUNTOS_MANO;
+                mensajeMano = "¡PUNTO P2!";
             } else {
-                handMessage = "¡EMPATE!";
+                mensajeMano = "¡EMPATE!";
             }
-        } else if (handTimer >= countDuration + REVEAL_TIME) {
-            resetHand();
+        } else if (tiempoMano >= duracionCuenta + TIEMPO_REVELAR) {
+            reiniciarMano();
         }
     }
 
     @Override
-    protected void drawGame(SpriteBatch batch) {
-        int shownP1 = revealed ? p1Choice : DEFAULT_CHOICE;
-        int shownP2 = revealed ? p2Choice : DEFAULT_CHOICE;
+    protected void dibujarJuego(SpriteBatch batch) {
+        int mostradaP1 = revelado ? eleccionP1 : ELECCION_INICIAL;
+        int mostradaP2 = revelado ? eleccionP2 : ELECCION_INICIAL;
 
         batch.begin();
-        batch.draw(textures[shownP1], P1_X, HAND_Y, SPRITE_SIZE, SPRITE_SIZE);
-        batch.draw(textures[shownP2], P2_X, HAND_Y, SPRITE_SIZE, SPRITE_SIZE);
+        batch.draw(texturas[mostradaP1], P1_X, MANO_Y, TAMANO_SPRITE, TAMANO_SPRITE);
+        batch.draw(texturas[mostradaP2], P2_X, MANO_Y, TAMANO_SPRITE, TAMANO_SPRITE);
 
-        font.setColor(Color.WHITE);
-        font.getData().setScale(2.2f);
-        if (!revealed) {
-            int step = Math.min(COUNT_STEPS, (int) (handTimer / STEP_TIME) + 1);
-            font.draw(batch, String.valueOf(step), 390f, 260f);
+        fuente.setColor(Color.WHITE);
+        fuente.getData().setScale(2.2f);
+        if (!revelado) {
+            int paso = Math.min(PASOS_CUENTA, (int) (tiempoMano / TIEMPO_PASO) + 1);
+            fuente.draw(batch, String.valueOf(paso), 390f, 260f);
         } else {
-            font.getData().setScale(1.4f);
-            font.draw(batch, handMessage, 340f, 360f);
-            font.draw(batch, NAMES[p1Choice], P1_X + 20f, 150f);
-            font.draw(batch, NAMES[p2Choice], P2_X + 20f, 150f);
+            fuente.getData().setScale(1.4f);
+            fuente.draw(batch, mensajeMano, 340f, 360f);
+            fuente.draw(batch, NOMBRES[eleccionP1], P1_X + 20f, 150f);
+            fuente.draw(batch, NOMBRES[eleccionP2], P2_X + 20f, 150f);
         }
 
-        font.getData().setScale(1.0f);
-        font.setColor(0.7f, 0.7f, 0.7f, 1f);
-        font.draw(batch, "P1: [A] Piedra  [S] Papel  [D] Tijera", 40f, 60f);
-        font.draw(batch, "P2: [IZQ] Piedra  [ABAJO] Papel  [DER] Tijera", 430f, 60f);
+        fuente.getData().setScale(1.0f);
+        fuente.setColor(0.7f, 0.7f, 0.7f, 1f);
+        fuente.draw(batch, "P1: [A] Piedra  [S] Papel  [D] Tijera", 40f, 60f);
+        fuente.draw(batch, "P2: [IZQ] Piedra  [ABAJO] Papel  [DER] Tijera", 430f, 60f);
         batch.end();
     }
 
     @Override
-    protected String determineRoundWinner() {
-        if (p1Score > p2Score) {
-            p1GlobalWins += WIN_GLOBAL_POINTS;
+    protected String determinarGanador() {
+        if (puntajeP1 > puntajeP2) {
+            victoriasP1 += PUNTOS_VICTORIA;
             return "GANA JUGADOR 1";
-        } else if (p2Score > p1Score) {
-            p2GlobalWins += WIN_GLOBAL_POINTS;
+        } else if (puntajeP2 > puntajeP1) {
+            victoriasP2 += PUNTOS_VICTORIA;
             return "GANA JUGADOR 2";
         } else {
-            p1GlobalWins += TIE_GLOBAL_POINTS;
-            p2GlobalWins += TIE_GLOBAL_POINTS;
+            victoriasP1 += PUNTOS_EMPATE;
+            victoriasP2 += PUNTOS_EMPATE;
             return "EMPATE (+1 A CADA UNO)";
         }
     }
 
     @Override
-    protected void onRoundReset() {
-        p1Score = 0;
-        p2Score = 0;
-        resetHand();
+    protected void reiniciarRonda() {
+        puntajeP1 = 0;
+        puntajeP2 = 0;
+        reiniciarMano();
     }
 
     @Override
-    protected String getP1StatusText() {
-        return "Puntos P1: " + p1Score;
+    protected String getTextoP1() {
+        return "Puntos P1: " + puntajeP1;
     }
 
     @Override
-    protected String getP2StatusText() {
-        return "Puntos P2: " + p2Score;
+    protected String getTextoP2() {
+        return "Puntos P2: " + puntajeP2;
     }
 
     @Override
-    protected String getScoreSummary() {
-        return "P1 (" + p1Score + " pts) vs P2 (" + p2Score + " pts)";
+    protected String getResumen() {
+        return "P1 (" + puntajeP1 + " pts) vs P2 (" + puntajeP2 + " pts)";
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        for (Texture t : textures) {
+        for (Texture t : texturas) {
             if (t != null) t.dispose();
         }
     }

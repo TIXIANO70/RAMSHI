@@ -9,78 +9,73 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/** Estado de una partida: modo, cola de minijuegos y puntos acumulados. */
 public class GameSession {
 
-    public enum Mode { CAMPAIGN, ENDLESS }
+    public enum Modo { JUGAR, ENDLESS }
 
-    public static class Result {
-        public final MinigameType type;
-        public final int p1Points, p2Points;
-        Result(MinigameType type, int p1Points, int p2Points) {
-            this.type = type;
-            this.p1Points = p1Points;
-            this.p2Points = p2Points;
+    public static class Resultado {
+        public final MinigameType tipo;
+        public final int puntosP1, puntosP2;
+        Resultado(MinigameType tipo, int puntosP1, int puntosP2) {
+            this.tipo = tipo;
+            this.puntosP1 = puntosP1;
+            this.puntosP2 = puntosP2;
         }
     }
 
-    // Sesión por defecto (si una pantalla se abre sin pasar por el menú)
-    private static GameSession current = new GameSession(Mode.ENDLESS, new ArrayList<MinigameType>());
+    private static GameSession actual = new GameSession(Modo.ENDLESS, new ArrayList<MinigameType>());
 
-    public static GameSession current() { return current; }
+    public static GameSession actual() { return actual; }
 
-    /** Modo Jugar: cola aleatoria de 'rounds' juegos, sin repetir seguido. */
-    public static GameSession startCampaign(int rounds) {
-        List<MinigameType> queue = new ArrayList<>();
-        while (queue.size() < rounds) {
-            List<MinigameType> block = new ArrayList<>(Arrays.asList(MinigameType.values()));
-            Collections.shuffle(block);
-            if (!queue.isEmpty() && block.get(0) == queue.get(queue.size() - 1)) {
-                Collections.swap(block, 0, block.size() - 1);
+    public static GameSession iniciarJugar(int rondas) {
+        List<MinigameType> cola = new ArrayList<>();
+        while (cola.size() < rondas) {
+            List<MinigameType> bloque = new ArrayList<>(Arrays.asList(MinigameType.values()));
+            Collections.shuffle(bloque);
+            if (!cola.isEmpty() && bloque.get(0) == cola.get(cola.size() - 1)) {
+                Collections.swap(bloque, 0, bloque.size() - 1);
             }
-            queue.addAll(block);
+            cola.addAll(bloque);
         }
-        current = new GameSession(Mode.CAMPAIGN, new ArrayList<>(queue.subList(0, rounds)));
-        return current;
+        actual = new GameSession(Modo.JUGAR, new ArrayList<>(cola.subList(0, rondas)));
+        return actual;
     }
 
-    /** Modo Endless: un solo minijuego en bucle. */
-    public static GameSession startEndless(MinigameType type) {
-        List<MinigameType> queue = new ArrayList<>();
-        queue.add(type);
-        current = new GameSession(Mode.ENDLESS, queue);
-        return current;
+    public static GameSession iniciarEndless(MinigameType tipo) {
+        List<MinigameType> cola = new ArrayList<>();
+        cola.add(tipo);
+        actual = new GameSession(Modo.ENDLESS, cola);
+        return actual;
     }
 
-    private final Mode mode;
-    private final List<MinigameType> queue;
-    private final List<Result> results = new ArrayList<>();
-    private int index = 0;
+    private final Modo modo;
+    private final List<MinigameType> cola;
+    private final List<Resultado> resultados = new ArrayList<>();
+    private int indice = 0;
 
-    private GameSession(Mode mode, List<MinigameType> queue) {
-        this.mode = mode;
-        this.queue = queue;
+    private GameSession(Modo modo, List<MinigameType> cola) {
+        this.modo = modo;
+        this.cola = cola;
     }
 
-    public boolean isCampaign() { return mode == Mode.CAMPAIGN; }
-    public MinigameType currentType() { return index < queue.size() ? queue.get(index) : null; }
-    public int getIndex() { return index; }
-    public int getTotalGames() { return queue.size(); }
-    public List<Result> getResults() { return results; }
+    public boolean esModoJugar() { return modo == Modo.JUGAR; }
+    public MinigameType tipoActual() { return indice < cola.size() ? cola.get(indice) : null; }
+    public int getIndice() { return indice; }
+    public int getTotalJuegos() { return cola.size(); }
+    public List<Resultado> getResultados() { return resultados; }
 
-    public int totalP1() { int t = 0; for (Result r : results) t += r.p1Points; return t; }
-    public int totalP2() { int t = 0; for (Result r : results) t += r.p2Points; return t; }
+    public int totalP1() { int t = 0; for (Resultado r : resultados) t += r.puntosP1; return t; }
+    public int totalP2() { int t = 0; for (Resultado r : resultados) t += r.puntosP2; return t; }
 
-    public void recordResult(int p1Points, int p2Points) {
-        results.add(new Result(currentType(), p1Points, p2Points));
+    public void registrarResultado(int puntosP1, int puntosP2) {
+        resultados.add(new Resultado(tipoActual(), puntosP1, puntosP2));
     }
 
-    public Screen firstScreen(Game game) { return queue.get(index).create(game); }
+    public Screen primeraPantalla(Game juego) { return cola.get(indice).crear(juego); }
 
-    /** Avanza al siguiente juego, o a la pantalla de resultados si era el último. */
-    public Screen nextScreen(Game game) {
-        index++;
-        if (index >= queue.size()) return new ResultsScreen(game, this);
-        return queue.get(index).create(game);
+    public Screen siguientePantalla(Game juego) {
+        indice++;
+        if (indice >= cola.size()) return new ResultsScreen(juego, this);
+        return cola.get(indice).crear(juego);
     }
 }
