@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import io.github.ramshi.Main;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
-import io.github.ramshi.Main;
 
 public class SumoScreen extends BaseMinigameScreen {
 
