@@ -165,6 +165,7 @@ public class StopItScreen extends BaseMinigameScreen {
         int pts = 1;
         if (diferencia >= DIFERENCIA_PARA_3) pts = 3;
         else if (diferencia >= DIFERENCIA_PARA_2) pts = 2;
+        explicacion = "Sumó " + Math.max(puntaje[0], puntaje[1]) + " contra " + Math.min(puntaje[0], puntaje[1]) + " (ventaja de " + diferencia + "): 6 o más = 3 pts, 3 a 5 = 2, 1 o 2 = 1.";
         return sumarPuntos(puntaje[0] > puntaje[1] ? 1 : 2, pts);
     }
 

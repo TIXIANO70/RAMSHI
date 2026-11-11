@@ -106,7 +106,11 @@ public class TugOfWarScreen extends BaseMinigameScreen {
     protected String determinarGanador() {
         if (Math.abs(sogaObjetivo) < 0.01f) return "¡EMPATE EN LA RONDA!";
         int ganador = (sogaObjetivo < 0f) ? 1 : 2;
-        int pts = (Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX) ? puntosPorTiempo() : PUNTOS_SIN_KO;
+        boolean llego = Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX;
+        int pts = llego ? puntosPorTiempo() : PUNTOS_SIN_KO;
+        explicacion = llego
+            ? "Llevó la soga hasta su línea a los " + segundosJugados() + " " + reglaTiempo()
+            : "Nadie llegó a la línea: la soga quedó de su lado al terminar el tiempo, 1 punto.";
         return sumarPuntos(ganador, pts);
     }
 

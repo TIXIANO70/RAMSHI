@@ -135,10 +135,8 @@ public class ShipsScreen extends BaseMinigameScreen {
     protected String determinarGanador() {
         if (ganador == 0) return "¡EMPATE EN LA RONDA!";
 
-        int puntos = puntosGanador();
-        if (ganador == 1) victoriasP1 += puntos;
-        else victoriasP2 += puntos;
-        return "¡JUGADOR " + ganador + " GANA!  +" + puntos + (puntos == 1 ? " pt" : " pts");
+        explicacion = "El rival se hundió a los " + String.format("%.1f s", tiempoFinal) + " " + reglaTiempo();
+        return sumarPuntos(ganador, puntosGanador());
     }
 
     @Override

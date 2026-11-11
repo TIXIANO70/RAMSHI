@@ -207,6 +207,9 @@ public class TankDuelScreen extends BaseMinigameScreen {
         int ganador = (vida[0] > vida[1]) ? 0 : 1;
         int pts = PUNTOS_VICTORIA;
         if (vida[1 - ganador] <= 0) pts = (vida[ganador] == VIDA_MAXIMA) ? PUNTOS_KO_PERFECTO : PUNTOS_KO;
+        if (pts == PUNTOS_KO_PERFECTO) explicacion = "Destruyó al rival sin perder ninguna vida: 3 puntos.";
+        else if (pts == PUNTOS_KO) explicacion = "Destruyó al rival, pero perdió vidas: 2 puntos.";
+        else explicacion = "Nadie fue destruido: terminó con más vidas (" + vida[ganador] + " contra " + vida[1 - ganador] + "): 1 punto.";
         return sumarPuntos(ganador + 1, pts);
     }
 

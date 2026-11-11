@@ -246,6 +246,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         int pts = 1;
         if (proporcion > PROPORCION_PARA_3) pts = 3;
         else if (proporcion > PROPORCION_PARA_2) pts = 2;
+        explicacion = "P" + (portador.indice + 1) + " tuvo la bomba el " + Math.round(proporcion * 100) + "% del tiempo (más de 70% = 3 pts, más de 50% = 2, si no 1).";
         return sumarPuntos(2 - portador.indice, pts);
     }
 

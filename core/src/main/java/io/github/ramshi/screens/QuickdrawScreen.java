@@ -136,7 +136,9 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     @Override
     protected String determinarGanador() {
         if (vidaP1 == vidaP2) return "¡EMPATE!";
-        return (vidaP1 > vidaP2) ? sumarPuntos(1, Math.max(1, vidaP1)) : sumarPuntos(2, Math.max(1, vidaP2));
+        int vidaGanador = Math.max(1, Math.max(vidaP1, vidaP2));
+        explicacion = "Terminó con " + vidaGanador + " de " + VIDA_MAXIMA + " vidas: 1 punto por cada vida que le quedó.";
+        return sumarPuntos(vidaP1 > vidaP2 ? 1 : 2, vidaGanador);
     }
 
     @Override

@@ -181,6 +181,8 @@ public class RaceScreen extends BaseMinigameScreen {
         int pts = 1;
         if (mayor >= menor * VENTAJA_PARA_3) pts = 3;
         else if (mayor >= menor * VENTAJA_PARA_2) pts = 2;
+        String ventaja = (menor > 0) ? "+" + Math.round((mayor / menor - 1f) * 100) + "%" : "el rival no avanzó";
+        explicacion = "Recorrió " + (int) mayor + " m contra " + (int) menor + " m (" + ventaja + "). +50% = 3 pts, +20% = 2, si no 1.";
         return sumarPuntos(distanciaP1 > distanciaP2 ? 1 : 2, pts);
     }
 

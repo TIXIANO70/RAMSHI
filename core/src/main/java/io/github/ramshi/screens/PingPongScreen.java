@@ -138,6 +138,9 @@ public class PingPongScreen extends BaseMinigameScreen {
         int golesGanador = Math.max(puntajeP1, puntajeP2), golesPerdedor = Math.min(puntajeP1, puntajeP2);
         int pts = 1;
         if (golesGanador >= GOLES_PARA_GANAR) pts = (golesPerdedor == 0) ? 3 : 2;
+        explicacion = (golesGanador >= GOLES_PARA_GANAR)
+            ? "Ganó " + golesGanador + " a " + golesPerdedor + " (2-0 = 3 pts, 2-1 = 2 pts)."
+            : "Iba ganando " + golesGanador + " a " + golesPerdedor + " cuando se acabó el tiempo: 1 punto.";
         return sumarPuntos(ganador, pts);
     }
 

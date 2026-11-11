@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -29,9 +30,11 @@ public abstract class BaseMinigameScreen implements Screen {
     private static final float CORAZONES_Y = 398f;
     private static final float GANADOR_Y = 462f;
     private static final float MOTIVO_Y = 418f;
-    private static final float TABLA_Y = 370f;
-    private static final float ALTO_FILA = 18f;
-    private static final float TOTAL_Y = 66f;
+    private static final float EXPLICACION_Y = 392f;
+    private static final float ANCHO_EXPLICACION = 700f;
+    private static final float TABLA_Y = 336f;
+    private static final float ALTO_FILA = 17f;
+    private static final float TOTAL_Y = 58f;
     private static final float COL_NUMERO = 60f;
     private static final float COL_NOMBRE = 100f;
     private static final float COL_P1 = 470f;
@@ -60,6 +63,7 @@ public abstract class BaseMinigameScreen implements Screen {
     protected int victoriasP1;
     protected int victoriasP2;
     protected String mensajeGanador;
+    protected String explicacion = "";
 
     private float tiempoIntro = SEGUNDOS_INTRO;
     private float tiempoResultado = 0f;
@@ -86,9 +90,11 @@ public abstract class BaseMinigameScreen implements Screen {
         int antesP1 = victoriasP1;
         int antesP2 = victoriasP2;
         rondaTerminada = true;
+        explicacion = "";
         mensajeGanador = determinarGanador();
         puntosGanadosP1 = victoriasP1 - antesP1;
         puntosGanadosP2 = victoriasP2 - antesP2;
+        if (puntosGanadosP1 == 0 && puntosGanadosP2 == 0 && explicacion.isEmpty()) explicacion = "Empate: nadie suma puntos.";
         tiempoResultado = 0f;
     }
 
@@ -261,7 +267,7 @@ public abstract class BaseMinigameScreen implements Screen {
         formas.setColor(0.03f, 0.03f, 0.06f, 0.93f);
         formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
         formas.setColor(0.12f, 0.12f, 0.18f, 1f);
-        formas.rect(40f, MOTIVO_Y - 30f, ANCHO_VIRTUAL - 80f, 36f);
+        formas.rect(40f, EXPLICACION_Y - 42f, ANCHO_VIRTUAL - 80f, MOTIVO_Y - EXPLICACION_Y + 50f);
         formas.end();
 
         batch.begin();
@@ -271,6 +277,9 @@ public abstract class BaseMinigameScreen implements Screen {
         usarFuente(Main.fuenteMediana);
         fuente.setColor(Color.WHITE);
         dibujarCentrado(getResumen(), MOTIVO_Y);
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(0.85f, 0.85f, 0.9f, 1f);
+        dibujarExplicacion(EXPLICACION_Y);
 
         usarFuente(Main.fuenteChica);
         fuente.setColor(Color.LIGHT_GRAY);
@@ -304,6 +313,11 @@ public abstract class BaseMinigameScreen implements Screen {
         batch.end();
     }
 
+    private void dibujarExplicacion(float y) {
+        GlyphLayout layout = new GlyphLayout(fuente, explicacion, fuente.getColor(), ANCHO_EXPLICACION, Align.center, true);
+        fuente.draw(batch, layout, (ANCHO_VIRTUAL - ANCHO_EXPLICACION) / 2f, y);
+    }
+
     private void dibujarFila(int numero, String nombre, int p1, int p2, float y, Color color) {
         fuente.setColor(color);
         fuente.draw(batch, String.valueOf(numero), COL_NUMERO, y);
@@ -321,30 +335,29 @@ public abstract class BaseMinigameScreen implements Screen {
             dibujarTablaPartida();
             return;
         }
-        dibujarCaja(160f, 130f, 480f, 220f);
+        dibujarCaja(100f, 110f, 600f, 260f);
         batch.begin();
 
         fuente.setColor(Color.WHITE);
         usarFuente(Main.fuenteGrande);
-        dibujarCentrado(mensajeGanador, 320f);
+        dibujarCentrado(mensajeGanador, 350f);
 
-        fuente.setColor(0.85f, 0.85f, 0.85f, 1f);
+        fuente.setColor(Color.WHITE);
+        usarFuente(Main.fuenteMediana);
+        dibujarCentrado(getResumen(), 310f);
+
+        fuente.setColor(0.85f, 0.85f, 0.9f, 1f);
         usarFuente(Main.fuenteChica);
-        dibujarCentrado(getResumen(), 275f);
+        GlyphLayout textoExplicacion = new GlyphLayout(fuente, explicacion, fuente.getColor(), 560f, Align.center, true);
+        fuente.draw(batch, textoExplicacion, 120f, 280f);
 
         fuente.setColor(1f, 0.85f, 0.2f, 1f);
         usarFuente(Main.fuenteMediana);
-        if (sesion.esModoJugar()) {
-            dibujarCentrado("PARTIDA:  P1 [" + (sesion.totalP1() + puntosGanadosP1) + "]  -  P2 ["
-                + (sesion.totalP2() + puntosGanadosP2) + "]", 235f);
-        } else {
-            dibujarCentrado("VICTORIAS TOTALES:  P1 [" + victoriasP1 + "]  -  P2 [" + victoriasP2 + "]", 235f);
-        }
+        dibujarCentrado("VICTORIAS TOTALES:  P1 [" + victoriasP1 + "]  -  P2 [" + victoriasP2 + "]", 200f);
 
         fuente.setColor(0.7f, 1f, 0.7f, 1f);
         usarFuente(Main.fuenteChica);
-        dibujarCentrado(sesion.esModoJugar() ? "Siguiente juego en un instante..."
-            : "[ ESPACIO ] Siguiente Ronda       [ ESC ] Menu Principal", 175f);
+        dibujarCentrado("[ ESPACIO ] Siguiente Ronda       [ ESC ] Menu Principal", 145f);
 
         usarFuente(Main.fuenteMediana);
         batch.end();
@@ -394,6 +407,14 @@ public abstract class BaseMinigameScreen implements Screen {
         if (jugador == 1) victoriasP1 += puntos;
         else victoriasP2 += puntos;
         return "¡JUGADOR " + jugador + " GANA (+" + puntos + (puntos == 1 ? " PUNTO" : " PUNTOS") + ")!";
+    }
+
+    protected String segundosJugados() {
+        return String.format("%.1f s", getDuracionRonda() - tiempoRestante);
+    }
+
+    protected String reglaTiempo() {
+        return "(antes de 3,3 s = 3 pts, antes de 6,6 s = 2, después = 1)";
     }
 
     protected int puntosPorTiempo() {

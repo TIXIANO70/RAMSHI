@@ -302,14 +302,18 @@ public class SumoScreen extends BaseMinigameScreen {
             return "¡EMPATE POR DOBLE CAÍDA!";
         }
 
-        if (p2Cayo) return sumarPuntos(1, puntosPorTiempo());
-        if (p1Cayo) return sumarPuntos(2, puntosPorTiempo());
+        if (p1Cayo || p2Cayo) {
+            explicacion = "Tiró al rival de la plataforma a los " + segundosJugados() + " " + reglaTiempo();
+            return sumarPuntos(p2Cayo ? 1 : 2, puntosPorTiempo());
+        }
 
         float d1 = Math.abs(p1X - PLAT_CENTRO_X);
         float d2 = Math.abs(p2X - PLAT_CENTRO_X);
 
+        explicacion = "Nadie cayó: el que terminó más cerca del centro suma 1 punto.";
         if (d1 < d2 - MARGEN_CENTRO) return sumarPuntos(1, PUNTOS_CENTRO);
         if (d2 < d1 - MARGEN_CENTRO) return sumarPuntos(2, PUNTOS_CENTRO);
+        explicacion = "Nadie cayó y quedaron igual de cerca del centro: nadie suma puntos.";
         return "¡EMPATE POR TIEMPO!";
     }
 

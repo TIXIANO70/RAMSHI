@@ -162,9 +162,8 @@ public class LightsScreen extends BaseMinigameScreen {
         int p1 = rondasGanadas[0], p2 = rondasGanadas[1];
         if (p1 == p2) return "¡EMPATE! (" + p1 + "-" + p2 + ")";
         int ganador = (p1 > p2) ? 1 : 2, pts = Math.max(p1, p2);
-        if (ganador == 1) victoriasP1 += pts;
-        else victoriasP2 += pts;
-        return "¡JUGADOR " + ganador + " GANA! (" + pts + "-" + Math.min(p1, p2) + ")  +" + pts + " pts";
+        explicacion = "Ganó " + pts + " de " + TOTAL_RONDAS + " secuencias (" + pts + "-" + Math.min(p1, p2) + "): 1 punto por cada secuencia ganada.";
+        return sumarPuntos(ganador, pts);
     }
 
     @Override

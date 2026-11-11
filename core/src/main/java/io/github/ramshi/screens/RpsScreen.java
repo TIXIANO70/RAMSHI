@@ -139,6 +139,7 @@ public class RpsScreen extends BaseMinigameScreen {
     protected String determinarGanador() {
         if (puntajeP1 == puntajeP2) return "¡EMPATE!";
         int pts = Math.min(PUNTOS_MAXIMOS, Math.max(puntajeP1, puntajeP2));
+        explicacion = "Ganó " + Math.max(puntajeP1, puntajeP2) + " manos contra " + Math.min(puntajeP1, puntajeP2) + ": 1 punto por mano ganada (máximo 3).";
         return sumarPuntos(puntajeP1 > puntajeP2 ? 1 : 2, pts);
     }
 
