@@ -16,7 +16,7 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     private static final float INTERVALO_BASE = 1f;
     private static final float AZAR_MIN = 0.1f;
     private static final float AZAR_MAX = 2f;
-    private static final float TIEMPO_REACCION = 0.5f;
+    private static final float TIEMPO_REACCION = 0.35f;
     private static final float P1_X = 0f;
     private static final float P2_X = 600f;
     private static final float ESCOPETA_Y = 180f;
@@ -134,14 +134,8 @@ public class QuickdrawScreen extends BaseMinigameScreen {
 
     @Override
     protected String determinarGanador() {
-        if (vidaP1 > vidaP2) {
-            victoriasP1++;
-            return "GANA JUGADOR 1";
-        } else if (vidaP1 < vidaP2) {
-            victoriasP2++;
-            return "GANA JUGADOR 2!";
-        }
-        return "EMPATE";
+        if (vidaP1 == vidaP2) return "¡EMPATE!";
+        return (vidaP1 > vidaP2) ? sumarPuntos(1, Math.max(1, vidaP1)) : sumarPuntos(2, Math.max(1, vidaP2));
     }
 
     @Override

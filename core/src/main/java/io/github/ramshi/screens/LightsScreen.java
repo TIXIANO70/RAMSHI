@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class LightsScreen extends BaseMinigameScreen {
 
     private static final float DURACION_TOTAL = 10f;
-    private static final int[] LARGOS_SECUENCIA = {4, 4, 5};
+    private static final int[] LARGOS_SECUENCIA = {4, 5, 6};
     private static final float TIEMPO_MUESTRA = 1f;
     private static final float PROPORCION_ENCENDIDA = 0.7f;
     private static final float TIEMPO_CUENTA = 0.4f;

@@ -14,7 +14,10 @@ import java.util.List;
 public class SnakeScreen extends BaseMinigameScreen {
 
     private static final float DURACION_RONDA = 10f;
-    private static final float INTERVALO_MOVIMIENTO = 0.098f;
+    private static final float INTERVALO_INICIAL = 0.098f;
+    private static final float INTERVALO_FINAL = 0.065f;
+    private static final int DIFERENCIA_PARA_3 = 4;
+    private static final int DIFERENCIA_PARA_2 = 2;
     private static final int GRILLA = 14;
     private static final float TAMANO_CASILLA = 16f;
     private static final float[] ZONA_X = {88f, 488f};
@@ -81,9 +84,10 @@ public class SnakeScreen extends BaseMinigameScreen {
                 if (Gdx.input.isKeyJustPressed(TECLAS[p][d]) && d != (dir[p] + 2) % 4) sigDir[p] = d;
             }
         }
+        float intervalo = MathUtils.lerp(INTERVALO_INICIAL, INTERVALO_FINAL, 1f - tiempoRestante / DURACION_RONDA);
         tiempoMovimiento += delta;
-        if (tiempoMovimiento >= INTERVALO_MOVIMIENTO) {
-            tiempoMovimiento -= INTERVALO_MOVIMIENTO;
+        if (tiempoMovimiento >= intervalo) {
+            tiempoMovimiento -= intervalo;
             avanzar(0);
             avanzar(1);
         }
@@ -188,11 +192,11 @@ public class SnakeScreen extends BaseMinigameScreen {
     @Override
     protected String determinarGanador() {
         if (puntaje[0] == puntaje[1]) return "¡EMPATE EN LA RONDA!";
-        int ganador = (puntaje[0] > puntaje[1]) ? 0 : 1;
-        int pts = (Math.abs(puntaje[0] - puntaje[1]) >= 2 || puntaje[ganador] >= 3) ? 2 : 1;
-        if (ganador == 0) victoriasP1 += pts;
-        else victoriasP2 += pts;
-        return "¡JUGADOR " + (ganador + 1) + " GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
+        int diferencia = Math.abs(puntaje[0] - puntaje[1]);
+        int pts = 1;
+        if (diferencia >= DIFERENCIA_PARA_3) pts = 3;
+        else if (diferencia >= DIFERENCIA_PARA_2) pts = 2;
+        return sumarPuntos(puntaje[0] > puntaje[1] ? 1 : 2, pts);
     }
 
     @Override

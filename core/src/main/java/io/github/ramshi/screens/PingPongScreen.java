@@ -18,7 +18,7 @@ public class PingPongScreen extends BaseMinigameScreen {
     private static final float VELOCIDAD_PALETA = 410f;
     private static final float VELOCIDAD_BOMBA_BASE_X = 480f;
     private static final float VELOCIDAD_BOMBA_BASE_Y = 420f;
-    private static final float ACELERACION_REBOTE = 1.05f;
+    private static final float ACELERACION_REBOTE = 1.08f;
     private static final float P1_X = 30f;
     private static final float P2_X = ANCHO_VIRTUAL - 45f;
     private static final int[][] TECLAS = {
@@ -131,16 +131,12 @@ public class PingPongScreen extends BaseMinigameScreen {
 
     @Override
     protected String determinarGanador() {
-        if (puntajeP1 > puntajeP2) {
-            int pts = (puntajeP1 >= 2 || (puntajeP1 - puntajeP2) >= 2) ? 2 : 1;
-            victoriasP1 += pts;
-            return "¡JUGADOR 1 GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
-        } else if (puntajeP2 > puntajeP1) {
-            int pts = (puntajeP2 >= 2 || (puntajeP2 - puntajeP1) >= 2) ? 2 : 1;
-            victoriasP2 += pts;
-            return "¡JUGADOR 2 GANA (" + pts + " " + (pts == 1 ? "PUNTO" : "PUNTOS") + ")!";
-        }
-        return "¡EMPATE EN LA RONDA!";
+        if (puntajeP1 == puntajeP2) return "¡EMPATE EN LA RONDA!";
+        int ganador = (puntajeP1 > puntajeP2) ? 1 : 2;
+        int golesGanador = Math.max(puntajeP1, puntajeP2), golesPerdedor = Math.min(puntajeP1, puntajeP2);
+        int pts = 1;
+        if (golesGanador >= GOLES_PARA_GANAR) pts = (golesPerdedor == 0) ? 3 : 2;
+        return sumarPuntos(ganador, pts);
     }
 
     @Override

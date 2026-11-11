@@ -17,7 +17,10 @@ public class RaceScreen extends BaseMinigameScreen {
     private static final float VELOCIDAD_INICIAL = 5f;
     private static final float ACELERACION = 5f;
     private static final float INTERVALO_VELOCIDAD = 1f;
-    private static final float INTERVALO_OBSTACULOS = 2f;
+    private static final float INTERVALO_OBSTACULOS_INICIAL = 2f;
+    private static final float INTERVALO_OBSTACULOS_FINAL = 0.8f;
+    private static final float VENTAJA_PARA_3 = 1.5f;
+    private static final float VENTAJA_PARA_2 = 1.2f;
     private static final float VELOCIDAD_GENERAL = 32f;
     private static final int CARRILES = 3;
     private static final float ANCHO_CARRIL = 128f;
@@ -97,10 +100,11 @@ public class RaceScreen extends BaseMinigameScreen {
             distanciaP2 += velocidadP2;
             tiempoVelocidad -= INTERVALO_VELOCIDAD;
         }
-        if (tiempoObstaculos >= INTERVALO_OBSTACULOS) {
+        float intervalo = MathUtils.lerp(INTERVALO_OBSTACULOS_INICIAL, INTERVALO_OBSTACULOS_FINAL, 1f - tiempoRestante / DURACION_RONDA);
+        if (tiempoObstaculos >= intervalo) {
             crearObstaculo(P1_X, obstaculosP1);
             crearObstaculo(P2_X, obstaculosP2);
-            tiempoObstaculos -= INTERVALO_OBSTACULOS;
+            tiempoObstaculos -= intervalo;
         }
         velocidadP1 = actualizarObstaculos(obstaculosP1, rectP1, velocidadP1, delta);
         velocidadP2 = actualizarObstaculos(obstaculosP2, rectP2, velocidadP2, delta);
@@ -147,14 +151,12 @@ public class RaceScreen extends BaseMinigameScreen {
 
     @Override
     protected String determinarGanador() {
-        if (distanciaP1 > distanciaP2) {
-            victoriasP1++;
-            return "¡JUGADOR 1 GANA LA RONDA!";
-        } else if (distanciaP1 < distanciaP2) {
-            victoriasP2++;
-            return "¡JUGADOR 2 GANA LA RONDA!";
-        }
-        return "¡EMPATE EN LA RONDA!";
+        if (distanciaP1 == distanciaP2) return "¡EMPATE EN LA RONDA!";
+        float mayor = Math.max(distanciaP1, distanciaP2), menor = Math.min(distanciaP1, distanciaP2);
+        int pts = 1;
+        if (mayor >= menor * VENTAJA_PARA_3) pts = 3;
+        else if (mayor >= menor * VENTAJA_PARA_2) pts = 2;
+        return sumarPuntos(distanciaP1 > distanciaP2 ? 1 : 2, pts);
     }
 
     @Override
@@ -165,8 +167,10 @@ public class RaceScreen extends BaseMinigameScreen {
         obstaculosP2.clear();
         carrilP1 = 1;
         carrilP2 = 1;
-        velocidadP1 = 0;
-        velocidadP2 = 0;
+        velocidadP1 = VELOCIDAD_INICIAL;
+        velocidadP2 = VELOCIDAD_INICIAL;
+        tiempoObstaculos = 0f;
+        tiempoVelocidad = 0f;
     }
 
     @Override protected String getTextoP1() { return "P1: " + (int) distanciaP1 + " m (Victorias: " + victoriasP1 + ")"; }

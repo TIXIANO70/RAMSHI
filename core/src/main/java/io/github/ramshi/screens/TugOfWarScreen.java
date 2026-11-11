@@ -10,8 +10,11 @@ import com.badlogic.gdx.math.MathUtils;
 public class TugOfWarScreen extends BaseMinigameScreen {
 
     private static final float DURACION_RONDA = 10f;
-    private static final int TECLA_P1 = Input.Keys.A;
-    private static final int TECLA_P2 = Input.Keys.LEFT;
+    private static final int PUNTOS_SIN_KO = 1;
+    private static final int[][] TECLAS = {
+        {Input.Keys.A, Input.Keys.D},
+        {Input.Keys.LEFT, Input.Keys.RIGHT}
+    };
     private static final float PASO_TIRON = 5f;
     private static final float DESPLAZAMIENTO_MAX = 150f;
     private static final float SUAVIZADO = 12f;
@@ -25,8 +28,8 @@ public class TugOfWarScreen extends BaseMinigameScreen {
     private float sogaObjetivo = 0f;
     private float sogaMostrada = 0f;
 
-    private int tironesP1 = 0;
-    private int tironesP2 = 0;
+    private final int[] tirones = new int[2];
+    private final int[] ultimaTecla = {-1, -1};
 
     public TugOfWarScreen(Game juego) {
         super(juego);
@@ -39,13 +42,14 @@ public class TugOfWarScreen extends BaseMinigameScreen {
 
     @Override
     protected void actualizarJuego(float delta) {
-        if (Gdx.input.isKeyJustPressed(TECLA_P1)) {
-            sogaObjetivo -= PASO_TIRON;
-            tironesP1++;
-        }
-        if (Gdx.input.isKeyJustPressed(TECLA_P2)) {
-            sogaObjetivo += PASO_TIRON;
-            tironesP2++;
+        for (int p = 0; p < 2; p++) {
+            for (int k = 0; k < 2; k++) {
+                if (Gdx.input.isKeyJustPressed(TECLAS[p][k]) && k != ultimaTecla[p]) {
+                    ultimaTecla[p] = k;
+                    sogaObjetivo += (p == 0) ? -PASO_TIRON : PASO_TIRON;
+                    tirones[p]++;
+                }
+            }
         }
         sogaObjetivo = MathUtils.clamp(sogaObjetivo, -DESPLAZAMIENTO_MAX, DESPLAZAMIENTO_MAX);
 
@@ -90,46 +94,41 @@ public class TugOfWarScreen extends BaseMinigameScreen {
         batch.begin();
         fuente.getData().setScale(1.1f);
         fuente.setColor(0.3f, 0.9f, 0.3f, 1f);
-        fuente.draw(batch, "P1: machaca [A]", 60f, 100f);
+        fuente.draw(batch, "P1: alterna [A] [D]", 60f, 100f);
         fuente.setColor(0.3f, 0.7f, 1f, 1f);
-        fuente.draw(batch, "P2: machaca [FLECHA IZQ]", 480f, 100f);
+        fuente.draw(batch, "P2: alterna [IZQ] [DER]", 480f, 100f);
         batch.end();
     }
 
     @Override
     protected String determinarGanador() {
-        if (sogaObjetivo < -0.01f) {
-            victoriasP1++;
-            return "¡JUGADOR 1 GANA LA RONDA!";
-        } else if (sogaObjetivo > 0.01f) {
-            victoriasP2++;
-            return "¡JUGADOR 2 GANA LA RONDA!";
-        } else {
-            return "¡EMPATE EN LA RONDA!";
-        }
+        if (Math.abs(sogaObjetivo) < 0.01f) return "¡EMPATE EN LA RONDA!";
+        int ganador = (sogaObjetivo < 0f) ? 1 : 2;
+        int pts = (Math.abs(sogaObjetivo) >= DESPLAZAMIENTO_MAX) ? puntosPorTiempo() : PUNTOS_SIN_KO;
+        return sumarPuntos(ganador, pts);
     }
 
     @Override
     protected void reiniciarRonda() {
         sogaObjetivo = 0f;
         sogaMostrada = 0f;
-        tironesP1 = 0;
-        tironesP2 = 0;
+        tirones[0] = tirones[1] = 0;
+        ultimaTecla[0] = ultimaTecla[1] = -1;
     }
 
     @Override
     protected String getTextoP1() {
-        return "P1 [A] (Victorias: " + victoriasP1 + ")";
+        return "P1 [A/D] (Victorias: " + victoriasP1 + ")";
     }
 
     @Override
     protected String getTextoP2() {
-        return "P2 [IZQ] (Victorias: " + victoriasP2 + ")";
+        return "P2 [IZQ/DER] (Victorias: " + victoriasP2 + ")";
     }
 
     @Override
     protected String getResumen() {
-        return "Tirones: P1 (" + tironesP1 + ") vs P2 (" + tironesP2 + ")";
+        return "Tirones: P1 (" + tirones[0] + ") vs P2 (" + tirones[1] + ")";
     }
 
     @Override
