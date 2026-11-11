@@ -6,15 +6,17 @@ import io.github.ramshi.screens.*;
 
 import java.util.function.Function;
 
-/** Catálogo de minijuegos. Para agregar uno: una línea acá. */
+/** Catálogo de minijuegos. */
 public enum MinigameType {
     SNAKE("Snake", SnakeScreen::new),
     LIGHTS("Secuencia de luces", LightsScreen::new),
     SHIPS("Lluvia de cañonazos", ShipsScreen::new),
     TUG_OF_WAR("Tira y afloja", TugOfWarScreen::new),
-    QUICKDRAW("Quickdraw", QuickdrawScreen::new),   // comentar si faltan los PNG
-    RACE("Carrera", RaceScreen::new),               // comentar si faltan los PNG
+    QUICKDRAW("Quickdraw", QuickdrawScreen::new),
+    RACE("Carrera", RaceScreen::new),
     RPS("Piedra, papel o tijera", RpsScreen::new),
+    TANKS("Duelo de Tanques", TankDuelScreen::new),
+    BOMB_TAG("La Papa Caliente", BombTagScreen::new),
     PINGPONG("Ping Pong Bomba", PingPongScreen::new),
     SUMO("Lucha de Sumo", SumoScreen::new),
     STOP_IT("Stop It!", StopItScreen::new);
