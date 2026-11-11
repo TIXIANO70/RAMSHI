@@ -15,28 +15,27 @@ import java.util.List;
 
 public class ShipsScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;        // Duración del minijuego (segundos)
-    private static final int MAX_POINTS = 3;                // Puntos máximos del ganador (el mínimo es 1)
-    private static final float PLAYER_SIZE = 48f;           // Tamaño del barco jugador (px)
-    private static final float PLAYER_SPEED = 520f;         // Velocidad de movimiento lateral (px/s)
-    private static final float BALL_MIN_SIZE = 16f;         // Tamaño mínimo de bala de cañón (px)
-    private static final float BALL_MAX_SIZE = 32f;         // Tamaño máximo de bala de cañón (px)
-    private static final float FALL_SPEED_START = 260f;     // Velocidad de caída al inicio (px/s)
-    private static final float FALL_SPEED_END = 900f;       // Velocidad de caída al final (px/s)
-    private static final float DIFFICULTY_CURVE = 1.3f;     // 1 = sube parejo; mayor = más tranquilo al inicio y más brusco al final
-    private static final float SPAWN_INTERVAL_START = 0.5f; // Segundos entre balas al inicio
-    private static final float SPAWN_INTERVAL_END = 0.25f;  // Segundos entre balas al final
-    private static final float FIRST_SPAWN_DELAY = 0.5f;    // Tiempo hasta la primera bala (s)
-    private static final float HITBOX_MARGIN = 4f;          // Margen de perdón en colisiones (px)
-    private static final float PLAYER_Y = 40f;              // Altura de los barcos sobre el agua
-    private static final float BALL_SPAWN_Y = 400f;         // Altura desde donde salen las balas
-    private static final float ARENA_MARGIN = 20f;          // Margen lateral de la zona de cada jugador
-    private static final Color HIT_COLOR = new Color(1f, 0.35f, 0.35f, 1f); // Tinte del barco golpeado
-    private static final int[][] KEYS = {                   // Controles {izquierda, derecha}
+    private static final float ROUND_DURATION = 10f;
+    private static final int MAX_POINTS = 3;
+    private static final float PLAYER_SIZE = 48f;
+    private static final float PLAYER_SPEED = 520f;
+    private static final float BALL_MIN_SIZE = 16f;
+    private static final float BALL_MAX_SIZE = 32f;
+    private static final float FALL_SPEED_START = 260f;
+    private static final float FALL_SPEED_END = 900f;
+    private static final float DIFFICULTY_CURVE = 1.3f;
+    private static final float SPAWN_INTERVAL_START = 0.5f;
+    private static final float SPAWN_INTERVAL_END = 0.25f;
+    private static final float FIRST_SPAWN_DELAY = 0.5f;
+    private static final float HITBOX_MARGIN = 4f;
+    private static final float PLAYER_Y = 40f;
+    private static final float BALL_SPAWN_Y = 400f;
+    private static final float ARENA_MARGIN = 20f;
+    private static final Color HIT_COLOR = new Color(1f, 0.35f, 0.35f, 1f);
+    private static final int[][] KEYS = {
         {Input.Keys.A, Input.Keys.D},
         {Input.Keys.LEFT, Input.Keys.RIGHT}
     };
-
     private static final float HALF_WIDTH = VIRTUAL_WIDTH / 2f;
     private static final float ARENA_WIDTH = HALF_WIDTH - 2 * ARENA_MARGIN;
 

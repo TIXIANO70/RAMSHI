@@ -17,14 +17,14 @@ import java.util.Map;
 
 public class SnakeScreen extends BaseMinigameScreen {
 
-    // ===== AJUSTES =====
-    private static final float ROUND_DURATION = 10f;   // duración del minijuego (s)
-    private static final float MOVE_INTERVAL = 0.098f; // segundos por paso de la serpiente (rápido y ágil)
-    private static final int ARENA_GRID_WIDTH = 14;    // casillas de ancho (cuadrada y compacta)
-    private static final int ARENA_GRID_HEIGHT = 14;   // casillas de alto (cuadrada y compacta)
-    private static final float ARENA_P1_X = 88f;       // posición simétrica de la arena de P1 (px)
-    private static final float ARENA_P2_X = 488f;      // posición simétrica de la arena de P2 (px)
-    private static final float ARENA_Y = 108f;         // margen vertical perfectamente centrado
+    private static final float ROUND_DURATION = 10f;
+    private static final float MOVE_INTERVAL = 0.098f;
+    private static final int ARENA_GRID_WIDTH = 14;
+    private static final int ARENA_GRID_HEIGHT = 14;
+    private static final float ARENA_P1_X = 88f;
+    private static final float ARENA_P2_X = 488f;
+    private static final float ARENA_Y = 108f;
+    private static final float TILE_SIZE = 16f;
 
     private final InputHandler inputHandler = new InputHandler();
     private final Texture tile1 = new Texture("snake/tiles/Tile1.png");
@@ -76,8 +76,8 @@ public class SnakeScreen extends BaseMinigameScreen {
         arenaP2.render(batch);
         batch.end();
 
-        float w = ARENA_GRID_WIDTH * Snake.TILE_SIZE;
-        float h = ARENA_GRID_HEIGHT * Snake.TILE_SIZE;
+        float w = ARENA_GRID_WIDTH * TILE_SIZE;
+        float h = ARENA_GRID_HEIGHT * TILE_SIZE;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(0.25f, 0.25f, 0.25f, 1f);
         shapeRenderer.rect(ARENA_P1_X - 1f, ARENA_Y - 1f, w + 2f, h + 2f);
@@ -137,11 +137,6 @@ public class SnakeScreen extends BaseMinigameScreen {
         arenaP2.dispose();
     }
 
-    // ====================================================================
-    // CLASES INTERNAS DEL SNAKE (dirección, segmentos, comida, serpiente,
-    // arena y lectura de teclado)
-    // ====================================================================
-
     private enum Direction {
         UP(0, 1),
         DOWN(0, -1),
@@ -169,7 +164,6 @@ public class SnakeScreen extends BaseMinigameScreen {
     }
 
     private static class SnakeSegment {
-
         public enum Type {
             HEAD,
             BODY,
@@ -222,7 +216,6 @@ public class SnakeScreen extends BaseMinigameScreen {
     }
 
     private static class Food implements Disposable {
-
         private int gridX;
         private int gridY;
         private final Texture texture;
@@ -274,22 +267,16 @@ public class SnakeScreen extends BaseMinigameScreen {
     }
 
     private static class Snake implements Disposable {
-
-        public static final float TILE_SIZE = 16f;
-
-        // Texturas de cabeza y cola según dirección
         private final Map<Direction, Texture> headTextures = new EnumMap<>(Direction.class);
         private final Map<Direction, Texture> tailTextures = new EnumMap<>(Direction.class);
 
-        // Texturas de cuerpo recto
         private Texture bodyVertical;
         private Texture bodyHorizontal;
 
-        // Texturas de esquinas / curvas (L-bends)
-        private Texture cornerDownLeft;  // BodyP#_2.png (conecta Abajo e Izquierda)
-        private Texture cornerUpLeft;    // BodyP#_3.png (conecta Arriba e Izquierda)
-        private Texture cornerDownRight; // BodyP#_4.png (conecta Abajo y Derecha)
-        private Texture cornerUpRight;   // BodyP#_5.png (conecta Arriba y Derecha)
+        private Texture cornerDownLeft;
+        private Texture cornerUpLeft;
+        private Texture cornerDownRight;
+        private Texture cornerUpRight;
 
         private final List<SnakeSegment> segments = new ArrayList<>();
         private final int playerNumber;
@@ -308,23 +295,19 @@ public class SnakeScreen extends BaseMinigameScreen {
         private void loadTextures(int player) {
             String p = "P" + player;
 
-            // Cabezas
             headTextures.put(Direction.UP, new Texture("snake/head/Cabeza" + p + "_Up.png"));
             headTextures.put(Direction.DOWN, new Texture("snake/head/Cabeza" + p + "_Down.png"));
             headTextures.put(Direction.LEFT, new Texture("snake/head/Cabeza" + p + "_Left.png"));
             headTextures.put(Direction.RIGHT, new Texture("snake/head/Cabeza" + p + "_Right.png"));
 
-            // Colas
             tailTextures.put(Direction.UP, new Texture("snake/tail/Cola" + p + "_Up.png"));
             tailTextures.put(Direction.DOWN, new Texture("snake/tail/Cola" + p + "_Down.png"));
             tailTextures.put(Direction.LEFT, new Texture("snake/tail/Cola" + p + "_Left.png"));
             tailTextures.put(Direction.RIGHT, new Texture("snake/tail/Cola" + p + "_Right.png"));
 
-            // Cuerpo recto
             bodyVertical = new Texture("snake/Body/Body" + p + ".png");
             bodyHorizontal = new Texture("snake/Body/Body" + p + "_1.png");
 
-            // Esquinas / Curvas
             cornerDownLeft = new Texture("snake/Body/Body" + p + "_2.png");
             cornerUpLeft = new Texture("snake/Body/Body" + p + "_3.png");
             cornerDownRight = new Texture("snake/Body/Body" + p + "_4.png");
@@ -426,10 +409,8 @@ public class SnakeScreen extends BaseMinigameScreen {
                 Texture textureToDraw = null;
 
                 if (i == count - 1) {
-                    // CABEZA: mira en la dirección de movimiento actual
                     textureToDraw = headTextures.get(segment.getDirection());
                 } else if (i == 0) {
-                    // COLA: conecta hacia el segmento siguiente en la cadena
                     if (count > 1) {
                         SnakeSegment next = segments.get(1);
                         int dx = next.getGridX() - segment.getGridX();
@@ -442,7 +423,6 @@ public class SnakeScreen extends BaseMinigameScreen {
                         textureToDraw = tailTextures.get(segment.getDirection());
                     }
                 } else {
-                    // CUERPO: evaluamos los vecinos previo y siguiente en la grilla
                     SnakeSegment prev = segments.get(i - 1);
                     SnakeSegment next = segments.get(i + 1);
 
@@ -457,25 +437,18 @@ public class SnakeScreen extends BaseMinigameScreen {
                     boolean hasDown  = (dy1 == -1 || dy2 == -1);
 
                     if (hasLeft && hasRight) {
-                        // Recto horizontal
                         textureToDraw = bodyHorizontal;
                     } else if (hasUp && hasDown) {
-                        // Recto vertical
                         textureToDraw = bodyVertical;
                     } else if (hasLeft && hasDown) {
-                        // Esquina Abajo-Izquierda (_2)
                         textureToDraw = cornerDownLeft;
                     } else if (hasLeft && hasUp) {
-                        // Esquina Arriba-Izquierda (_3)
                         textureToDraw = cornerUpLeft;
                     } else if (hasRight && hasDown) {
-                        // Esquina Abajo-Derecha (_4)
                         textureToDraw = cornerDownRight;
                     } else if (hasRight && hasUp) {
-                        // Esquina Arriba-Derecha (_5)
                         textureToDraw = cornerUpRight;
                     } else {
-                        // Salvaguarda
                         textureToDraw = (segment.getDirection() == Direction.LEFT || segment.getDirection() == Direction.RIGHT)
                             ? bodyHorizontal : bodyVertical;
                     }
@@ -523,7 +496,6 @@ public class SnakeScreen extends BaseMinigameScreen {
     }
 
     private static class SnakeArena implements Disposable {
-
         private final int playerNumber;
         private final float originPixelX;
         private final float originPixelY;
@@ -602,7 +574,7 @@ public class SnakeScreen extends BaseMinigameScreen {
             snake.reset(initialSpawnX, initialSpawnY, initialDirection);
             currentDirection = initialDirection;
             nextDirection = initialDirection;
-            score = 0; // Se reinicia el marcador de la ronda al morir
+            score = 0;
             food.respawn(gridWidth, gridHeight, snake);
         }
 
@@ -614,14 +586,12 @@ public class SnakeScreen extends BaseMinigameScreen {
             for (int x = 0; x < gridWidth; x++) {
                 for (int y = 0; y < gridHeight; y++) {
                     Texture currentTile = ((x + y) % 2 == 0) ? tile1 : tile2;
-                    batch.draw(currentTile, originPixelX + x * Snake.TILE_SIZE, originPixelY + y * Snake.TILE_SIZE, Snake.TILE_SIZE, Snake.TILE_SIZE);
+                    batch.draw(currentTile, originPixelX + x * TILE_SIZE, originPixelY + y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 }
             }
 
-            // 2. Dibujar comida
-            food.render(batch, Snake.TILE_SIZE, originPixelX, originPixelY);
+            food.render(batch, TILE_SIZE, originPixelX, originPixelY);
 
-            // 3. Dibujar serpiente
             snake.render(batch, originPixelX, originPixelY);
         }
 
@@ -665,7 +635,6 @@ public class SnakeScreen extends BaseMinigameScreen {
     }
 
     private static class InputHandler extends InputAdapter {
-
         private Direction p1BufferedDirection = null;
         private Direction p2BufferedDirection = null;
 

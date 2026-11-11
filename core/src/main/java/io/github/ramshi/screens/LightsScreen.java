@@ -14,22 +14,22 @@ import java.util.Arrays;
 
 public class LightsScreen extends BaseMinigameScreen {
 
-    private static final float TOTAL_DURATION = 10f;   // Duración TOTAL del minijuego (todas las rondas), en segundos
-    private static final int[] SEQUENCE_LENGTHS = {4, 4, 5}; // Luces por ronda (la cantidad de elementos = cantidad de rondas)
-    private static final float SHOW_TIME = 1f;         // Tiempo en que se muestra CADA secuencia (igual en todas las rondas)
-    private static final float LIGHT_ON_RATIO = 0.7f;  // Fracción de cada luz que está encendida (el resto es pausa)
-    private static final float COUNTDOWN_TIME = 0.4f;  // Pausa antes de mostrar cada secuencia (s)
-    private static final float RESULT_TIME = 0.4f;     // Pausa al terminar cada ronda (s)
-    private static final float FLASH_TIME = 0.15f;     // Destello al presionar una tecla (s)
-    private static final boolean RESET_ON_ERROR = true; // true: al fallar se reinicia el progreso
-    private static final float PAD_SIZE = 80f;         // Tamaño de cada tecla en pantalla (px)
-    private static final float PAD_GAP = 8f;           // Separación entre teclas (px)
-    private static final float ROW_BOTTOM_Y = 150f;    // Altura de la fila de abajo (px)
-    private static final int[][] KEYS = {              // Controles: 0=arriba, 1=izquierda, 2=abajo, 3=derecha
+    private static final float TOTAL_DURATION = 10f;
+    private static final int[] SEQUENCE_LENGTHS = {4, 4, 5};
+    private static final float SHOW_TIME = 1f;
+    private static final float LIGHT_ON_RATIO = 0.7f;
+    private static final float COUNTDOWN_TIME = 0.4f;
+    private static final float RESULT_TIME = 0.4f;
+    private static final float FLASH_TIME = 0.15f;
+    private static final boolean RESET_ON_ERROR = true;
+    private static final float PAD_SIZE = 80f;
+    private static final float PAD_GAP = 8f;
+    private static final float ROW_BOTTOM_Y = 150f;
+    private static final int[][] KEYS = {
         {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D},
         {Input.Keys.UP, Input.Keys.LEFT, Input.Keys.DOWN, Input.Keys.RIGHT}
     };
-    private static final Color[] PAD_COLORS = {        // Colores de encendido: verde, rojo, amarillo, azul
+    private static final Color[] PAD_COLORS = {
         new Color(0.20f, 0.90f, 0.30f, 1f), new Color(0.95f, 0.25f, 0.25f, 1f),
         new Color(0.98f, 0.85f, 0.20f, 1f), new Color(0.25f, 0.50f, 1.00f, 1f)
     };

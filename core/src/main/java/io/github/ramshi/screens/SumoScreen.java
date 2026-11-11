@@ -12,38 +12,44 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class SumoScreen extends BaseMinigameScreen {
 
-    // =======================================================
-    // CONSTANTES Y CONFIGURACIÓN (Mundo 800x480)
-    // =======================================================
-    private static final float ROUND_DURATION = 10f; // 10s límite por microjuego
-    private static final float RADIO = 22f;          // Radio de colisión
-    private static final float SPRITE_SIZE = 48f;    // Tamaño del sprite en pantalla
-    private static final float IMPULSO_TAP = 16f;    // Píxeles al pulsar tecla
-    private static final float VELOCIDAD_HOLD = 240f;// Píxeles/s al mantener pulsado
-    private static final float FUERZA_SALTO = 400f;  // Impulso vertical al saltar
-    private static final float GRAVEDAD = 950f;      // Gravedad para la caída
-
-    // Plataforma central
+    private static final float ROUND_DURATION = 10f;
+    private static final float RADIO = 22f;
+    private static final float SPRITE_SIZE = 48f;
+    private static final float IMPULSO_TAP = 16f;
+    private static final float VELOCIDAD_HOLD = 240f;
+    private static final float FUERZA_SALTO = 400f;
+    private static final float GRAVEDAD = 950f;
+    private static final float VELOCIDAD_CAIDA = 450f;
+    private static final float DISTANCIA_INICIO = 110f;
+    private static final float RETROCESO_CHOQUE = 38f;
+    private static final float EMPUJE = 14f;
+    private static final float ARRASTRE = 4f;
+    private static final float ONDA_RADIO_INICIAL = 8f;
+    private static final float ONDA_CRECIMIENTO = 300f;
+    private static final float ONDA_DESVANECER = 3.0f;
+    private static final int PUNTOS_KO = 2;
+    private static final int PUNTOS_CENTRO = 1;
+    private static final float MARGEN_CENTRO = 5f;
+    private static final int[][] KEYS = {
+        {Input.Keys.A, Input.Keys.D, Input.Keys.W},
+        {Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP}
+    };
     private static final float PLAT_ANCHO = 440f;
     private static final float PLAT_ALTO = 22f;
-    private static final float PLAT_X = (VIRTUAL_WIDTH - PLAT_ANCHO) / 2f; // 180f
+    private static final float PLAT_X = (VIRTUAL_WIDTH - PLAT_ANCHO) / 2f;
     private static final float PLAT_Y = 190f;
     private static final float PLAT_CENTER_X = PLAT_X + PLAT_ANCHO / 2f;
     private static final float BASE_Y = PLAT_Y + PLAT_ALTO + RADIO;
-
-    // Colores
     private static final Color COLOR_BG = new Color(30 / 255f, 30 / 255f, 45 / 255f, 1f);
     private static final Color COLOR_PLATAFORMA = new Color(0f, 204 / 255f, 255 / 255f, 1f);
     private static final Color COLOR_P1 = new Color(255 / 255f, 75 / 255f, 120 / 255f, 1f);
     private static final Color COLOR_P2 = new Color(0f, 255 / 255f, 180 / 255f, 1f);
 
-    // Texturas de luchadores
     private final Texture sumoP1Front = new Texture("sumo/sumo_p1_front.png");
     private final Texture sumoP1Side  = new Texture("sumo/sumo_p1_side.png");
     private final Texture sumoP2Front = new Texture("sumo/sumo_p2_front.png");
     private final Texture sumoP2Side  = new Texture("sumo/sumo_p2_side.png");
 
-    // Posición y estado de los luchadores
     private float p1X;
     private float p1Y;
     private float p1VelY = 0f;
@@ -57,7 +63,6 @@ public class SumoScreen extends BaseMinigameScreen {
     private boolean p1Cayo;
     private boolean p2Cayo;
 
-    // Onda de choque (Shockwave)
     private boolean shockwaveActive = false;
     private float shockwaveX;
     private float shockwaveY;
@@ -74,11 +79,11 @@ public class SumoScreen extends BaseMinigameScreen {
     }
 
     private void resetFighters() {
-        p1X = PLAT_X + 110f;
+        p1X = PLAT_X + DISTANCIA_INICIO;
         p1Y = BASE_Y;
         p1VelY = 0f;
 
-        p2X = PLAT_X + PLAT_ANCHO - 110f;
+        p2X = PLAT_X + PLAT_ANCHO - DISTANCIA_INICIO;
         p2Y = BASE_Y;
         p2VelY = 0f;
 
@@ -90,6 +95,15 @@ public class SumoScreen extends BaseMinigameScreen {
         outcomeReason = "";
     }
 
+    private float leerMovimiento(int p, float delta) {
+        float move = 0f;
+        if (Gdx.input.isKeyJustPressed(KEYS[p][0])) move -= IMPULSO_TAP;
+        else if (Gdx.input.isKeyPressed(KEYS[p][0])) move -= VELOCIDAD_HOLD * delta;
+        if (Gdx.input.isKeyJustPressed(KEYS[p][1])) move += IMPULSO_TAP;
+        else if (Gdx.input.isKeyPressed(KEYS[p][1])) move += VELOCIDAD_HOLD * delta;
+        return move;
+    }
+
     @Override
     protected float getRoundDuration() {
         return ROUND_DURATION;
@@ -98,37 +112,18 @@ public class SumoScreen extends BaseMinigameScreen {
     @Override
     protected void updateGame(float delta) {
         if (p1Cayo || p2Cayo) {
-            // Animación de caída al vacio fuera de la plataforma
-            if (p1Cayo) p1Y -= 450f * delta;
-            if (p2Cayo) p2Y -= 450f * delta;
+            if (p1Cayo) p1Y -= VELOCIDAD_CAIDA * delta;
+            if (p2Cayo) p2Y -= VELOCIDAD_CAIDA * delta;
             return;
         }
 
-        // =======================================================
-        // ENTRADAS: JUGADOR 1 (A/D horizontal, W salto)
-        // =======================================================
-        float moveP1 = 0f;
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) moveP1 -= IMPULSO_TAP;
-        else if (Gdx.input.isKeyPressed(Input.Keys.A)) moveP1 -= VELOCIDAD_HOLD * delta;
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.D)) moveP1 += IMPULSO_TAP;
-        else if (Gdx.input.isKeyPressed(Input.Keys.D)) moveP1 += VELOCIDAD_HOLD * delta;
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.W) && Math.abs(p1Y - BASE_Y) < 1.5f) {
+        float moveP1 = leerMovimiento(0, delta);
+        if (Gdx.input.isKeyJustPressed(KEYS[0][2]) && Math.abs(p1Y - BASE_Y) < 1.5f) {
             p1VelY = FUERZA_SALTO;
         }
 
-        // =======================================================
-        // ENTRADAS: JUGADOR 2 (Flechas Horizontales, Arriba salto)
-        // =======================================================
-        float moveP2 = 0f;
-        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) moveP2 -= IMPULSO_TAP;
-        else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) moveP2 -= VELOCIDAD_HOLD * delta;
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) moveP2 += IMPULSO_TAP;
-        else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) moveP2 += VELOCIDAD_HOLD * delta;
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) && Math.abs(p2Y - BASE_Y) < 1.5f) {
+        float moveP2 = leerMovimiento(1, delta);
+        if (Gdx.input.isKeyJustPressed(KEYS[1][2]) && Math.abs(p2Y - BASE_Y) < 1.5f) {
             p2VelY = FUERZA_SALTO;
         }
 
@@ -138,7 +133,6 @@ public class SumoScreen extends BaseMinigameScreen {
         lastMoveP1 = moveP1;
         lastMoveP2 = moveP2;
 
-        // Físicas verticales (Gravedad y aterrizaje en plataforma)
         boolean p1SobrePlataforma = (p1X >= PLAT_X - RADIO && p1X <= PLAT_X + PLAT_ANCHO + RADIO);
         p1VelY -= GRAVEDAD * delta;
         p1Y += p1VelY * delta;
@@ -155,17 +149,12 @@ public class SumoScreen extends BaseMinigameScreen {
             p2VelY = 0f;
         }
 
-        // =======================================================
-        // FÍSICA DE COLISIÓN Y ONDA DE CHOQUE
-        // =======================================================
         float distanciaX = Math.abs(p2X - p1X);
         float distanciaY = Math.abs(p2Y - p1Y);
 
-        // Solo colisionan si están en la misma franja de altura (salto esquiva por arriba)
         if (distanciaX < RADIO * 2f && distanciaY < RADIO * 1.5f) {
             float solapamiento = (RADIO * 2f) - distanciaX;
 
-            // Separación física base
             p1X -= solapamiento / 2f;
             p2X += solapamiento / 2f;
 
@@ -173,52 +162,46 @@ public class SumoScreen extends BaseMinigameScreen {
             boolean p2AtacandoHaciaP1 = (p2X > p1X && moveP2 < 0f) || (p2X < p1X && moveP2 > 0f);
 
             if (p1AtacandoHaciaP2 && p2AtacandoHaciaP1) {
-                // AMBOS ARREMETEN DE FRENTE -> ONDA DE CHOQUE Y REBOTE MUTUO
                 shockwaveActive = true;
                 shockwaveX = (p1X + p2X) / 2f;
                 shockwaveY = (p1Y + p2Y) / 2f;
-                shockwaveRadius = 8f;
+                shockwaveRadius = ONDA_RADIO_INICIAL;
                 shockwaveAlpha = 1f;
 
-                // Retroceso que separa a ambos luchadores
                 if (p1X < p2X) {
-                    p1X -= 38f;
-                    p2X += 38f;
+                    p1X -= RETROCESO_CHOQUE;
+                    p2X += RETROCESO_CHOQUE;
                 } else {
-                    p1X += 38f;
-                    p2X -= 38f;
+                    p1X += RETROCESO_CHOQUE;
+                    p2X -= RETROCESO_CHOQUE;
                 }
             } else if (p1AtacandoHaciaP2) {
-                // SOLO P1 ARREMETE -> Empuja y arrastra a P2
                 if (p1X < p2X) {
-                    p2X += 14f;
-                    p1X += 4f;
+                    p2X += EMPUJE;
+                    p1X += ARRASTRE;
                 } else {
-                    p2X -= 14f;
-                    p1X -= 4f;
+                    p2X -= EMPUJE;
+                    p1X -= ARRASTRE;
                 }
             } else if (p2AtacandoHaciaP1) {
-                // SOLO P2 ARREMETE -> Empuja y arrastra a P1
                 if (p2X > p1X) {
-                    p1X -= 14f;
-                    p2X -= 4f;
+                    p1X -= EMPUJE;
+                    p2X -= ARRASTRE;
                 } else {
-                    p1X += 14f;
-                    p2X += 4f;
+                    p1X += EMPUJE;
+                    p2X += ARRASTRE;
                 }
             }
         }
 
-        // Actualizar onda de choque
         if (shockwaveActive) {
-            shockwaveRadius += 300f * delta;
-            shockwaveAlpha -= 3.0f * delta;
+            shockwaveRadius += ONDA_CRECIMIENTO * delta;
+            shockwaveAlpha -= ONDA_DESVANECER * delta;
             if (shockwaveAlpha <= 0f) {
                 shockwaveActive = false;
             }
         }
 
-        // Control de caída de la plataforma (Ring-Out)
         boolean p1Fuera = (p1X < PLAT_X - RADIO || p1X > PLAT_X + PLAT_ANCHO + RADIO);
         boolean p2Fuera = (p2X < PLAT_X - RADIO || p2X > PLAT_X + PLAT_ANCHO + RADIO);
 
@@ -242,23 +225,18 @@ public class SumoScreen extends BaseMinigameScreen {
 
     @Override
     protected void drawGame(SpriteBatch batch) {
-        // 1. Dibujar escenario
         shapeRenderer.begin(ShapeType.Filled);
 
-        // Fondo
         shapeRenderer.setColor(COLOR_BG);
         shapeRenderer.rect(0f, 0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
-        // Plataforma central
         shapeRenderer.setColor(COLOR_PLATAFORMA);
         shapeRenderer.rect(PLAT_X, PLAT_Y, PLAT_ANCHO, PLAT_ALTO);
 
-        // Bordes de advertencia en los extremos de la plataforma
         shapeRenderer.setColor(1f, 0.3f, 0.3f, 0.8f);
         shapeRenderer.rect(PLAT_X, PLAT_Y, 20f, PLAT_ALTO);
         shapeRenderer.rect(PLAT_X + PLAT_ANCHO - 20f, PLAT_Y, 20f, PLAT_ALTO);
 
-        // Sombras dinámicas según la altura del salto
         float shadowScale1 = MathUtils.clamp(1f - (p1Y - BASE_Y) / 180f, 0.35f, 1f);
         float shadowScale2 = MathUtils.clamp(1f - (p2Y - BASE_Y) / 180f, 0.35f, 1f);
 
@@ -268,24 +246,20 @@ public class SumoScreen extends BaseMinigameScreen {
 
         shapeRenderer.end();
 
-        // 2. Dibujar Sprites de los Luchadores
         batch.begin();
 
-        // Jugador 1
         Texture p1Tex = (Math.abs(lastMoveP1) > 0.01f) ? sumoP1Side : sumoP1Front;
         boolean p1FlipX = (lastMoveP1 < -0.01f);
         float p1DrawX = p1X - SPRITE_SIZE / 2f;
         float p1DrawY = p1Y - SPRITE_SIZE / 2f;
         batch.draw(p1Tex, p1DrawX, p1DrawY, SPRITE_SIZE, SPRITE_SIZE, 0, 0, 48, 48, p1FlipX, false);
 
-        // Jugador 2
         Texture p2Tex = (Math.abs(lastMoveP2) > 0.01f) ? sumoP2Side : sumoP2Front;
         boolean p2FlipX = (lastMoveP2 <= 0.01f);
         float p2DrawX = p2X - SPRITE_SIZE / 2f;
         float p2DrawY = p2Y - SPRITE_SIZE / 2f;
         batch.draw(p2Tex, p2DrawX, p2DrawY, SPRITE_SIZE, SPRITE_SIZE, 0, 0, 48, 48, p2FlipX, false);
 
-        // HUD con controles
         font.setColor(COLOR_P1);
         font.getData().setScale(1.1f);
         font.draw(batch, "P1: [A/D] Empuja  [W] Salta", 45f, 70f);
@@ -295,7 +269,6 @@ public class SumoScreen extends BaseMinigameScreen {
 
         batch.end();
 
-        // 3. Dibujar Onda de Choque (Shockwave) si está activa
         if (shockwaveActive && shockwaveAlpha > 0f) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -320,29 +293,24 @@ public class SumoScreen extends BaseMinigameScreen {
         }
 
         if (p2Cayo) {
-            int pts = 2;
-            p1GlobalWins += pts;
-            return "¡JUGADOR 1 GANA (" + pts + " PUNTOS POR KO)!";
+            p1GlobalWins += PUNTOS_KO;
+            return "¡JUGADOR 1 GANA (" + PUNTOS_KO + " PUNTOS POR KO)!";
         } else if (p1Cayo) {
-            int pts = 2;
-            p2GlobalWins += pts;
-            return "¡JUGADOR 2 GANA (" + pts + " PUNTOS POR KO)!";
+            p2GlobalWins += PUNTOS_KO;
+            return "¡JUGADOR 2 GANA (" + PUNTOS_KO + " PUNTOS POR KO)!";
         }
 
         float d1 = Math.abs(p1X - PLAT_CENTER_X);
         float d2 = Math.abs(p2X - PLAT_CENTER_X);
 
-        if (d1 < d2 - 5f) {
-            int pts = 1;
-            p1GlobalWins += pts;
-            return "¡JUGADOR 1 DOMINA EL CENTRO (1 PUNTO)!";
-        } else if (d2 < d1 - 5f) {
-            int pts = 1;
-            p2GlobalWins += pts;
-            return "¡JUGADOR 2 DOMINA EL CENTRO (1 PUNTO)!";
-        } else {
-            return "¡EMPATE POR TIEMPO!";
+        if (d1 < d2 - MARGEN_CENTRO) {
+            p1GlobalWins += PUNTOS_CENTRO;
+            return "¡JUGADOR 1 DOMINA EL CENTRO (" + PUNTOS_CENTRO + " PUNTO)!";
+        } else if (d2 < d1 - MARGEN_CENTRO) {
+            p2GlobalWins += PUNTOS_CENTRO;
+            return "¡JUGADOR 2 DOMINA EL CENTRO (" + PUNTOS_CENTRO + " PUNTO)!";
         }
+        return "¡EMPATE POR TIEMPO!";
     }
 
     @Override

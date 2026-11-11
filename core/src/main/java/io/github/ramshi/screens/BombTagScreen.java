@@ -17,25 +17,21 @@ import java.util.List;
 
 public class BombTagScreen extends BaseMinigameScreen {
 
-    private static final float ROUND_DURATION = 10f;       // duración de la ronda (s)
-    private static final int WIN_POINTS = 2;               // puntos para el que sobrevive
-
-    private static final float PLAYER_SPEED = 210f;        // velocidad normal (px/s)
-    private static final float DASH_SPEED = 480f;          // velocidad durante el dash (px/s)
-    private static final float DASH_DURATION = 0.28f;      // duración del dash (s)
-    private static final float DASH_COOLDOWN = 3.0f;       // recarga del dash (s)
-    private static final float BOMB_HOLDER_BOOST = 1.08f;  // multiplicador de velocidad del portador
-
-    private static final float TRANSFER_IMMUNITY = 0.85f;  // inmunidad tras pasar la bomba (s)
-    private static final float START_IMMUNITY = 1.0f;      // inmunidad al empezar la ronda (s)
-    private static final float DETONATION_TIME = 0.05f;    // tiempo restante en que explota la bomba (s)
-
-    private static final float PLAYER_RADIUS = 18f;        // radio de colisión del jugador
-    private static final float PLAYER_SIZE = 40f;          // tamaño del sprite del jugador
-    private static final float START_X = 120f;             // distancia al borde donde arranca cada uno
-    private static final float BOMB_SIZE = 36f;            // tamaño del sprite de la bomba
-    private static final float MARGIN = 50f;               // borde de la arena (px)
-
+    private static final float ROUND_DURATION = 10f;
+    private static final int WIN_POINTS = 2;
+    private static final float PLAYER_SPEED = 210f;
+    private static final float DASH_SPEED = 480f;
+    private static final float DASH_DURATION = 0.28f;
+    private static final float DASH_COOLDOWN = 3.0f;
+    private static final float BOMB_HOLDER_BOOST = 1.08f;
+    private static final float TRANSFER_IMMUNITY = 0.85f;
+    private static final float START_IMMUNITY = 1.0f;
+    private static final float DETONATION_TIME = 0.05f;
+    private static final float PLAYER_RADIUS = 18f;
+    private static final float PLAYER_SIZE = 40f;
+    private static final float START_X = 120f;
+    private static final float BOMB_SIZE = 36f;
+    private static final float MARGIN = 50f;
     private static final int[][] KEYS = {
         { Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D, Input.Keys.SPACE },
         { Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.ENTER }

@@ -12,16 +12,8 @@ import com.badlogic.gdx.math.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Minijuego 1v1: Duelo de Tanques Arcade.
- * - P1: W/A/S/D para mover, ESPACIO para disparar.
- * - P2: FLECHAS para mover, ENTER para disparar.
- */
 public class TankDuelScreen extends BaseMinigameScreen {
 
-    // =======================================================
-    // CONSTANTES Y CONFIGURACIÓN (Fáciles de modificar)
-    // =======================================================
     private static final float ROUND_DURATION = 10f;
     private static final float TANQUE_TAMANO = 44f;
     private static final float VELOCIDAD_TANQUE = 210f;
@@ -30,16 +22,14 @@ public class TankDuelScreen extends BaseMinigameScreen {
     private static final float TIEMPO_RECARGA = 0.40f;
     private static final int VIDA_MAXIMA = 3;
     private static final float MARGEN_ARENA = 40f;
-    private static final int PUNTOS_VICTORIA = 1; // gana por tener más vida al final
-    private static final int PUNTOS_KO = 2;       // destruye al rival
-
-    // Teclas: {Arriba, Abajo, Izquierda, Derecha, Disparo}
+    private static final int PUNTOS_VICTORIA = 1;
+    private static final int PUNTOS_KO = 2;
+    private static final float INICIO_X = 100f;
     private static final int[][] TECLAS = {
         {Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D, Input.Keys.SPACE},
         {Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.ENTER}
     };
 
-    // 4 Muros de cobertura (X, Y, Ancho, Alto)
     private final Rectangle[] muros = {
         new Rectangle(230f, 120f, 48f, 90f),
         new Rectangle(230f, 270f, 48f, 90f),
@@ -49,7 +39,7 @@ public class TankDuelScreen extends BaseMinigameScreen {
 
     private static class Bala {
         float x, y, vx, vy;
-        int dueno; // 0 = P1, 1 = P2
+        int dueno;
         final Rectangle rect = new Rectangle();
         Bala(float x, float y, float vx, float vy, int dueno) {
             this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.dueno = dueno;
@@ -58,7 +48,6 @@ public class TankDuelScreen extends BaseMinigameScreen {
     }
     private final List<Bala> balas = new ArrayList<>();
 
-    // Texturas y Sprites
     private final Texture bgTex = cargarTextura("tanks/arena_bg.png");
     private final Texture crateTex = cargarTextura("tanks/crate.png");
     private final Texture[] laserTex = {
@@ -69,7 +58,6 @@ public class TankDuelScreen extends BaseMinigameScreen {
     };
     private final Sprite[] tankSprites = new Sprite[2];
 
-    // Estado por jugador (índice 0 = P1, 1 = P2)
     private final float[] posX = new float[2];
     private final float[] posY = new float[2];
     private final float[] angle = new float[2];
@@ -96,13 +84,11 @@ public class TankDuelScreen extends BaseMinigameScreen {
     }
 
     private void reiniciarDuelo() {
-        // P1 inicia a la izquierda mirando a la derecha
-        posX[0] = 100f; posY[0] = (VIRTUAL_HEIGHT - TANQUE_TAMANO) / 2f;
+        posX[0] = INICIO_X; posY[0] = (VIRTUAL_HEIGHT - TANQUE_TAMANO) / 2f;
         dirX[0] = 1; dirY[0] = 0; angle[0] = 0f; hp[0] = VIDA_MAXIMA; cooldown[0] = 0f;
         playerRect[0].set(posX[0], posY[0], TANQUE_TAMANO, TANQUE_TAMANO);
 
-        // P2 inicia a la derecha mirando a la izquierda
-        posX[1] = VIRTUAL_WIDTH - 100f - TANQUE_TAMANO; posY[1] = posY[0];
+        posX[1] = VIRTUAL_WIDTH - INICIO_X - TANQUE_TAMANO; posY[1] = posY[0];
         dirX[1] = -1; dirY[1] = 0; angle[1] = 180f; hp[1] = VIDA_MAXIMA; cooldown[1] = 0f;
         playerRect[1].set(posX[1], posY[1], TANQUE_TAMANO, TANQUE_TAMANO);
 
@@ -159,7 +145,6 @@ public class TankDuelScreen extends BaseMinigameScreen {
             b.y += b.vy * delta;
             b.rect.setPosition(b.x, b.y);
 
-            // Choque con bordes o muros
             if (b.x < MARGEN_ARENA || b.x > VIRTUAL_WIDTH - MARGEN_ARENA - BALA_TAMANO ||
                 b.y < MARGEN_ARENA || b.y > VIRTUAL_HEIGHT - MARGEN_ARENA - BALA_TAMANO ||
                 chocaConMuro(b.rect)) {
@@ -167,7 +152,6 @@ public class TankDuelScreen extends BaseMinigameScreen {
                 continue;
             }
 
-            // Impacto en el rival
             int rival = 1 - b.dueno;
             if (b.rect.overlaps(playerRect[rival])) {
                 balas.remove(i);
@@ -203,7 +187,6 @@ public class TankDuelScreen extends BaseMinigameScreen {
             tankSprites[p].draw(batch);
         }
 
-        // HUD Inferior
         font.getData().setScale(1.1f);
         font.setColor(1f, 0.35f, 0.45f, 1f);
         font.draw(batch, "P1 HP: " + hp[0] + "/" + VIDA_MAXIMA + "  [WASD / ESPACIO]", 50f, 30f);
