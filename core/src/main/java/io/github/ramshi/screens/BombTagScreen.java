@@ -263,17 +263,12 @@ public class BombTagScreen extends BaseMinigameScreen {
 
     private boolean hitsPillar(float x, float y) {
         for (Rectangle r : obstaculos) {
-            if (circleIntersectsRect(x, y, PLAYER_RADIUS, r)) return true;
+            // Distancia del centro del jugador al punto más cercano del pilar
+            float distX = x - MathUtils.clamp(x, r.x, r.x + r.width);
+            float distY = y - MathUtils.clamp(y, r.y, r.y + r.height);
+            if (distX * distX + distY * distY < PLAYER_RADIUS * PLAYER_RADIUS) return true;
         }
         return false;
-    }
-
-    private boolean circleIntersectsRect(float cx, float cy, float radius, Rectangle r) {
-        float closestX = MathUtils.clamp(cx, r.x, r.x + r.width);
-        float closestY = MathUtils.clamp(cy, r.y, r.y + r.height);
-        float distX = cx - closestX;
-        float distY = cy - closestY;
-        return (distX * distX + distY * distY) < (radius * radius);
     }
 
     // ===== PARTÍCULAS =====
