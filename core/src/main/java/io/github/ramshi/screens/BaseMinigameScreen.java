@@ -218,6 +218,19 @@ public abstract class BaseMinigameScreen implements Screen {
     @Override public void resume() {}
     @Override public void hide() {}
 
+    protected String sumarPuntos(int jugador, int puntos) {
+        if (jugador == 1) victoriasP1 += puntos;
+        else victoriasP2 += puntos;
+        return "¡JUGADOR " + jugador + " GANA (+" + puntos + (puntos == 1 ? " PUNTO" : " PUNTOS") + ")!";
+    }
+
+    protected int puntosPorTiempo() {
+        float progreso = 1f - tiempoRestante / getDuracionRonda();
+        if (progreso < 1f / 3f) return 3;
+        if (progreso < 2f / 3f) return 2;
+        return 1;
+    }
+
     protected abstract float getDuracionRonda();
     protected abstract void actualizarJuego(float delta);
     protected abstract void dibujarJuego(SpriteBatch batch);

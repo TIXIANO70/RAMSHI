@@ -18,11 +18,12 @@ import java.util.List;
 public class BombTagScreen extends BaseMinigameScreen {
 
     private static final float DURACION_RONDA = 10f;
-    private static final int PUNTOS_VICTORIA = 2;
+    private static final float PROPORCION_PARA_3 = 0.7f;
+    private static final float PROPORCION_PARA_2 = 0.5f;
     private static final float VELOCIDAD_JUGADOR = 210f;
     private static final float VELOCIDAD_DASH = 480f;
     private static final float DURACION_DASH = 0.28f;
-    private static final float RECARGA_DASH = 3.0f;
+    private static final float RECARGA_DASH = 2.0f;
     private static final float BONUS_PORTADOR = 1.08f;
     private static final float INMUNIDAD_PASE = 0.85f;
     private static final float INMUNIDAD_INICIAL = 1.0f;
@@ -65,6 +66,7 @@ public class BombTagScreen extends BaseMinigameScreen {
     private final Texture pilarTex = cargarTextura("bombtag/pillar.png", false);
     private final Corredor[] corredores = { new Corredor(), new Corredor() };
     private final List<Particula> particulas = new ArrayList<>();
+    private final float[] tiempoConBomba = new float[2];
     private Corredor portador;
     private float inmunidad, pulsoBomba;
 
@@ -90,6 +92,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         for (Corredor r : corredores) {
             r.pos.set(r.indice == 0 ? INICIO_X : ANCHO_VIRTUAL - INICIO_X, ALTO_VIRTUAL / 2f);
             r.tiempoDash = r.recargaDash = 0f;
+            tiempoConBomba[r.indice] = 0f;
         }
         inmunidad = INMUNIDAD_INICIAL;
         particulas.clear();
@@ -102,6 +105,7 @@ public class BombTagScreen extends BaseMinigameScreen {
     protected void actualizarJuego(float delta) {
         pulsoBomba += delta * 6f;
         inmunidad -= delta;
+        tiempoConBomba[portador.indice] += delta;
         for (Corredor r : corredores) actualizarCorredor(r, delta);
         manejarContacto();
 
@@ -225,15 +229,24 @@ public class BombTagScreen extends BaseMinigameScreen {
 
     @Override
     protected String determinarGanador() {
-        int perdedor = portador.indice + 1, ganador = 3 - perdedor;
-        if (ganador == 1) victoriasP1 += PUNTOS_VICTORIA;
-        else victoriasP2 += PUNTOS_VICTORIA;
-        return "¡P" + perdedor + " EXPLOTO! ¡JUGADOR " + ganador + " GANA (" + PUNTOS_VICTORIA + " PUNTOS)!";
+        float proporcion = proporcionConBomba();
+        int pts = 1;
+        if (proporcion > PROPORCION_PARA_3) pts = 3;
+        else if (proporcion > PROPORCION_PARA_2) pts = 2;
+        return sumarPuntos(2 - portador.indice, pts);
+    }
+
+    private float proporcionConBomba() {
+        return tiempoConBomba[portador.indice] / (tiempoConBomba[0] + tiempoConBomba[1]);
     }
 
     @Override protected String getTextoP1() { return "P1 (Victorias: " + victoriasP1 + ")"; }
     @Override protected String getTextoP2() { return "P2 (Victorias: " + victoriasP2 + ")"; }
-    @Override protected String getResumen() { return "P" + (portador.indice + 1) + " detono con la bomba"; }
+
+    @Override
+    protected String getResumen() {
+        return "P" + (portador.indice + 1) + " detono: tuvo la bomba el " + Math.round(proporcionConBomba() * 100) + "% del tiempo";
+    }
 
     @Override
     public void dispose() {

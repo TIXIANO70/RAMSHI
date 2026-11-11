@@ -19,11 +19,12 @@ public class TankDuelScreen extends BaseMinigameScreen {
     private static final float VELOCIDAD_TANQUE = 210f;
     private static final float BALA_TAMANO = 14f;
     private static final float VELOCIDAD_BALA = 480f;
-    private static final float TIEMPO_RECARGA = 0.40f;
+    private static final float TIEMPO_RECARGA = 0.30f;
     private static final int VIDA_MAXIMA = 3;
     private static final float MARGEN_ARENA = 40f;
     private static final int PUNTOS_VICTORIA = 1;
     private static final int PUNTOS_KO = 2;
+    private static final int PUNTOS_KO_PERFECTO = 3;
     private static final float INICIO_X = 100f;
     private static final int[][] TECLAS = {
         {Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D, Input.Keys.SPACE},
@@ -200,10 +201,9 @@ public class TankDuelScreen extends BaseMinigameScreen {
     protected String determinarGanador() {
         if (vida[0] == vida[1]) return "¡EMPATE EN EL DUELO DE TANQUES!";
         int ganador = (vida[0] > vida[1]) ? 0 : 1;
-        int pts = (vida[1 - ganador] <= 0) ? PUNTOS_KO : PUNTOS_VICTORIA;
-        if (ganador == 0) victoriasP1 += pts;
-        else victoriasP2 += pts;
-        return "¡JUGADOR " + (ganador + 1) + " GANA (" + pts + (pts == 1 ? " PUNTO" : " PUNTOS") + ")!";
+        int pts = PUNTOS_VICTORIA;
+        if (vida[1 - ganador] <= 0) pts = (vida[ganador] == VIDA_MAXIMA) ? PUNTOS_KO_PERFECTO : PUNTOS_KO;
+        return sumarPuntos(ganador + 1, pts);
     }
 
     @Override

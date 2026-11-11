@@ -22,10 +22,10 @@ public class ShipsScreen extends BaseMinigameScreen {
     private static final float TAMANO_BALA_MIN = 16f;
     private static final float TAMANO_BALA_MAX = 32f;
     private static final float VELOCIDAD_CAIDA_INICIO = 260f;
-    private static final float VELOCIDAD_CAIDA_FIN = 900f;
-    private static final float CURVA_DIFICULTAD = 1.3f;
+    private static final float VELOCIDAD_CAIDA_FIN = 1150f;
+    private static final float CURVA_DIFICULTAD = 2.2f;
     private static final float INTERVALO_BALAS_INICIO = 0.5f;
-    private static final float INTERVALO_BALAS_FIN = 0.25f;
+    private static final float INTERVALO_BALAS_FIN = 0.15f;
     private static final float PRIMERA_BALA = 0.5f;
     private static final float MARGEN_GOLPE = 4f;
     private static final float BARCO_Y = 40f;

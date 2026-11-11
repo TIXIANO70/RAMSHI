@@ -27,18 +27,17 @@ public class SumoScreen extends BaseMinigameScreen {
     private static final float ONDA_RADIO_INICIAL = 8f;
     private static final float ONDA_CRECIMIENTO = 300f;
     private static final float ONDA_DESVANECER = 3.0f;
-    private static final int PUNTOS_KO = 2;
     private static final int PUNTOS_CENTRO = 1;
     private static final float MARGEN_CENTRO = 5f;
     private static final int[][] TECLAS = {
         {Input.Keys.A, Input.Keys.D, Input.Keys.W},
         {Input.Keys.LEFT, Input.Keys.RIGHT, Input.Keys.UP}
     };
-    private static final float PLAT_ANCHO = 440f;
+    private static final float PLAT_ANCHO_INICIAL = 440f;
+    private static final float PLAT_ANCHO_FINAL = 260f;
     private static final float PLAT_ALTO = 22f;
-    private static final float PLAT_X = (ANCHO_VIRTUAL - PLAT_ANCHO) / 2f;
     private static final float PLAT_Y = 190f;
-    private static final float PLAT_CENTRO_X = PLAT_X + PLAT_ANCHO / 2f;
+    private static final float PLAT_CENTRO_X = ANCHO_VIRTUAL / 2f;
     private static final float BASE_Y = PLAT_Y + PLAT_ALTO + RADIO;
     private static final Color COLOR_FONDO = new Color(30 / 255f, 30 / 255f, 45 / 255f, 1f);
     private static final Color COLOR_PLATAFORMA = new Color(0f, 204 / 255f, 255 / 255f, 1f);
@@ -69,6 +68,8 @@ public class SumoScreen extends BaseMinigameScreen {
     private float ondaRadio;
     private float ondaAlfa;
 
+    private float platAncho = PLAT_ANCHO_INICIAL;
+    private float platX = PLAT_CENTRO_X - PLAT_ANCHO_INICIAL / 2f;
     private int rondasGanadasP1 = 0;
     private int rondasGanadasP2 = 0;
     private String motivoFinal = "";
@@ -79,11 +80,13 @@ public class SumoScreen extends BaseMinigameScreen {
     }
 
     private void reiniciarLuchadores() {
-        p1X = PLAT_X + DISTANCIA_INICIO;
+        platAncho = PLAT_ANCHO_INICIAL;
+        platX = PLAT_CENTRO_X - platAncho / 2f;
+        p1X = platX + DISTANCIA_INICIO;
         p1Y = BASE_Y;
         p1VelY = 0f;
 
-        p2X = PLAT_X + PLAT_ANCHO - DISTANCIA_INICIO;
+        p2X = platX + platAncho - DISTANCIA_INICIO;
         p2Y = BASE_Y;
         p2VelY = 0f;
 
@@ -117,6 +120,9 @@ public class SumoScreen extends BaseMinigameScreen {
             return;
         }
 
+        platAncho = MathUtils.lerp(PLAT_ANCHO_INICIAL, PLAT_ANCHO_FINAL, 1f - tiempoRestante / DURACION_RONDA);
+        platX = PLAT_CENTRO_X - platAncho / 2f;
+
         float movP1 = leerMovimiento(0, delta);
         if (Gdx.input.isKeyJustPressed(TECLAS[0][2]) && Math.abs(p1Y - BASE_Y) < 1.5f) {
             p1VelY = FUERZA_SALTO;
@@ -133,7 +139,7 @@ public class SumoScreen extends BaseMinigameScreen {
         ultimoMovP1 = movP1;
         ultimoMovP2 = movP2;
 
-        boolean p1SobrePlataforma = (p1X >= PLAT_X - RADIO && p1X <= PLAT_X + PLAT_ANCHO + RADIO);
+        boolean p1SobrePlataforma = (p1X >= platX - RADIO && p1X <= platX + platAncho + RADIO);
         p1VelY -= GRAVEDAD * delta;
         p1Y += p1VelY * delta;
         if (p1SobrePlataforma && p1Y <= BASE_Y) {
@@ -141,7 +147,7 @@ public class SumoScreen extends BaseMinigameScreen {
             p1VelY = 0f;
         }
 
-        boolean p2SobrePlataforma = (p2X >= PLAT_X - RADIO && p2X <= PLAT_X + PLAT_ANCHO + RADIO);
+        boolean p2SobrePlataforma = (p2X >= platX - RADIO && p2X <= platX + platAncho + RADIO);
         p2VelY -= GRAVEDAD * delta;
         p2Y += p2VelY * delta;
         if (p2SobrePlataforma && p2Y <= BASE_Y) {
@@ -202,8 +208,8 @@ public class SumoScreen extends BaseMinigameScreen {
             }
         }
 
-        boolean p1Fuera = (p1X < PLAT_X - RADIO || p1X > PLAT_X + PLAT_ANCHO + RADIO);
-        boolean p2Fuera = (p2X < PLAT_X - RADIO || p2X > PLAT_X + PLAT_ANCHO + RADIO);
+        boolean p1Fuera = (p1X < platX - RADIO || p1X > platX + platAncho + RADIO);
+        boolean p2Fuera = (p2X < platX - RADIO || p2X > platX + platAncho + RADIO);
 
         if (p1Fuera && p2Fuera) {
             p1Cayo = true;
@@ -231,11 +237,11 @@ public class SumoScreen extends BaseMinigameScreen {
         formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
 
         formas.setColor(COLOR_PLATAFORMA);
-        formas.rect(PLAT_X, PLAT_Y, PLAT_ANCHO, PLAT_ALTO);
+        formas.rect(platX, PLAT_Y, platAncho, PLAT_ALTO);
 
         formas.setColor(1f, 0.3f, 0.3f, 0.8f);
-        formas.rect(PLAT_X, PLAT_Y, 20f, PLAT_ALTO);
-        formas.rect(PLAT_X + PLAT_ANCHO - 20f, PLAT_Y, 20f, PLAT_ALTO);
+        formas.rect(platX, PLAT_Y, 20f, PLAT_ALTO);
+        formas.rect(platX + platAncho - 20f, PLAT_Y, 20f, PLAT_ALTO);
 
         float escalaSombra1 = MathUtils.clamp(1f - (p1Y - BASE_Y) / 180f, 0.35f, 1f);
         float escalaSombra2 = MathUtils.clamp(1f - (p2Y - BASE_Y) / 180f, 0.35f, 1f);
@@ -292,24 +298,14 @@ public class SumoScreen extends BaseMinigameScreen {
             return "¡EMPATE POR DOBLE CAÍDA!";
         }
 
-        if (p2Cayo) {
-            victoriasP1 += PUNTOS_KO;
-            return "¡JUGADOR 1 GANA (" + PUNTOS_KO + " PUNTOS POR KO)!";
-        } else if (p1Cayo) {
-            victoriasP2 += PUNTOS_KO;
-            return "¡JUGADOR 2 GANA (" + PUNTOS_KO + " PUNTOS POR KO)!";
-        }
+        if (p2Cayo) return sumarPuntos(1, puntosPorTiempo());
+        if (p1Cayo) return sumarPuntos(2, puntosPorTiempo());
 
         float d1 = Math.abs(p1X - PLAT_CENTRO_X);
         float d2 = Math.abs(p2X - PLAT_CENTRO_X);
 
-        if (d1 < d2 - MARGEN_CENTRO) {
-            victoriasP1 += PUNTOS_CENTRO;
-            return "¡JUGADOR 1 DOMINA EL CENTRO (" + PUNTOS_CENTRO + " PUNTO)!";
-        } else if (d2 < d1 - MARGEN_CENTRO) {
-            victoriasP2 += PUNTOS_CENTRO;
-            return "¡JUGADOR 2 DOMINA EL CENTRO (" + PUNTOS_CENTRO + " PUNTO)!";
-        }
+        if (d1 < d2 - MARGEN_CENTRO) return sumarPuntos(1, PUNTOS_CENTRO);
+        if (d2 < d1 - MARGEN_CENTRO) return sumarPuntos(2, PUNTOS_CENTRO);
         return "¡EMPATE POR TIEMPO!";
     }
 

@@ -24,6 +24,8 @@ public class StopItScreen extends BaseMinigameScreen {
     private static final int PUNTOS_CERCA = 1;
     private static final float PROPORCION_PERFECTO = 0.3f;
     private static final float PROPORCION_CERCA = 2f;
+    private static final int DIFERENCIA_PARA_3 = 6;
+    private static final int DIFERENCIA_PARA_2 = 3;
     private static final int[] TECLAS = {Input.Keys.W, Input.Keys.UP};
     private static final float[] BARRA_X = {40f, 440f};
     private static final float BARRA_ANCHO = 320f;
@@ -152,14 +154,12 @@ public class StopItScreen extends BaseMinigameScreen {
 
     @Override
     protected String determinarGanador() {
-        if (puntaje[0] > puntaje[1]) {
-            victoriasP1++;
-            return "¡JUGADOR 1 GANA!";
-        } else if (puntaje[1] > puntaje[0]) {
-            victoriasP2++;
-            return "¡JUGADOR 2 GANA!";
-        }
-        return "¡EMPATE!";
+        int diferencia = Math.abs(puntaje[0] - puntaje[1]);
+        if (diferencia == 0) return "¡EMPATE!";
+        int pts = 1;
+        if (diferencia >= DIFERENCIA_PARA_3) pts = 3;
+        else if (diferencia >= DIFERENCIA_PARA_2) pts = 2;
+        return sumarPuntos(puntaje[0] > puntaje[1] ? 1 : 2, pts);
     }
 
     @Override
