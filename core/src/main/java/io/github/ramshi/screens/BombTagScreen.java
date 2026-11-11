@@ -41,6 +41,7 @@ public class BombTagScreen extends BaseMinigameScreen {
 
     private static final float HUD_X = 16f;
     private static final float DASH_Y = 62f;
+    private static final float AVISO_Y = 400f;
     private static final Color[] COLORES_HUD = { new Color(1f, 0.3f, 0.6f, 1f), new Color(0f, 0.85f, 1f, 1f) };
 
     private final Rectangle[] pilares = {
@@ -229,7 +230,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         batch.draw(bombaTex, bomba.x - TAMANO_BOMBA / 2f, bomba.y + 14f + MathUtils.sin(pulsoBomba) * 3f, TAMANO_BOMBA, TAMANO_BOMBA);
         usarFuente(Main.fuenteMediana);
         fuente.setColor(COLORES_HUD[portador.indice]);
-        fuente.draw(batch, "¡P" + (portador.indice + 1) + " TIENE LA BOMBA! ¡PASALA!", ANCHO_VIRTUAL / 2f - 135f, 465f);
+        fuente.draw(batch, "¡P" + (portador.indice + 1) + " TIENE LA BOMBA! ¡PASALA!", ANCHO_VIRTUAL / 2f - 135f, AVISO_Y);
         batch.end();
 
         formas.begin(ShapeType.Filled);

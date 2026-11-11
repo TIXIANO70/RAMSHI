@@ -49,6 +49,7 @@ public class SnakeScreen extends BaseMinigameScreen {
     private final int[] sigDir = new int[2];
     private final int[] crecer = new int[2];
     private final int[] puntaje = new int[2];
+    private final int[] record = new int[2];
     private final int[] comidaX = new int[2];
     private final int[] comidaY = new int[2];
     private float tiempoMovimiento;
@@ -115,6 +116,7 @@ public class SnakeScreen extends BaseMinigameScreen {
         if (x == comidaX[p] && y == comidaY[p]) {
             crecer[p]++;
             puntaje[p]++;
+            record[p] = Math.max(record[p], puntaje[p]);
             ubicarComida(p);
         }
         boolean afuera = x < 0 || y < 0 || x >= GRILLA || y >= GRILLA;
@@ -200,25 +202,26 @@ public class SnakeScreen extends BaseMinigameScreen {
 
     @Override
     protected String determinarGanador() {
-        if (puntaje[0] == puntaje[1]) return "¡EMPATE EN LA RONDA!";
-        int diferencia = Math.abs(puntaje[0] - puntaje[1]);
+        if (record[0] == record[1]) return "¡EMPATE EN LA RONDA!";
+        int diferencia = Math.abs(record[0] - record[1]);
         int pts = 1;
         if (diferencia >= DIFERENCIA_PARA_3) pts = 3;
         else if (diferencia >= DIFERENCIA_PARA_2) pts = 2;
-        explicacion = "Comió " + Math.max(puntaje[0], puntaje[1]) + " huevos contra " + Math.min(puntaje[0], puntaje[1]) + " (ventaja de " + diferencia + "): 4 o más = 3 pts, 2 o 3 = 2, 1 = 1.";
-        return sumarPuntos(puntaje[0] > puntaje[1] ? 1 : 2, pts);
+        explicacion = "Récord de " + Math.max(record[0], record[1]) + " huevos contra " + Math.min(record[0], record[1]) + " (ventaja de " + diferencia + "): 4 o más = 3 pts, 2 o 3 = 2, 1 = 1.";
+        return sumarPuntos(record[0] > record[1] ? 1 : 2, pts);
     }
 
     @Override
     protected void reiniciarRonda() {
         tiempoMovimiento = 0f;
+        record[0] = record[1] = 0;
         reaparecer(0);
         reaparecer(1);
     }
 
-    @Override protected String getTextoP1() { return "P1: " + puntaje[0] + " pts (Victorias: " + victoriasP1 + ")"; }
-    @Override protected String getTextoP2() { return "P2: " + puntaje[1] + " pts (Victorias: " + victoriasP2 + ")"; }
-    @Override protected String getResumen() { return "Puntaje de ronda: P1 (" + puntaje[0] + ") vs P2 (" + puntaje[1] + ")"; }
+    @Override protected String getTextoP1() { return "P1: " + puntaje[0] + "  Récord: " + record[0] + "  Victorias: " + victoriasP1; }
+    @Override protected String getTextoP2() { return "P2: " + puntaje[1] + "  Récord: " + record[1] + "  Victorias: " + victoriasP2; }
+    @Override protected String getResumen() { return "Récord de huevos: P1 (" + record[0] + ") vs P2 (" + record[1] + ")"; }
 
     @Override
     public void dispose() {

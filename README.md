@@ -86,11 +86,11 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 ### 3.2 Durante el juego
 
 - **Arriba a la izquierda:** estado del jugador 1 (verde).
-- **Arriba al centro:** el tiempo. Se pone **rojo en los últimos 5 segundos**.
+- **Arriba al centro:** el **reloj**, un círculo con los segundos que quedan (del 10 al 1) en grande y amarillo; se pone **rojo en los últimos 3 segundos**. A los costados, sobre el borde de arriba, dos barras que se van **cortando desde los extremos hacia el reloj** y cambian de **verde a amarillo y a rojo**; cuando llegan al centro se terminó el tiempo.
 - **Arriba a la derecha:** estado del jugador 2 (celeste).
 - **Corazones** (solo en los juegos con vidas: Quickdraw y Duelo de Tanques): uno por vida, centrados en la mitad de cada jugador. Las vidas perdidas se ven como corazones vacíos.
 - **Barra de abajo:** recordatorio de los controles de cada jugador (tecla en chico + acción).
-- En modo Jugar, en la línea de más arriba: "Juego N/M" y el total de la partida.
+- En modo Jugar, debajo del reloj: "Juego N/M" y el total de la partida.
 
 ### 3.3 Al terminar el minijuego (2,5 s)
 
@@ -103,6 +103,8 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 - La lista de los juegos jugados hasta el momento, con el último **resaltado en amarillo**, y el **total actualizado** de cada jugador.
 
 **En modo Endless** aparece un cartel con lo mismo (ganador, motivo, explicación) y las victorias totales.
+
+**Transición:** en modo Jugar, en los últimos 0,3 s de la tabla la pantalla se funde a negro, y el minijuego siguiente (o la pantalla de resultados) aparece aclarándose en otros 0,3 s.
 
 ---
 
@@ -137,7 +139,7 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 
 | # | Minijuego | Consigna | Controles P1 / P2 | Cómo se gana | 3 pts | 2 pts | 1 pt |
 |---|---|---|---|---|---|---|---|
-| 1 | Snake | ¡COMÉ! | WASD / flechas | Más huevos al final | Gana por 4+ | por 2-3 | por 1 |
+| 1 | Snake | ¡COMÉ! | WASD / flechas | Mejor récord de huevos | Gana por 4+ | por 2-3 | por 1 |
 | 2 | Secuencia de luces | ¡REPETÍ! | WASD / flechas | Más secuencias completadas | 3 de 3 | 2 | 1 |
 | 3 | Lluvia de cañonazos | ¡ESQUIVÁ! | A D / ← → | El rival se hunde primero | antes de 3,3 s | antes de 6,6 s | después |
 | 4 | Tira y afloja | ¡TIRÁ! | A D / ← → (alternando) | Llevar la soga a tu línea | llega antes de 3,3 s | antes de 6,6 s | después, o soga de su lado al final |
@@ -155,7 +157,7 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 #### 1. Snake — `SnakeScreen`
 - Cada jugador tiene **su propia arena de 14 × 14** y su serpiente (arranca con 3 tramos).
 - Comer el huevo hace crecer la serpiente y suma 1 huevo.
-- Chocar contra la pared o contra uno mismo hace **reaparecer la serpiente con 0 huevos**.
+- Chocar contra la pared o contra uno mismo hace **reaparecer la serpiente con 0 huevos**, pero se guarda el **récord**: la mayor cantidad de huevos que llegó a tener en la ronda. **Los puntos se calculan con el récord**, así que chocar no te hace perder lo que ya lograste.
 - **La serpiente acelera** durante la ronda (de 0,098 s a 0,065 s por paso).
 - No se puede dar media vuelta.
 
@@ -384,6 +386,9 @@ Todos los valores que se pueden ajustar están como **constantes al principio de
 |---|---|---|---|
 | `BaseMinigameScreen` | `SEGUNDOS_INTRO` | 1.5 | Duración del cartel de inicio |
 | `BaseMinigameScreen` | `SEGUNDOS_RESULTADO` | 2.5 | Duración de la pantalla de fin de ronda |
+| `BaseMinigameScreen` | `DURACION_FUNDIDO` | 0.3 | Duración del fundido a negro entre pantallas |
+| `BaseMinigameScreen` | `SEGUNDOS_ALERTA` | 3 | Desde qué segundo el número del reloj se pone rojo |
+| `BaseMinigameScreen` | `RELOJ_RADIO` / `ALTO_BARRA` | 24 / 8 | Tamaño del reloj y grosor de las barras de tiempo |
 | `MainMenuScreen` | `MIN_RONDAS` / `MAX_RONDAS` / `RONDAS_INICIALES` | 3 / 15 / 8 | Rondas del modo Jugar |
 | Cada minijuego | `DURACION_RONDA` | 10 | Duración del juego |
 | Snake | `INTERVALO_INICIAL` / `INTERVALO_FINAL` | 0.098 / 0.065 | Velocidad de la serpiente |
