@@ -17,8 +17,8 @@ public class RaceScreen extends BaseMinigameScreen {
     private static final float VELOCIDAD_INICIAL = 5f;
     private static final float ACELERACION = 5f;
     private static final float INTERVALO_VELOCIDAD = 1f;
-    private static final float INTERVALO_OBSTACULOS_INICIAL = 2f;
-    private static final float INTERVALO_OBSTACULOS_FINAL = 0.8f;
+    private static final float SEPARACION_INICIAL = 320f;
+    private static final float SEPARACION_FINAL = 260f;
     private static final float VENTAJA_PARA_3 = 1.5f;
     private static final float VENTAJA_PARA_2 = 1.2f;
     private static final float VELOCIDAD_GENERAL = 32f;
@@ -59,7 +59,7 @@ public class RaceScreen extends BaseMinigameScreen {
     private int carrilP2 = 1;
     private float velocidadP1 = VELOCIDAD_INICIAL;
     private float velocidadP2 = VELOCIDAD_INICIAL;
-    private float tiempoObstaculos = 0f;
+    private final float[] recorrido = new float[2];
     private float tiempoVelocidad = 0f;
     private float autoX1;
     private float autoX2;
@@ -92,7 +92,6 @@ public class RaceScreen extends BaseMinigameScreen {
         autoX2 = carrilX(P2_X, carrilP2);
 
         tiempoVelocidad += delta;
-        tiempoObstaculos += delta;
         if (tiempoVelocidad >= INTERVALO_VELOCIDAD) {
             velocidadP1 += ACELERACION;
             velocidadP2 += ACELERACION;
@@ -100,14 +99,8 @@ public class RaceScreen extends BaseMinigameScreen {
             distanciaP2 += velocidadP2;
             tiempoVelocidad -= INTERVALO_VELOCIDAD;
         }
-        float intervalo = MathUtils.lerp(INTERVALO_OBSTACULOS_INICIAL, INTERVALO_OBSTACULOS_FINAL, 1f - tiempoRestante / DURACION_RONDA);
-        if (tiempoObstaculos >= intervalo) {
-            crearObstaculo(P1_X, obstaculosP1);
-            crearObstaculo(P2_X, obstaculosP2);
-            tiempoObstaculos -= intervalo;
-        }
-        velocidadP1 = actualizarObstaculos(obstaculosP1, rectP1, velocidadP1, delta);
-        velocidadP2 = actualizarObstaculos(obstaculosP2, rectP2, velocidadP2, delta);
+        velocidadP1 = actualizarObstaculos(0, P1_X, obstaculosP1, rectP1, velocidadP1, delta);
+        velocidadP2 = actualizarObstaculos(1, P2_X, obstaculosP2, rectP2, velocidadP2, delta);
     }
 
     private void crearObstaculo(float pistaX, ArrayList<Obstaculo> lista) {
@@ -115,8 +108,14 @@ public class RaceScreen extends BaseMinigameScreen {
         lista.add(new Obstaculo(x, ALTO_VIRTUAL, tamanoAuto, tamanoAuto));
     }
 
-    private float actualizarObstaculos(ArrayList<Obstaculo> lista, Rectangle auto, float velocidad, float delta) {
+    private float actualizarObstaculos(int p, float pistaX, ArrayList<Obstaculo> lista, Rectangle auto, float velocidad, float delta) {
         float caida = velocidad * delta * VELOCIDAD_GENERAL;
+        recorrido[p] += caida;
+        float separacion = MathUtils.lerp(SEPARACION_INICIAL, SEPARACION_FINAL, 1f - tiempoRestante / DURACION_RONDA);
+        if (recorrido[p] >= separacion) {
+            recorrido[p] = 0f;
+            crearObstaculo(pistaX, lista);
+        }
         for (int i = lista.size() - 1; i >= 0; i--) {
             Obstaculo obs = lista.get(i);
             obs.y -= caida;
@@ -169,7 +168,7 @@ public class RaceScreen extends BaseMinigameScreen {
         carrilP2 = 1;
         velocidadP1 = VELOCIDAD_INICIAL;
         velocidadP2 = VELOCIDAD_INICIAL;
-        tiempoObstaculos = 0f;
+        recorrido[0] = recorrido[1] = 0f;
         tiempoVelocidad = 0f;
     }
 
