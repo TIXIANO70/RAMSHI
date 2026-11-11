@@ -128,7 +128,7 @@ public class RpsScreen extends BaseMinigameScreen {
         fuente.setColor(Color.WHITE);
         usarFuente(Main.fuenteCartel);
         if (!revelado) {
-            int paso = Math.min(PASOS_CUENTA, (int) (tiempoMano / TIEMPO_PASO) + 1);
+            int paso = Math.max(1, PASOS_CUENTA - (int) (tiempoMano / TIEMPO_PASO));
             fuente.draw(batch, String.valueOf(paso), 390f, 260f);
         } else {
             usarFuente(Main.fuenteMediana);
