@@ -30,7 +30,10 @@ public class RpsScreen extends BaseMinigameScreen {
     private static final float TAMANO_SPRITE = 128f;
     private static final float P1_X = 140f;
     private static final float P2_X = 532f;
-    private static final float MANO_Y = 180f;
+    private static final float MANO_Y = 171f;
+    private static final float CENTRO_Y = 235f;
+    private static final float NOMBRE_Y = 127f;
+    private static final float MENSAJE_Y = 395f;
     private static final String[] NOMBRES = {"PIEDRA", "PAPEL", "TIJERA"};
     private final Texture[] texturas = new Texture[3];
     private final Texture fondo;
@@ -126,15 +129,15 @@ public class RpsScreen extends BaseMinigameScreen {
         batch.draw(texturas[mostradaP2], P2_X, MANO_Y, TAMANO_SPRITE, TAMANO_SPRITE);
 
         fuente.setColor(Color.WHITE);
-        usarFuente(Main.fuenteCartel);
+        usarFuente(revelado ? Main.fuenteCartel : Main.fuenteTitulo);
         if (!revelado) {
             int paso = Math.max(1, PASOS_CUENTA - (int) (tiempoMano / TIEMPO_PASO));
-            fuente.draw(batch, String.valueOf(paso), 390f, 260f);
+            dibujarCentradoEn(String.valueOf(paso), ANCHO_VIRTUAL / 2f, CENTRO_Y + fuente.getCapHeight() / 2f);
         } else {
+            dibujarCentradoEn(mensajeMano, ANCHO_VIRTUAL / 2f, MENSAJE_Y);
             usarFuente(Main.fuenteMediana);
-            fuente.draw(batch, mensajeMano, 340f, 360f);
-            fuente.draw(batch, NOMBRES[eleccionP1], P1_X + 20f, 150f);
-            fuente.draw(batch, NOMBRES[eleccionP2], P2_X + 20f, 150f);
+            dibujarCentradoEn(NOMBRES[eleccionP1], P1_X + TAMANO_SPRITE / 2f, NOMBRE_Y);
+            dibujarCentradoEn(NOMBRES[eleccionP2], P2_X + TAMANO_SPRITE / 2f, NOMBRE_Y);
         }
         batch.end();
     }

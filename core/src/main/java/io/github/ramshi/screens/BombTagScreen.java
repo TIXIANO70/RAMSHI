@@ -230,7 +230,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         batch.draw(bombaTex, bomba.x - TAMANO_BOMBA / 2f, bomba.y + 14f + MathUtils.sin(pulsoBomba) * 3f, TAMANO_BOMBA, TAMANO_BOMBA);
         usarFuente(Main.fuenteMediana);
         fuente.setColor(COLORES_HUD[portador.indice]);
-        fuente.draw(batch, "¡P" + (portador.indice + 1) + " TIENE LA BOMBA! ¡PASALA!", ANCHO_VIRTUAL / 2f - 135f, AVISO_Y);
+        dibujarCentradoEn("¡P" + (portador.indice + 1) + " TIENE LA BOMBA! ¡PASALA!", ANCHO_VIRTUAL / 2f, AVISO_Y);
         batch.end();
 
         formas.begin(ShapeType.Filled);

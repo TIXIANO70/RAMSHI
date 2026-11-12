@@ -112,7 +112,7 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 ### 3.1 Cartel de inicio (1,5 s)
 
 - La pantalla se oscurece y se divide en dos mitades, una por jugador.
-- Arriba: el **nombre del juego**.
+- Arriba: el **nombre del juego** y, en partida por rondas, "Juego N de M" con el total de cada jugador.
 - En cada mitad: la **consigna** en grande (por ejemplo **¡ESQUIVÁ!**), "JUGADOR 1" / "JUGADOR 2" y **las teclas que va a usar ese jugador, dibujadas en grande**, con lo que hace cada una.
   - Las teclas de movimiento aparecen con la forma del teclado (`W` arriba, `A S D` abajo; lo mismo con las flechas).
   - En RPS, debajo de cada tecla se ve el dibujo del objeto.
@@ -124,7 +124,7 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 - **Arriba a la derecha:** estado del jugador 2 (celeste).
 - **Corazones** (solo en los juegos con vidas: Quickdraw y Tank Duel): uno por vida, centrados en la mitad de cada jugador. Las vidas perdidas se ven como corazones vacíos.
 - **Barra de abajo:** recordatorio de los controles de cada jugador (tecla en chico + acción).
-- En partida por rondas, debajo del reloj: "Juego N/M" y el total de la partida.
+- Arriba y abajo hay **franjas oscuras semitransparentes** detrás de los textos y de los controles, para que se lean sobre cualquier fondo.
 
 ### 3.3 Al terminar el minijuego (2,5 s)
 
