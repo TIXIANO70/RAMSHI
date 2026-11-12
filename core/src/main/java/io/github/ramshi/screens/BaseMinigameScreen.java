@@ -17,6 +17,10 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
+import io.github.ramshi.menus.Boton;
+import io.github.ramshi.menus.Botonera;
+import io.github.ramshi.menus.EndlessMenuScreen;
+import io.github.ramshi.menus.ModoMenuScreen;
 import io.github.ramshi.session.GameSession;
 import io.github.ramshi.session.MinigameType;
 
@@ -42,6 +46,12 @@ public abstract class BaseMinigameScreen implements Screen {
     private static final float COL_GANADOR = 630f;
     private static final float SEGUNDOS_RESULTADO = 2.5f;
     public static final float DURACION_FUNDIDO = 0.3f;
+    private static final float PAUSA_TOTAL_Y = 118f;
+    private static final float BOTON_PAUSA_ANCHO = 170f;
+    private static final float BOTON_PAUSA_ALTO = 50f;
+    private static final float BOTONES_PAUSA_Y = 35f;
+    private static final float SEPARACION_BOTONES_PAUSA = 20f;
+    private static final float MARCADOR_Y = 260f;
     private static final float MARGEN_HUD = 16f;
     private static final float ALTURA_HUD = 462f;
     private static final float ALTO_LEYENDA = 40f;
@@ -90,6 +100,10 @@ public abstract class BaseMinigameScreen implements Screen {
     private Texture corazon;
     private Texture corazonVacio;
     private final Color colorBarra = new Color();
+    private final Botonera botonesPausa;
+    private boolean pausado;
+    private int partidasGanadasP1;
+    private int partidasGanadasP2;
 
     protected BaseMinigameScreen(Game juego) {
         this.juego = juego;
@@ -102,6 +116,20 @@ public abstract class BaseMinigameScreen implements Screen {
         this.vista.apply();
         this.camara.position.set(ANCHO_VIRTUAL / 2f, ALTO_VIRTUAL / 2f, 0);
         this.tiempoRestante = getDuracionRonda();
+
+        this.botonesPausa = new Botonera(vista);
+        float x = ANCHO_VIRTUAL / 2f - BOTON_PAUSA_ANCHO - SEPARACION_BOTONES_PAUSA / 2f;
+        botonesPausa.agregar(new Boton(x, BOTONES_PAUSA_Y, BOTON_PAUSA_ANCHO, BOTON_PAUSA_ALTO, "REANUDAR", Boton.VERDE,
+            () -> pausado = false));
+        botonesPausa.agregar(new Boton(x + BOTON_PAUSA_ANCHO + SEPARACION_BOTONES_PAUSA, BOTONES_PAUSA_Y, BOTON_PAUSA_ANCHO,
+            BOTON_PAUSA_ALTO, "SALIR", Boton.ROJO, () -> irA(pantallaDeSalida())));
+    }
+
+    private Screen pantallaDeSalida() {
+        if (sesion.esModoJugar()) return new ModoMenuScreen(juego, false);
+        MinigameType tipo = sesion.tipoActual();
+        if (tipo != null) EndlessMenuScreen.seleccionar(tipo);
+        return new EndlessMenuScreen(juego);
     }
 
     public void terminarRonda() {
@@ -114,6 +142,8 @@ public abstract class BaseMinigameScreen implements Screen {
         puntosGanadosP1 = victoriasP1 - antesP1;
         puntosGanadosP2 = victoriasP2 - antesP2;
         if (puntosGanadosP1 == 0 && puntosGanadosP2 == 0 && explicacion.isEmpty()) explicacion = "Empate: nadie suma puntos.";
+        if (puntosGanadosP1 > puntosGanadosP2) partidasGanadasP1++;
+        if (puntosGanadosP2 > puntosGanadosP1) partidasGanadasP2++;
         tiempoResultado = 0f;
     }
 
@@ -131,12 +161,12 @@ public abstract class BaseMinigameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            irA(new MainMenuScreen(juego));
-            return;
-        }
+        boolean puedePausar = !rondaTerminada || !sesion.esModoJugar();
+        if (puedePausar && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) pausado = !pausado;
 
-        if (tiempoIntro > 0f) {
+        if (pausado) {
+            botonesPausa.actualizar();
+        } else if (tiempoIntro > 0f) {
             tiempoIntro -= delta;
         } else if (!rondaTerminada) {
             tiempoRestante -= delta;
@@ -168,7 +198,8 @@ public abstract class BaseMinigameScreen implements Screen {
         dibujarJuego(batch);
         dibujarHUD();
 
-        if (tiempoIntro > 0f) dibujarIntro();
+        if (pausado) dibujarPausa();
+        else if (tiempoIntro > 0f) dibujarIntro();
         else if (rondaTerminada) dibujarFinDeRonda();
 
         tiempoEntrada -= delta;
@@ -177,6 +208,9 @@ public abstract class BaseMinigameScreen implements Screen {
             oscuridad = Math.max(oscuridad, (tiempoResultado - SEGUNDOS_RESULTADO + DURACION_FUNDIDO) / DURACION_FUNDIDO);
         }
         dibujarFundido(formas, Math.min(1f, oscuridad));
+
+        Boton elegido = pausado ? botonesPausa.elegido() : null;
+        if (elegido != null) elegido.ejecutar();
     }
 
     public static void dibujarFundido(ShapeRenderer formas, float oscuridad) {
@@ -342,7 +376,15 @@ public abstract class BaseMinigameScreen implements Screen {
         usarFuente(Main.fuenteChica);
         fuente.setColor(0.85f, 0.85f, 0.9f, 1f);
         dibujarExplicacion(EXPLICACION_Y);
+        dibujarTabla(true, TOTAL_Y);
 
+        usarFuente(Main.fuenteChica);
+        fuente.setColor(0.7f, 1f, 0.7f, 1f);
+        dibujarCentrado("Juego " + (sesion.getIndice() + 1) + " de " + sesion.getTotalJuegos() + "  -  siguiente en un instante...", 24f);
+        batch.end();
+    }
+
+    private void dibujarTabla(boolean conActual, float totalY) {
         usarFuente(Main.fuenteChica);
         fuente.setColor(Color.LIGHT_GRAY);
         float y = TABLA_Y;
@@ -357,22 +399,59 @@ public abstract class BaseMinigameScreen implements Screen {
             y -= ALTO_FILA;
             dibujarFila(++fila, r.tipo.getNombre(), r.puntosP1, r.puntosP2, y, Color.WHITE);
         }
-        y -= ALTO_FILA;
-        MinigameType actual = sesion.tipoActual();
-        dibujarFila(++fila, actual != null ? actual.getNombre() : "", puntosGanadosP1, puntosGanadosP2, y, COLOR_CONSIGNA);
+        int sumaP1 = sesion.totalP1();
+        int sumaP2 = sesion.totalP2();
+        if (conActual) {
+            y -= ALTO_FILA;
+            MinigameType actual = sesion.tipoActual();
+            dibujarFila(++fila, actual != null ? actual.getNombre() : "", puntosGanadosP1, puntosGanadosP2, y, COLOR_CONSIGNA);
+            sumaP1 += puntosGanadosP1;
+            sumaP2 += puntosGanadosP2;
+        }
 
         usarFuente(Main.fuenteMediana);
         fuente.setColor(COLOR_CONSIGNA);
-        fuente.draw(batch, "TOTAL", COL_NOMBRE, TOTAL_Y);
+        fuente.draw(batch, "TOTAL", COL_NOMBRE, totalY);
         fuente.setColor(COLOR_P1);
-        fuente.draw(batch, String.valueOf(sesion.totalP1() + puntosGanadosP1), COL_P1, TOTAL_Y);
+        fuente.draw(batch, String.valueOf(sumaP1), COL_P1, totalY);
         fuente.setColor(COLOR_P2);
-        fuente.draw(batch, String.valueOf(sesion.totalP2() + puntosGanadosP2), COL_P2, TOTAL_Y);
+        fuente.draw(batch, String.valueOf(sumaP2), COL_P2, totalY);
+    }
 
-        usarFuente(Main.fuenteChica);
-        fuente.setColor(0.7f, 1f, 0.7f, 1f);
-        dibujarCentrado("Juego " + fila + " de " + sesion.getTotalJuegos() + "  -  siguiente en un instante...", 24f);
+    private void dibujarPausa() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(0.03f, 0.03f, 0.06f, 0.93f);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.end();
+
+        MinigameType tipo = sesion.tipoActual();
+        String nombre = tipo != null ? tipo.getNombre() : "";
+        batch.begin();
+        usarFuente(Main.fuenteCartel);
+        fuente.setColor(COLOR_CONSIGNA);
+        dibujarCentrado("PAUSA", GANADOR_Y);
+        usarFuente(Main.fuenteMediana);
+        fuente.setColor(Color.WHITE);
+        if (sesion.esModoJugar()) {
+            dibujarCentrado("Juego " + (sesion.getIndice() + 1) + " de " + sesion.getTotalJuegos() + ": " + nombre, MOTIVO_Y);
+            dibujarTabla(false, PAUSA_TOTAL_Y);
+        } else {
+            dibujarCentrado(nombre + "  -  Endless", MOTIVO_Y);
+            usarFuente(Main.fuenteChica);
+            fuente.setColor(Color.LIGHT_GRAY);
+            dibujarCentrado("PARTIDAS GANADAS", MARCADOR_Y + 60f);
+            usarFuente(Main.fuenteTitulo);
+            fuente.setColor(COLOR_P1);
+            dibujarCentradoEn("P1  " + partidasGanadasP1, centroJugador(0) + 80f, MARCADOR_Y);
+            fuente.setColor(COLOR_P2);
+            dibujarCentradoEn(partidasGanadasP2 + "  P2", centroJugador(1) - 80f, MARCADOR_Y);
+            fuente.setColor(Color.WHITE);
+            dibujarCentrado("-", MARCADOR_Y);
+        }
         batch.end();
+
+        botonesPausa.dibujar(formas, batch);
     }
 
     private void dibujarExplicacion(float y) {
@@ -415,11 +494,11 @@ public abstract class BaseMinigameScreen implements Screen {
 
         fuente.setColor(1f, 0.85f, 0.2f, 1f);
         usarFuente(Main.fuenteMediana);
-        dibujarCentrado("VICTORIAS TOTALES:  P1 [" + victoriasP1 + "]  -  P2 [" + victoriasP2 + "]", 200f);
+        dibujarCentrado("PARTIDAS GANADAS:  P1 [" + partidasGanadasP1 + "]  -  P2 [" + partidasGanadasP2 + "]", 200f);
 
         fuente.setColor(0.7f, 1f, 0.7f, 1f);
         usarFuente(Main.fuenteChica);
-        dibujarCentrado("[ ESPACIO ] Siguiente Ronda       [ ESC ] Menu Principal", 145f);
+        dibujarCentrado("[ ESPACIO ] Siguiente ronda       [ ESC ] Pausa", 145f);
 
         usarFuente(Main.fuenteMediana);
         batch.end();

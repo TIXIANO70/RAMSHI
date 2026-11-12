@@ -43,14 +43,40 @@ La ventana es de **800 × 480** (el mundo del juego mide lo mismo; si se agranda
 
 ---
 
-## 2. Modos de juego
+## 2. Menús y modos de juego
 
-El menú principal tiene tres botones: **JUGAR**, **ENDLESS** y **SALIR**. Se usa con el mouse.
+Los menús se usan **con el mouse o con el teclado, como en una consola**:
 
-### Jugar (partida completa)
+| Tecla | Qué hace |
+|---|---|
+| `W` `A` `S` `D` o flechas | Mueven la selección al botón que está en esa dirección (el seleccionado se ve más claro y con borde blanco) |
+| `ENTER` o `ESPACIO` | Aprietan el botón seleccionado |
+| `ESC` | Vuelve al menú anterior |
+| Mouse | Pasar por encima selecciona el botón y el clic lo aprieta |
 
-1. Con los botones **−** y **+** se eligen las **rondas**: de **3 a 15** (empieza en **8**).
-2. Al tocar **JUGAR** se arma una lista de minijuegos al azar. **Nunca sale el mismo juego dos veces seguidas**; si hay más rondas que juegos, se vuelve a mezclar la lista.
+En cualquier submenú, el botón rojo **VOLVER** está abajo a la izquierda. Cada pantalla arranca con el botón principal ya seleccionado (JUGAR, JUGAR RONDAS, REANUDAR…).
+
+```
+Menú principal
+├── JUGAR
+│   ├── LOCAL ──── Partida por rondas (3 a 12)
+│   │              └── ENDLESS ── selector de minijuego
+│   └── EN RED ─── (igual que Local, desactivado: "Próximamente...")
+├── GUÍA ───────── páginas con la explicación del juego y de cada minijuego
+├── AJUSTES ────── pantalla completa (se guarda)
+└── SALIR
+```
+
+- **Menú principal:** el título "RAMSHI" (si existe `assets/ui/logo.png`, se muestra el logo en su lugar) y los botones **JUGAR**, **GUÍA**, **AJUSTES** y **SALIR**.
+- **Jugar:** dos tarjetas, **LOCAL** (los dos en el mismo teclado) a la izquierda y **EN RED** (cada uno en su compu) a la derecha.
+- **En red:** tiene el mismo menú que Local, pero con los botones apagados y el cartel **"Próximamente..."**.
+- **Guía:** como una presentación. Las primeras dos páginas explican qué es el juego, los controles, los modos, los puntos y la pausa; después hay **una página por minijuego** con *cómo se juega*, *meta* y *puntos*. Abajo se ve la página actual (`3/14`) con flechas; se cambia con las flechas en pantalla, `←` `→` o `A` `D`. **Es un bucle:** después de la última vuelve a la primera.
+- **Ajustes:** botón **PANTALLA COMPLETA: SÍ / NO**. Queda guardado para la próxima vez que se abra el juego.
+
+### Partida por rondas
+
+1. Con los botones **−** y **+** se eligen las **rondas**: de **3 a 12** (empieza en **8**).
+2. Al tocar **JUGAR RONDAS** se arma una lista de minijuegos al azar. **Nunca sale el mismo juego dos veces seguidas**; si hay más rondas que juegos, se vuelve a mezclar la lista.
 3. Se juegan uno detrás del otro sin volver al menú.
 4. Después de cada minijuego aparece la **tabla de la partida** (ver [sección 3](#3-qué-pasa-en-cada-minijuego)).
 5. Al terminar la última ronda se pasa a la **pantalla de resultados**:
@@ -62,12 +88,20 @@ El menú principal tiene tres botones: **JUGAR**, **ENDLESS** y **SALIR**. Se us
 
 ### Endless (práctica)
 
-1. Se elige **un minijuego** de la lista (12 botones en dos columnas).
-2. Se juega en bucle: al terminar cada ronda aparece el cartel del ganador con la explicación de los puntos y las **victorias totales** de la sesión.
+1. Se elige **un minijuego** en un selector circular:
+   - En el centro, un **círculo grande** con la imagen del minijuego, su **nombre** abajo y el número (`5/12`) con flechas.
+   - A los costados, **un poco más chicos y sin texto**, el minijuego anterior y el siguiente.
+   - Se cambia con las flechas en pantalla, `←` `→`, `A` `D` o tocando un círculo del costado. **Es un bucle.** Al cambiar, los círculos **se deslizan** hacia el costado (0,18 s): el nuevo crece al llegar al centro y el que sale se desvanece en el borde.
+   - Se juega con el botón **JUGAR** (arranca seleccionado, así que alcanza con `ENTER` o `ESPACIO`) o tocando el círculo del centro. Acá izquierda y derecha cambian de juego, así que para ir a **VOLVER** se usa `S` / `↓` (y `W` / `↑` para subir).
+   - Las imágenes van en `assets/menu/minijuegos/<nombre>.png` (por ejemplo `snake.png`, `tug_of_war.png`), **ya recortadas en círculo con fondo transparente**. Mientras no exista la imagen, se dibuja un círculo de color con la inicial.
+2. Se juega en bucle: al terminar cada ronda aparece el cartel del ganador con la explicación de los puntos y las **partidas ganadas** por cada uno.
 3. `ESPACIO` o `ENTER` → siguiente ronda (si no, arranca sola a los 2,5 s).
-4. `ESC` → vuelve al menú (también desde la lista de juegos).
 
-En cualquier minijuego, **`ESC` vuelve al menú principal**.
+### Pausa (`ESC` en medio de un minijuego)
+
+- El juego se congela (también el reloj) y aparece la pantalla de **PAUSA** con dos botones: **REANUDAR** (verde) y **SALIR** (rojo). Se eligen con el mouse o con `A` `D` / flechas y `ENTER` / `ESPACIO`. `ESC` también reanuda.
+- **En partida por rondas:** muestra en qué juego van (`Juego 3 de 8: Race`), la **tabla de los juegos ya jugados** y el **total** de cada uno. *SALIR* vuelve al menú Local. No se puede pausar durante los 2,5 s de la tabla entre juegos.
+- **En Endless:** muestra el **marcador de partidas ganadas** (`P1 3 - 2 P2`). *SALIR* vuelve al selector de Endless con ese mismo minijuego elegido.
 
 ---
 
@@ -81,20 +115,20 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 - Arriba: el **nombre del juego**.
 - En cada mitad: la **consigna** en grande (por ejemplo **¡ESQUIVÁ!**), "JUGADOR 1" / "JUGADOR 2" y **las teclas que va a usar ese jugador, dibujadas en grande**, con lo que hace cada una.
   - Las teclas de movimiento aparecen con la forma del teclado (`W` arriba, `A S D` abajo; lo mismo con las flechas).
-  - En Piedra, papel o tijera, debajo de cada tecla se ve el dibujo del objeto.
+  - En RPS, debajo de cada tecla se ve el dibujo del objeto.
 
 ### 3.2 Durante el juego
 
 - **Arriba a la izquierda:** estado del jugador 1 (verde).
 - **Arriba al centro:** el **reloj**, un círculo con los segundos que quedan (del 10 al 1) en grande y amarillo; se pone **rojo en los últimos 3 segundos**. A los costados, sobre el borde de arriba, dos barras que se van **cortando desde los extremos hacia el reloj** y cambian de **verde a amarillo y a rojo**; cuando llegan al centro se terminó el tiempo.
 - **Arriba a la derecha:** estado del jugador 2 (celeste).
-- **Corazones** (solo en los juegos con vidas: Quickdraw y Duelo de Tanques): uno por vida, centrados en la mitad de cada jugador. Las vidas perdidas se ven como corazones vacíos.
+- **Corazones** (solo en los juegos con vidas: Quickdraw y Tank Duel): uno por vida, centrados en la mitad de cada jugador. Las vidas perdidas se ven como corazones vacíos.
 - **Barra de abajo:** recordatorio de los controles de cada jugador (tecla en chico + acción).
-- En modo Jugar, debajo del reloj: "Juego N/M" y el total de la partida.
+- En partida por rondas, debajo del reloj: "Juego N/M" y el total de la partida.
 
 ### 3.3 Al terminar el minijuego (2,5 s)
 
-**En modo Jugar** aparece la tabla de la partida:
+**En partida por rondas** aparece la tabla de la partida:
 
 - **Quién ganó y cuántos puntos sumó** (en grande).
 - **El motivo** (qué pasó en el juego).
@@ -102,9 +136,9 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
   Ejemplo: *"El rival se hundió a los 2,4 s (antes de 3,3 s = 3 pts, antes de 6,6 s = 2, después = 1)"*.
 - La lista de los juegos jugados hasta el momento, con el último **resaltado en amarillo**, y el **total actualizado** de cada jugador.
 
-**En modo Endless** aparece un cartel con lo mismo (ganador, motivo, explicación) y las victorias totales.
+**En modo Endless** aparece un cartel con lo mismo (ganador, motivo, explicación) y las partidas ganadas por cada uno.
 
-**Transición:** en modo Jugar, en los últimos 0,3 s de la tabla la pantalla se funde a negro, y el minijuego siguiente (o la pantalla de resultados) aparece aclarándose en otros 0,3 s.
+**Transición:** en partida por rondas, en los últimos 0,3 s de la tabla la pantalla se funde a negro, y el minijuego siguiente (o la pantalla de resultados) aparece aclarándose en otros 0,3 s.
 
 ---
 
@@ -127,7 +161,7 @@ Hay dos formas de medir "qué tan buena" fue la victoria:
   - después de 6,6 s → **1 punto**
 - **Por diferencia** (juegos que se deciden al final): cuanto mayor la ventaja, más puntos (ver cada juego).
 
-**Excepción:** Piedra, papel o tijera da 1 punto por mano ganada, con un tope de 5.
+**Excepción:** RPS da 1 punto por mano ganada, con un tope de 5.
 
 El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijuegos).
 
@@ -140,17 +174,17 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 | # | Minijuego | Consigna | Controles P1 / P2 | Cómo se gana | 3 pts | 2 pts | 1 pt |
 |---|---|---|---|---|---|---|---|
 | 1 | Snake | ¡COMÉ! | WASD / flechas | Mejor récord de huevos | Gana por 4+ | por 2-3 | por 1 |
-| 2 | Secuencia de luces | ¡REPETÍ! | WASD / flechas | Más secuencias completadas | 3 de 3 | 2 | 1 |
-| 3 | Lluvia de cañonazos | ¡ESQUIVÁ! | A D / ← → | El rival se hunde primero | antes de 3,3 s | antes de 6,6 s | después |
-| 4 | Tira y afloja | ¡TIRÁ! | A D / ← → (alternando) | Llevar la soga a tu línea | llega antes de 3,3 s | antes de 6,6 s | después, o soga de su lado al final |
+| 2 | Lights | ¡REPETÍ! | WASD / flechas | Más secuencias completadas | 3 de 3 | 2 | 1 |
+| 3 | Ships | ¡ESQUIVÁ! | A D / ← → | El rival se hunde primero | antes de 3,3 s | antes de 6,6 s | después |
+| 4 | Tug of War | ¡TIRÁ! | A D / ← → (alternando) | Llevar la soga a tu línea | llega antes de 3,3 s | antes de 6,6 s | después, o soga de su lado al final |
 | 5 | Quickdraw | ¡DISPARÁ! | WASD / flechas | Dejar al rival sin vidas o tener más | termina con 3 vidas | con 2 | con 1 |
-| 6 | Carrera | ¡ESQUIVÁ! | A D / ← → | Más distancia recorrida | +50% | +20% | menos |
-| 7 | Piedra, papel o tijera | ¡GANÁ! | A S D / ← ↓ → | Más manos ganadas | 1 punto por mano ganada, **hasta 5** | | |
-| 8 | Duelo de Tanques | ¡DESTRUÍ! | WASD + ESPACIO / flechas + ENTER | Destruir al rival o más vidas | KO sin perder vidas | KO | más vidas al final |
-| 9 | La Papa Caliente | ¡PASALA! | WASD + ESPACIO / flechas + ENTER | No tener la bomba a los 10 s | el rival la tuvo +70% | +50% | menos |
-| 10 | Ping Pong Bomba | ¡DEVOLVÉ! | W S / ↑ ↓ | Meter 2 goles | 2-0 | 2-1 | iba ganando al final |
-| 11 | Lucha de Sumo | ¡EMPUJÁ! | A D + W / ← → + ↑ | Tirar al rival de la plataforma | ring out antes de 3,3 s | antes de 6,6 s | después, o más cerca del centro |
-| 12 | Stop It! | ¡FRENÁ! | W / ↑ | Más puntos frenando la barra | gana por 6+ | por 3-5 | por 1-2 |
+| 6 | Race | ¡ESQUIVÁ! | A D / ← → | Más distancia recorrida | +50% | +20% | menos |
+| 7 | RPS | ¡GANÁ! | A S D / ← ↓ → | Más manos ganadas | 1 punto por mano ganada, **hasta 5** | | |
+| 8 | Tank Duel | ¡DESTRUÍ! | WASD + ESPACIO / flechas + ENTER | Destruir al rival o más vidas | KO sin perder vidas | KO | más vidas al final |
+| 9 | Bomb Tag | ¡PASALA! | WASD + ESPACIO / flechas + ENTER | No tener la bomba a los 10 s | el rival la tuvo +70% | +50% | menos |
+| 10 | Ping Pong | ¡DEVOLVÉ! | W S / ↑ ↓ | Meter 2 goles | 2-0 | 2-1 | iba ganando al final |
+| 11 | Sumo | ¡EMPUJÁ! | A D + W / ← → + ↑ | Tirar al rival de la plataforma | ring out antes de 3,3 s | antes de 6,6 s | después, o más cerca del centro |
+| 12 | Stop It | ¡FRENÁ! | W / ↑ | Más puntos frenando la barra | gana por 6+ | por 3-5 | por 1-2 |
 
 ### Detalle de cada minijuego
 
@@ -161,19 +195,19 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 - **La serpiente acelera** durante la ronda (de 0,098 s a 0,065 s por paso).
 - No se puede dar media vuelta.
 
-#### 2. Secuencia de luces — `LightsScreen`
+#### 2. Lights — `LightsScreen`
 - **3 secuencias** de **4, 5 y 6 luces** dentro de los 10 s. Cada una se muestra en 1 s (así que la última va más rápido).
 - **Los dos reciben la misma secuencia**; gana la secuencia el primero que la repite completa.
 - Equivocarse **reinicia el progreso** de esa secuencia.
 - Las teclas se ven como teclas reales (pack de Kenney) que se encienden con el color de cada dirección.
 
-#### 3. Lluvia de cañonazos — `ShipsScreen`
+#### 3. Ships — `ShipsScreen`
 - Pantalla dividida: cada barco se mueve de izquierda a derecha en su zona.
 - **Los dos reciben exactamente el mismo patrón de balas** (se genera una sola vez por ronda).
 - La caída se acelera fuerte hacia el final (curva de dificultad 2,2: tranquilo al principio, lluvia al final).
 - El primero al que le pega una bala pierde. Si les pegan a los dos a la vez, o sobreviven los dos, es empate.
 
-#### 4. Tira y afloja — `TugOfWarScreen`
+#### 4. Tug of War — `TugOfWarScreen`
 - Hay que **alternar** las dos teclas (`A`/`D` o `←`/`→`). Apretar la misma dos veces seguidas **no tira**.
 - Cada tirón mueve la soga 5 px; a los 150 px se llega a la línea y se gana en el momento.
 - Si nadie llega, gana quien tenga la soga de su lado al final (1 punto).
@@ -185,40 +219,40 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 - **Apretar una tecla equivocada o antes de tiempo te saca una vida a vos.**
 - Termina cuando alguien se queda sin vidas o se acaba el tiempo.
 
-#### 6. Carrera — `RaceScreen`
+#### 6. Race — `RaceScreen`
 - Cada auto tiene una pista de 3 carriles; se cambia de carril con izquierda/derecha.
 - La velocidad sube sola cada segundo y la distancia se acumula.
 - Los obstáculos aparecen **cada cierta distancia recorrida** (siempre separados, nunca amontonados).
 - **Chocar** deja la velocidad en 0 y rompe el obstáculo. La parte trasera del auto no cuenta como choque (para que no frene si apenas lo rozás al cambiar de carril).
 
-#### 7. Piedra, papel o tijera — `RpsScreen`
+#### 7. RPS (piedra, papel o tijera) — `RpsScreen`
 - Manos rápidas: cuenta regresiva **2, 1** (0,4 s por número) y se revela durante 0,5 s, así que entran unas **7 manos** en 10 s.
 - Durante la cuenta, cada uno elige en secreto (`A` piedra, `S` papel, `D` tijera / `←` piedra, `↓` papel, `→` tijera). Si no elige, queda papel.
 - Gana la ronda quien ganó más manos y suma **1 punto por mano ganada, hasta 5** (`PUNTOS_MAXIMOS`). Es el único juego que puede dar más de 3.
 
-#### 8. Duelo de Tanques — `TankDuelScreen`
+#### 8. Tank Duel — `TankDuelScreen`
 - Tanques que se mueven en 4 direcciones y disparan hacia donde miran.
 - **3 vidas** cada uno (corazones arriba). Las balas se rompen contra las cajas y los bordes.
 - Los tanques no se pueden encimar.
 
-#### 9. La Papa Caliente — `BombTagScreen`
+#### 9. Bomb Tag — `BombTagScreen`
 - Uno empieza con la bomba (al azar). **Al tocar al rival, se la pasa**, con un momento de inmunidad para que no vuelva enseguida.
 - El que tiene la bomba corre un 8% más rápido.
 - **Dash** con `ESPACIO` / `ENTER` (recarga de 2 s; se ve abajo de cada lado).
 - A los 10 s explota la bomba: pierde quien la tiene. **Nunca hay empate.**
 
-#### 10. Ping Pong Bomba — `PingPongScreen`
+#### 10. Ping Pong — `PingPongScreen`
 - Paletas verticales a cada lado, una "bomba" como pelota.
 - Cada rebote en una paleta la acelera un 8%.
 - El primero en meter **2 goles** gana en el momento.
 
-#### 11. Lucha de Sumo — `SumoScreen`
+#### 11. Sumo — `SumoScreen`
 - Empujar al rival fuera de la plataforma. **La plataforma se achica** con el tiempo (de 440 a 260 px).
 - Si los dos empujan de frente, hay una onda de choque y rebotan.
 - `W` / `↑` para saltar (sirve para esquivar).
 - Si nadie cae, gana el que terminó más cerca del centro.
 
-#### 12. Stop It! — `StopItScreen`
+#### 12. Stop It — `StopItScreen`
 - Un marcador va y viene sobre una barra; hay que **frenarlo dentro de la zona**.
 - Perfecto = 3, bien = 2, cerca = 1, afuera = 0. Después de cada intento la zona se achica y el marcador va más rápido.
 - Gana quien suma más; los puntos de RAMSHI salen de la diferencia.
@@ -232,20 +266,32 @@ RAMSHI/
 ├── assets/                       Imágenes y fuentes (una carpeta por minijuego)
 │   ├── bombtag/  lights/  pingpong/  quickdraw/  race/  rps/
 │   ├── ships/  snake/  stopit/  sumo/  tanks/  tugofwar/
+│   ├── menu/minijuegos/          (futuro) Imágenes circulares del selector de Endless
 │   └── ui/
 │       ├── fonts/                Pixelify Sans (+ licencia OFL)
-│       └── kenney/               Pack de teclas de Kenney (ver INDICE.md)
+│       ├── kenney/               Pack de teclas de Kenney (ver INDICE.md)
+│       └── logo.png              (futuro) Logo del menú principal
 ├── core/src/main/java/io/github/ramshi/
 │   ├── Main.java                 Arranque del juego y fuentes compartidas
+│   ├── Ajustes.java              Ajustes guardados (pantalla completa)
+│   ├── menus/
+│   │   ├── MenuScreen.java           Base de todos los menús (cámara, botones, VOLVER, textos)
+│   │   ├── Boton.java / Botonera.java   Botones con color y la lista que los dibuja y detecta el clic
+│   │   ├── Paginador.java            "3/14" con flechas, en bucle (Guía y Endless)
+│   │   ├── MainMenuScreen.java       Menú principal
+│   │   ├── JugarMenuScreen.java      Elegir Local o En red
+│   │   ├── ModoMenuScreen.java       Rondas y Endless (el mismo para Local y En red)
+│   │   ├── EndlessMenuScreen.java    Selector circular de minijuego
+│   │   ├── GuiaScreen.java           Guía en páginas
+│   │   └── AjustesScreen.java        Pantalla de ajustes
 │   ├── screens/
-│   │   ├── BaseMinigameScreen.java   Base de todos los minijuegos
+│   │   ├── BaseMinigameScreen.java   Base de todos los minijuegos (HUD, reloj, pausa, tablas)
 │   │   ├── Controles.java            Teclas de Kenney: cartel de inicio y barra de abajo
-│   │   ├── MainMenuScreen.java       Menú principal y lista de Endless
-│   │   ├── ResultsScreen.java        Resultado final del modo Jugar
+│   │   ├── ResultsScreen.java        Resultado final de la partida por rondas
 │   │   └── *Screen.java              Un archivo por minijuego (12)
 │   └── session/
 │       ├── GameSession.java          Estado de la partida (modo, cola de juegos, puntos)
-│       └── MinigameType.java         Catálogo de minijuegos (una línea por juego)
+│       └── MinigameType.java         Catálogo de minijuegos (nombre, clase y textos de la Guía)
 ├── lwjgl3/                       Lanzador de escritorio (ventana 800 × 480)
 ├── CREDITS.md                    Créditos de assets y fuentes
 └── README.md
@@ -258,15 +304,22 @@ Todo el código (variables, métodos, constantes) está **en español** para que
 ## 7. Cómo funciona por dentro
 
 ### `Main`
-Extiende `Game` de libGDX. Al arrancar crea **5 fuentes** (Pixelify Sans en 16, 20, 24, 32 y 56 px) que usan todas las pantallas (`Main.fuenteChica`, `fuenteMediana`, `fuenteGrande`, `fuenteCartel`, `fuenteTitulo`) y abre el menú. Al cerrar, libera las fuentes y las texturas de las teclas.
+Extiende `Game` de libGDX. Al arrancar crea **5 fuentes** (Pixelify Sans en 16, 20, 24, 32 y 56 px) que usan todas las pantallas (`Main.fuenteChica`, `fuenteMediana`, `fuenteGrande`, `fuenteCartel`, `fuenteTitulo`), activa la pantalla completa si estaba guardada y abre el menú. Al cerrar, libera las fuentes y las texturas de las teclas.
+
+### Menús (`menus/`)
+- **`MenuScreen`** es la base de todos los menús: arma la cámara de 800 × 480, maneja el mouse, dibuja los botones y agrega el botón **VOLVER** (`agregarVolver(...)`, que también responde a `ESC`). Cada menú solo define qué botones tiene y qué dibuja en `dibujar()`.
+- **`Boton`** tiene posición, texto, color (`Boton.VERDE`, `Boton.ROJO`, `Boton.NEUTRO`) y la acción al tocarlo. Con `activo = false` queda gris y no responde (así está el menú En red).
+- **`Botonera`** es la lista de botones de una pantalla: guarda cuál está **seleccionado**, lo mueve con el teclado buscando el botón más cercano en esa dirección (`mover(dx, dy)`), detecta el mouse, devuelve el botón elegido con clic, `ENTER` o `ESPACIO` (`elegido()`) y los dibuja. Con `navegarHorizontal = false` solo se mueve arriba/abajo (lo usan Endless y la Guía, donde izquierda/derecha cambian de página). Con `enfocar(boton)` se elige cuál arranca seleccionado. **La usa también la pausa de los minijuegos**, así que todos los botones del juego se ven igual.
+- **`Paginador`** guarda en qué página estás, la cambia con flechas o teclas y dibuja el `3/14`. Siempre es un bucle. Lo usan la Guía y el selector de Endless.
+- **`Ajustes`** (fuera de `menus/`) guarda la pantalla completa con las `Preferences` de libGDX (en Windows quedan en la carpeta `.prefs` del usuario, no en el repo).
 
 ### `BaseMinigameScreen`
 Clase abstracta de la que heredan los 12 minijuegos. Se encarga de todo lo común:
 
 - Cámara y mundo virtual de **800 × 480** (`ANCHO_VIRTUAL`, `ALTO_VIRTUAL`).
 - **Cronómetro** de la ronda, cartel de inicio, HUD, barra de controles, corazones y pantallas de fin de ronda.
-- `ESC` para volver al menú.
-- Pasar al siguiente juego (modo Jugar) o reiniciar la ronda (modo Endless).
+- **Pausa** con `ESC` (tabla de la partida o marcador de Endless, con REANUDAR y SALIR).
+- Pasar al siguiente juego (partida por rondas) o reiniciar la ronda (modo Endless).
 - Calcular cuántos puntos sumó cada jugador en ese juego.
 
 **Métodos que cada minijuego tiene que implementar (obligatorios):**
@@ -312,8 +365,15 @@ Controles.una("piedra", Controles.A, Controles.IZQUIERDA).conIcono("rps/piedra.p
 ```
 
 ### `GameSession` y `MinigameType`
-- `MinigameType` es la **lista de minijuegos**: una línea por juego con el nombre que se ve y la clase.
-- `GameSession` guarda el modo (Jugar o Endless), la cola de juegos y los resultados. El menú de Endless se arma solo a partir de `MinigameType` (máximo 12 botones).
+- `MinigameType` es la **lista de minijuegos**: por cada juego tiene el nombre que se ve (igual al de su clase: `Snake`, `Lights`, `Ships`, `Tug of War`, `Quickdraw`, `Race`, `RPS`, `Tank Duel`, `Bomb Tag`, `Ping Pong`, `Sumo`, `Stop It`), la clase y los textos de la Guía (*cómo se juega*, *meta* y *puntos*). **La Guía y el selector de Endless se arman solos a partir de esta lista**, sin límite de cantidad.
+- `GameSession` guarda el modo (rondas o Endless), la cola de juegos y los resultados. La cola se mezcla con una **semilla** (`iniciarJugar(rondas, semilla)`): con la misma semilla sale siempre el mismo orden.
+
+### Pensado para el modo en red
+El modo en red (probablemente *peer to peer*) todavía no existe, pero el código ya está armado para que se pueda agregar sin rehacer los menús:
+- **`ModoMenuScreen` es uno solo** para Local y En red (`new ModoMenuScreen(juego, true)`). Cuando exista la red, alcanza con activar sus botones y que inicien una partida en red.
+- **La semilla de `GameSession`**: un jugador la genera, se la manda al otro, y los dos arman exactamente la misma lista de minijuegos sin tener que mandarla entera.
+- **Los menús, botones y paginador no dependen del modo**: se reutilizan tal cual.
+- Lo que **sí falta** para la red: que los minijuegos no lean el teclado directamente (`Gdx.input`) sino a través de una "entrada de jugador" que pueda venir del teclado o de la red, y la conexión en sí. La pausa en red tendría que avisarle al otro jugador.
 
 ---
 
@@ -364,17 +424,22 @@ public class MiJuegoScreen extends BaseMinigameScreen {
 }
 ```
 
-3. **Registrar:** agregar una línea en `session/MinigameType.java`:
+3. **Registrar:** agregar una entrada en `session/MinigameType.java`. Con eso ya aparece en la partida por rondas, en el selector de Endless y en la Guía:
 
 ```java
-MI_JUEGO("Nombre visible", MiJuegoScreen::new),
+MI_JUEGO("Mi Juego", MiJuegoScreen::new,
+    "Cómo se juega, en una o dos oraciones.",
+    "Cuál es la meta.",
+    "Cómo se reparten los puntos."),
 ```
 
-**Reglas para que funcione bien en el modo Jugar:**
+4. **(Opcional) Imagen del selector:** `assets/menu/minijuegos/mi_juego.png` (el nombre de la constante en minúsculas), recortada en círculo con fondo transparente.
+
+**Reglas para que funcione bien en la partida por rondas:**
 - La duración tiene que ser una constante `static final` (la base la lee en su constructor, antes de que existan los campos del juego; si fuera un campo normal valdría 0 y el juego terminaría al instante).
 - El ganador suma entre 1 y 3 puntos con `sumarPuntos(...)`; el empate no suma.
 - `dispose()` siempre llama a `super.dispose()`.
-- No cambiar de pantalla ni manejar `ESC` desde el juego: lo hace la base.
+- No cambiar de pantalla ni manejar `ESC` desde el juego: lo hace la base (la pausa).
 
 ---
 
@@ -389,26 +454,28 @@ Todos los valores que se pueden ajustar están como **constantes al principio de
 | `BaseMinigameScreen` | `DURACION_FUNDIDO` | 0.3 | Duración del fundido a negro entre pantallas |
 | `BaseMinigameScreen` | `SEGUNDOS_ALERTA` | 3 | Desde qué segundo el número del reloj se pone rojo |
 | `BaseMinigameScreen` | `RELOJ_RADIO` / `ALTO_BARRA` | 24 / 8 | Tamaño del reloj y grosor de las barras de tiempo |
-| `MainMenuScreen` | `MIN_RONDAS` / `MAX_RONDAS` / `RONDAS_INICIALES` | 3 / 15 / 8 | Rondas del modo Jugar |
+| `ModoMenuScreen` | `MIN_RONDAS` / `MAX_RONDAS` / `RONDAS_INICIALES` | 3 / 12 / 8 | Rondas de la partida |
+| `EndlessMenuScreen` | `DURACION_DESLIZAR` | 0.18 | Velocidad de la animación del selector |
+| `EndlessMenuScreen` | `RADIO_CENTRO` / `RADIO_LADO` | 85 / 62 | Tamaño del círculo del centro y de los costados |
 | Cada minijuego | `DURACION_RONDA` | 10 | Duración del juego |
 | Snake | `INTERVALO_INICIAL` / `INTERVALO_FINAL` | 0.098 / 0.065 | Velocidad de la serpiente |
-| Secuencia de luces | `LARGOS_SECUENCIA` | {4, 5, 6} | Cantidad de luces (y de secuencias) |
-| Secuencia de luces | `TIEMPO_MUESTRA` | 1 | Tiempo en que se muestra cada secuencia |
-| Secuencia de luces | `REINICIAR_AL_FALLAR` | true | Si equivocarse reinicia el progreso |
-| Lluvia de cañonazos | `VELOCIDAD_CAIDA_FIN` / `CURVA_DIFICULTAD` | 1150 / 2.2 | Qué tan brusca es la lluvia al final |
-| Tira y afloja | `PASO_TIRON` / `DESPLAZAMIENTO_MAX` | 5 / 150 | Cuántos tirones hacen falta para ganar |
+| Lights | `LARGOS_SECUENCIA` | {4, 5, 6} | Cantidad de luces (y de secuencias) |
+| Lights | `TIEMPO_MUESTRA` | 1 | Tiempo en que se muestra cada secuencia |
+| Lights | `REINICIAR_AL_FALLAR` | true | Si equivocarse reinicia el progreso |
+| Ships | `VELOCIDAD_CAIDA_FIN` / `CURVA_DIFICULTAD` | 1150 / 2.2 | Qué tan brusca es la lluvia al final |
+| Tug of War | `PASO_TIRON` / `DESPLAZAMIENTO_MAX` | 5 / 150 | Cuántos tirones hacen falta para ganar |
 | Quickdraw | `TIEMPO_REACCION` | 0.35 | Ventana para disparar |
-| Carrera | `SEPARACION_INICIAL` / `SEPARACION_FINAL` | 320 / 260 | Distancia entre obstáculos |
-| Carrera | `PARTE_TRASERA_LIBRE` / `MARGEN_GOLPE` | 0.35 / 10 | Qué tan permisivo es el choque |
-| Piedra, papel o tijera | `PASOS_CUENTA` / `TIEMPO_PASO` / `TIEMPO_REVELAR` | 2 / 0.4 / 0.5 | Cuenta regresiva y velocidad de cada mano |
-| Piedra, papel o tijera | `PUNTOS_MAXIMOS` | 5 | Tope de puntos por ronda |
-| Duelo de Tanques | `TIEMPO_RECARGA` / `VIDA_MAXIMA` | 0.30 / 3 | Cadencia de disparo y vidas |
-| La Papa Caliente | `RECARGA_DASH` / `BONUS_PORTADOR` | 2.0 / 1.08 | Dash y ventaja del que tiene la bomba |
-| Ping Pong Bomba | `GOLES_PARA_GANAR` / `ACELERACION_REBOTE` | 2 / 1.08 | Goles y aceleración de la bomba |
-| Lucha de Sumo | `PLAT_ANCHO_INICIAL` / `PLAT_ANCHO_FINAL` | 440 / 260 | Cuánto se achica la plataforma |
-| Stop It! | `VELOCIDAD_INICIAL` / `MEDIA_ZONA_INICIAL` | 0.9 / 0.09 | Velocidad del marcador y tamaño de la zona |
+| Race | `SEPARACION_INICIAL` / `SEPARACION_FINAL` | 320 / 260 | Distancia entre obstáculos |
+| Race | `PARTE_TRASERA_LIBRE` / `MARGEN_GOLPE` | 0.35 / 10 | Qué tan permisivo es el choque |
+| RPS | `PASOS_CUENTA` / `TIEMPO_PASO` / `TIEMPO_REVELAR` | 2 / 0.4 / 0.5 | Cuenta regresiva y velocidad de cada mano |
+| RPS | `PUNTOS_MAXIMOS` | 5 | Tope de puntos por ronda |
+| Tank Duel | `TIEMPO_RECARGA` / `VIDA_MAXIMA` | 0.30 / 3 | Cadencia de disparo y vidas |
+| Bomb Tag | `RECARGA_DASH` / `BONUS_PORTADOR` | 2.0 / 1.08 | Dash y ventaja del que tiene la bomba |
+| Ping Pong | `GOLES_PARA_GANAR` / `ACELERACION_REBOTE` | 2 / 1.08 | Goles y aceleración de la bomba |
+| Sumo | `PLAT_ANCHO_INICIAL` / `PLAT_ANCHO_FINAL` | 440 / 260 | Cuánto se achica la plataforma |
+| Stop It | `VELOCIDAD_INICIAL` / `MEDIA_ZONA_INICIAL` | 0.9 / 0.09 | Velocidad del marcador y tamaño de la zona |
 
-Los cortes de puntos también son constantes: `DIFERENCIA_PARA_3` / `DIFERENCIA_PARA_2` (Snake, Stop It!), `VENTAJA_PARA_3` / `VENTAJA_PARA_2` (Carrera), `PROPORCION_PARA_3` / `PROPORCION_PARA_2` (Papa Caliente), `PUNTOS_KO_PERFECTO` / `PUNTOS_KO` / `PUNTOS_VICTORIA` (Tanques). Los cortes por rapidez (3,3 s y 6,6 s) están en `puntosPorTiempo()` de la base.
+Los cortes de puntos también son constantes: `DIFERENCIA_PARA_3` / `DIFERENCIA_PARA_2` (Snake, Stop It), `VENTAJA_PARA_3` / `VENTAJA_PARA_2` (Race), `PROPORCION_PARA_3` / `PROPORCION_PARA_2` (Bomb Tag), `PUNTOS_KO_PERFECTO` / `PUNTOS_KO` / `PUNTOS_VICTORIA` (Tank Duel). Los cortes por rapidez (3,3 s y 6,6 s) están en `puntosPorTiempo()` de la base.
 
 ---
 
