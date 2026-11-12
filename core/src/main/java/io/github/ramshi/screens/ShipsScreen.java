@@ -217,7 +217,7 @@ public class ShipsScreen extends BaseMinigameScreen {
 
     private float velocidadCaida() {
         float progreso = MathUtils.clamp(transcurrido / DURACION_RONDA, 0f, 1f);
-        return MathUtils.lerp(VELOCIDAD_CAIDA_INICIO, VELOCIDAD_CAIDA_FIN, (float) Math.pow(progreso, CURVA_DIFICULTAD));
+        return MathUtils.lerp(VELOCIDAD_CAIDA_INICIO, VELOCIDAD_CAIDA_FIN, (float) StrictMath.pow(progreso, CURVA_DIFICULTAD));
     }
 
     private int puntosGanador() {
