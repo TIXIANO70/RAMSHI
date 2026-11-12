@@ -93,7 +93,7 @@ Menú principal
    - A los costados, **un poco más chicos y sin texto**, el minijuego anterior y el siguiente.
    - Se cambia con las flechas en pantalla, `←` `→`, `A` `D` o tocando un círculo del costado. **Es un bucle.** Al cambiar, los círculos **se deslizan** hacia el costado (0,18 s): el nuevo crece al llegar al centro y el que sale se desvanece en el borde.
    - Se juega con el botón **JUGAR** (arranca seleccionado, así que alcanza con `ENTER` o `ESPACIO`) o tocando el círculo del centro. Acá izquierda y derecha cambian de juego, así que para ir a **VOLVER** se usa `S` / `↓` (y `W` / `↑` para subir).
-   - Las imágenes van en `assets/menu/minijuegos/<nombre>.png` (por ejemplo `snake.png`, `tug_of_war.png`), **ya recortadas en círculo con fondo transparente**. Mientras no exista la imagen, se dibuja un círculo de color con la inicial.
+   - Cada minijuego tiene su **logo**: un collage de sus propios sprites en `assets/menu/minijuegos/<nombre>.png` (por ejemplo `snake.png`, `tug_of_war.png`), de **170 × 170 px** (el tamaño del círculo del centro), recortado en círculo con fondo transparente. Si a un juego le falta el logo, se dibuja un círculo de color con la inicial.
 2. Se juega en bucle: al terminar cada ronda aparece el cartel del ganador con la explicación de los puntos y las **partidas ganadas** por cada uno.
 3. `ESPACIO` o `ENTER` → siguiente ronda (si no, arranca sola a los 2,5 s).
 
@@ -173,7 +173,7 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 
 | # | Minijuego | Consigna | Controles P1 / P2 | Cómo se gana | 3 pts | 2 pts | 1 pt |
 |---|---|---|---|---|---|---|---|
-| 1 | Snake | ¡COMÉ! | WASD / flechas | Mejor récord de huevos | Gana por 4+ | por 2-3 | por 1 |
+| 1 | Snake | ¡COMÉ! | WASD / flechas | Mejor récord de manzanas | Gana por 4+ | por 2-3 | por 1 |
 | 2 | Lights | ¡REPETÍ! | WASD / flechas | Más secuencias completadas | 3 de 3 | 2 | 1 |
 | 3 | Ships | ¡ESQUIVÁ! | A D / ← → | El rival se hunde primero | antes de 3,3 s | antes de 6,6 s | después |
 | 4 | Tug of War | ¡TIRÁ! | A D / ← → (alternando) | Llevar la soga a tu línea | llega antes de 3,3 s | antes de 6,6 s | después, o soga de su lado al final |
@@ -190,8 +190,8 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 
 #### 1. Snake — `SnakeScreen`
 - Cada jugador tiene **su propia arena de 14 × 14** y su serpiente (arranca con 3 tramos).
-- Comer el huevo hace crecer la serpiente y suma 1 huevo.
-- Chocar contra la pared o contra uno mismo hace **reaparecer la serpiente con 0 huevos**, pero se guarda el **récord**: la mayor cantidad de huevos que llegó a tener en la ronda. **Los puntos se calculan con el récord**, así que chocar no te hace perder lo que ya lograste.
+- Comer la manzana hace crecer la serpiente y suma 1 manzana.
+- Chocar contra la pared o contra uno mismo hace **reaparecer la serpiente con 0 manzanas**, pero se guarda el **récord**: la mayor cantidad de manzanas que llegó a tener en la ronda. **Los puntos se calculan con el récord**, así que chocar no te hace perder lo que ya lograste.
 - **La serpiente acelera** durante la ronda (de 0,098 s a 0,065 s por paso).
 - No se puede dar media vuelta.
 
@@ -266,7 +266,7 @@ RAMSHI/
 ├── assets/                       Imágenes y fuentes (una carpeta por minijuego)
 │   ├── bombtag/  lights/  pingpong/  quickdraw/  race/  rps/
 │   ├── ships/  snake/  stopit/  sumo/  tanks/  tugofwar/
-│   ├── menu/minijuegos/          (futuro) Imágenes circulares del selector de Endless
+│   ├── menu/minijuegos/          Logos circulares del selector de Endless (170 × 170)
 │   └── ui/
 │       ├── fonts/                Pixelify Sans (+ licencia OFL)
 │       ├── kenney/               Pack de teclas de Kenney (ver INDICE.md)
@@ -433,7 +433,7 @@ MI_JUEGO("Mi Juego", MiJuegoScreen::new,
     "Cómo se reparten los puntos."),
 ```
 
-4. **(Opcional) Imagen del selector:** `assets/menu/minijuegos/mi_juego.png` (el nombre de la constante en minúsculas), recortada en círculo con fondo transparente.
+4. **(Opcional) Logo del selector:** `assets/menu/minijuegos/mi_juego.png` (el nombre de la constante en minúsculas), de 170 × 170 px, recortado en círculo con fondo transparente.
 
 **Reglas para que funcione bien en la partida por rondas:**
 - La duración tiene que ser una constante `static final` (la base la lee en su constructor, antes de que existan los campos del juego; si fuera un campo normal valdría 0 y el juego terminaría al instante).

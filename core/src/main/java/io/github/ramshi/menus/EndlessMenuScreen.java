@@ -50,7 +50,10 @@ public class EndlessMenuScreen extends MenuScreen {
         super(juego);
         paginador = new Paginador(tipos.length, seleccion, CENTRO_X, PAGINADOR_Y);
         for (MinigameType t : tipos) {
-            if (Gdx.files.internal(t.getImagen()).exists()) imagenes.put(t, new Texture(t.getImagen()));
+            if (!Gdx.files.internal(t.getImagen()).exists()) continue;
+            Texture imagen = new Texture(t.getImagen());
+            imagen.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Nearest);
+            imagenes.put(t, imagen);
         }
         botonera.agregar(new Boton(CENTRO_X - JUGAR_ANCHO / 2f, JUGAR_Y, JUGAR_ANCHO, JUGAR_ALTO, "JUGAR", Boton.VERDE,
             this::jugar));
