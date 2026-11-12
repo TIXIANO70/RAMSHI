@@ -1,6 +1,11 @@
 # RAMSHI
 
-**Versión 1.0** — los 12 minijuegos, partida por rondas, Endless, guía, ajustes y pausa. El modo en red se está desarrollando aparte (rama `feature/red`).
+**Versión 1.1**
+
+| Versión | Qué trajo |
+|---|---|
+| 1.0 | Los 12 minijuegos, partida por rondas, Endless, guía, ajustes y pausa |
+| 1.1 | Modo en red: crear sala, unirse, partida sincronizada por UDP |
 
 Juego **1 contra 1 local** de **microjuegos de 10 segundos**, al estilo WarioWare, hecho en **Java + libGDX**.
 Los dos jugadores comparten el teclado y la pantalla: cada minijuego dura 10 segundos, el que lo gana suma puntos (de **1 a 3** en casi todos) y al final de la partida gana quien juntó más.
@@ -584,3 +589,8 @@ Proyecto académico grupal. Integrantes (usuarios de Git): **TIXIANO70**, **Hung
 Licencia: **MIT** (ver [`LICENSE`](LICENSE)).
 
 **Forma de trabajo con Git:** cada cambio va en una rama propia (`feature/...`, `fix/...`, `refactor/...`) → Pull Request → merge a `main`. Antes de empezar algo nuevo, `git pull` en `main`.
+
+**Versiones:** cada cambio que se sube suma **0.1** a la versión (1.0 → 1.1 → 1.2…). Hay que actualizarla en tres lugares:
+1. `projectVersion` en `gradle.properties` (por ejemplo `1.2.0`; también cambia el nombre del `.jar`).
+2. La línea **Versión** y la tabla del principio de este README.
+3. El mensaje del commit, que empieza con la versión: `v1.2: lo que se cambió`.
