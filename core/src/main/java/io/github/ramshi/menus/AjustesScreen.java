@@ -10,6 +10,7 @@ public class AjustesScreen extends MenuScreen {
 
     private static final String ARCHIVO = "ramshi-ajustes";
     private static final String CLAVE_PANTALLA_COMPLETA = "pantallaCompleta";
+    private static final String CLAVE_ULTIMA_IP = "ultimaIp";
     private static final int ANCHO_VENTANA = 800;
     private static final int ALTO_VENTANA = 480;
     private static final float BOTON_ANCHO = 380f;
@@ -37,6 +38,14 @@ public class AjustesScreen extends MenuScreen {
     public static void setPantallaCompleta(boolean activa) {
         preferencias().putBoolean(CLAVE_PANTALLA_COMPLETA, activa).flush();
         aplicar();
+    }
+
+    public static String getUltimaIp() {
+        return preferencias().getString(CLAVE_ULTIMA_IP, "");
+    }
+
+    public static void setUltimaIp(String ip) {
+        preferencias().putString(CLAVE_ULTIMA_IP, ip).flush();
     }
 
     public static void aplicar() {
