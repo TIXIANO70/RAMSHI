@@ -17,7 +17,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
-import io.github.ramshi.menus.Boton;
+import io.github.ramshi.menus.Botonera.Boton;
 import io.github.ramshi.menus.Botonera;
 import io.github.ramshi.menus.EndlessMenuScreen;
 import io.github.ramshi.menus.ModoMenuScreen;

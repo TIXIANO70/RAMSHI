@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import io.github.ramshi.screens.Controles;
+import io.github.ramshi.menus.AjustesScreen;
 import io.github.ramshi.menus.MainMenuScreen;
 
 public class Main extends Game {
@@ -33,7 +34,7 @@ public class Main extends Game {
         fuenteGrande = crearFuente(FUENTE_NEGRITA, TAMANO_GRANDE);
         fuenteCartel = crearFuente(FUENTE_NEGRITA, TAMANO_CARTEL);
         fuenteTitulo = crearFuente(FUENTE_NEGRITA, TAMANO_TITULO);
-        if (Ajustes.pantallaCompleta()) Ajustes.aplicar();
+        if (AjustesScreen.pantallaCompleta()) AjustesScreen.aplicar();
         setScreen(new MainMenuScreen(this));
     }
 

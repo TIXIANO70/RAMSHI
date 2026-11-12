@@ -2,6 +2,7 @@ package io.github.ramshi.menus;
 
 import com.badlogic.gdx.Game;
 import io.github.ramshi.Main;
+import io.github.ramshi.menus.Botonera.Boton;
 
 public class JugarMenuScreen extends MenuScreen {
 
