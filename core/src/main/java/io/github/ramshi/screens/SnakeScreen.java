@@ -39,7 +39,7 @@ public class SnakeScreen extends BaseMinigameScreen {
     private final List<Texture> texturas = new ArrayList<>();
     private final Texture casilla1 = cargar("snake/tiles/Tile1.png");
     private final Texture casilla2 = cargar("snake/tiles/Tile2.png");
-    private final Texture huevo = cargar("snake/egg.png");
+    private final Texture manzana = cargar("snake/manzana.png");
     private final Texture[][] cabezas = new Texture[2][4];
     private final Texture[][] colas = new Texture[2][4];
     private final Texture[][] cuerpos = new Texture[2][16];
@@ -172,7 +172,7 @@ public class SnakeScreen extends BaseMinigameScreen {
             for (int x = 0; x < GRILLA; x++) {
                 for (int y = 0; y < GRILLA; y++) dibujarCasilla(batch, (x + y) % 2 == 0 ? casilla1 : casilla2, p, x, y);
             }
-            dibujarCasilla(batch, huevo, p, comidaX[p], comidaY[p]);
+            dibujarCasilla(batch, manzana, p, comidaX[p], comidaY[p]);
 
             List<int[]> s = serpientes.get(p);
             int ultimo = s.size() - 1;
@@ -207,7 +207,7 @@ public class SnakeScreen extends BaseMinigameScreen {
         int pts = 1;
         if (diferencia >= DIFERENCIA_PARA_3) pts = 3;
         else if (diferencia >= DIFERENCIA_PARA_2) pts = 2;
-        explicacion = "Récord de " + Math.max(record[0], record[1]) + " huevos contra " + Math.min(record[0], record[1]) + " (ventaja de " + diferencia + "): 4 o más = 3 pts, 2 o 3 = 2, 1 = 1.";
+        explicacion = "Récord de " + Math.max(record[0], record[1]) + " manzanas contra " + Math.min(record[0], record[1]) + " (ventaja de " + diferencia + "): 4 o más = 3 pts, 2 o 3 = 2, 1 = 1.";
         return sumarPuntos(record[0] > record[1] ? 1 : 2, pts);
     }
 
@@ -221,7 +221,7 @@ public class SnakeScreen extends BaseMinigameScreen {
 
     @Override protected String getTextoP1() { return "P1: " + puntaje[0] + "  Récord: " + record[0] + "  Victorias: " + victoriasP1; }
     @Override protected String getTextoP2() { return "P2: " + puntaje[1] + "  Récord: " + record[1] + "  Victorias: " + victoriasP2; }
-    @Override protected String getResumen() { return "Récord de huevos: P1 (" + record[0] + ") vs P2 (" + record[1] + ")"; }
+    @Override protected String getResumen() { return "Récord de manzanas: P1 (" + record[0] + ") vs P2 (" + record[1] + ")"; }
 
     @Override
     public void dispose() {

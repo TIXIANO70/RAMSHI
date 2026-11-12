@@ -8,8 +8,8 @@ import java.util.function.Function;
 
 public enum MinigameType {
     SNAKE("Snake", SnakeScreen::new,
-        "Cada uno maneja su serpiente en su propia arena. Comé huevos para crecer; si chocás, reaparecés con 0 huevos.",
-        "Lograr el récord de huevos más alto de la ronda.",
+        "Cada uno maneja su serpiente en su propia arena. Comé manzanas para crecer; si chocás, reaparecés con 0 manzanas.",
+        "Lograr el récord de manzanas más alto de la ronda.",
         "Por diferencia de récord: 4 o más = 3 pts, 2 o 3 = 2, 1 = 1."),
     LIGHTS("Lights", LightsScreen::new,
         "Se muestran 3 secuencias de flechas (de 4, 5 y 6 luces). Repetilas con tus teclas; si te equivocás, empezás esa secuencia de nuevo.",

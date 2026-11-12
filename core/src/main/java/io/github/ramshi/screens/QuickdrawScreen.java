@@ -17,8 +17,8 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     private static final float AZAR_MIN = 0.1f;
     private static final float AZAR_MAX = 2f;
     private static final float TIEMPO_REACCION = 0.35f;
-    private static final float P1_X = 0f;
-    private static final float P2_X = 600f;
+    private static final float P1_X = 99f;
+    private static final float P2_X = 574f;
     private static final float ESCOPETA_Y = 180f;
     private static final float TAMANO_ESCOPETA = 128f;
     private static final int[][] TECLAS = {
