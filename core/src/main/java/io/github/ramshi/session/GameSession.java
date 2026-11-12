@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class GameSession {
 
@@ -28,10 +29,15 @@ public class GameSession {
     public static GameSession actual() { return actual; }
 
     public static GameSession iniciarJugar(int rondas) {
+        return iniciarJugar(rondas, System.nanoTime());
+    }
+
+    public static GameSession iniciarJugar(int rondas, long semilla) {
+        Random azar = new Random(semilla);
         List<MinigameType> cola = new ArrayList<>();
         while (cola.size() < rondas) {
             List<MinigameType> bloque = new ArrayList<>(Arrays.asList(MinigameType.values()));
-            Collections.shuffle(bloque);
+            Collections.shuffle(bloque, azar);
             if (!cola.isEmpty() && bloque.get(0) == cola.get(cola.size() - 1)) {
                 Collections.swap(bloque, 0, bloque.size() - 1);
             }
