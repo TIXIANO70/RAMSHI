@@ -17,7 +17,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
-import io.github.ramshi.menus.Boton;
+import io.github.ramshi.menus.Botonera.Boton;
 import io.github.ramshi.menus.Botonera;
 import io.github.ramshi.menus.EndlessMenuScreen;
 import io.github.ramshi.menus.ModoMenuScreen;
@@ -68,7 +68,9 @@ public abstract class BaseMinigameScreen implements Screen {
     private static final float SEPARACION_RELOJ = 6f;
     private static final float BARRA_Y = 470f;
     private static final float ALTO_BARRA = 8f;
-    private static final float SESION_Y = 418f;
+    private static final float SESION_Y = 432f;
+    private static final float FRANJA_HUD_Y = 442f;
+    private static final Color COLOR_FRANJA = new Color(0f, 0f, 0f, 0.55f);
     private static final float SEGUNDOS_ALERTA = 3f;
     private static final Color COLOR_RELOJ = new Color(1f, 0.85f, 0.2f, 1f);
     private static final Color COLOR_RELOJ_ALERTA = new Color(1f, 0.3f, 0.3f, 1f);
@@ -224,26 +226,18 @@ public abstract class BaseMinigameScreen implements Screen {
 
     public void dibujarHUD() {
         Controles.Control[] controles = getControles();
-        if (controles.length > 0) {
-            Gdx.gl.glEnable(GL20.GL_BLEND);
-            formas.begin(ShapeRenderer.ShapeType.Filled);
-            formas.setColor(0f, 0f, 0f, 0.55f);
-            formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_LEYENDA);
-            formas.end();
-        }
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(COLOR_FRANJA);
+        if (controles.length > 0) formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_LEYENDA);
+        formas.rect(0f, FRANJA_HUD_Y, ANCHO_VIRTUAL, ALTO_VIRTUAL - FRANJA_HUD_Y);
+        formas.end();
 
         dibujarFondoReloj();
 
         batch.begin();
         for (int p = 0; p < 2 && controles.length > 0; p++) {
             Controles.dibujarLeyenda(batch, controles, p, centroJugador(p), LEYENDA_Y);
-        }
-
-        if (sesion.esModoJugar()) {
-            fuente.setColor(Color.WHITE);
-            usarFuente(Main.fuenteChica);
-            dibujarCentrado("Juego " + (sesion.getIndice() + 1) + "/" + sesion.getTotalJuegos()
-                + "    Total:  P1 " + sesion.totalP1() + " - " + sesion.totalP2() + " P2", SESION_Y);
         }
 
         usarFuente(Main.fuenteCartel);
@@ -328,6 +322,12 @@ public abstract class BaseMinigameScreen implements Screen {
         usarFuente(Main.fuenteGrande);
         fuente.setColor(Color.WHITE);
         dibujarCentrado(tipo != null ? tipo.getNombre() : "", ALTURA_HUD);
+        if (sesion.esModoJugar()) {
+            usarFuente(Main.fuenteChica);
+            fuente.setColor(Color.LIGHT_GRAY);
+            dibujarCentrado("Juego " + (sesion.getIndice() + 1) + " de " + sesion.getTotalJuegos()
+                + "    Total:  P1 " + sesion.totalP1() + " - " + sesion.totalP2() + " P2", SESION_Y);
+        }
         for (int p = 0; p < 2; p++) {
             usarFuente(Main.fuenteCartel);
             fuente.setColor(COLOR_CONSIGNA);
@@ -344,7 +344,7 @@ public abstract class BaseMinigameScreen implements Screen {
         return ANCHO_VIRTUAL * (p == 0 ? 0.25f : 0.75f);
     }
 
-    private void dibujarCentradoEn(String texto, float centroX, float y) {
+    protected void dibujarCentradoEn(String texto, float centroX, float y) {
         GlyphLayout layout = new GlyphLayout(fuente, texto);
         fuente.draw(batch, layout, centroX - layout.width / 2f, y);
     }

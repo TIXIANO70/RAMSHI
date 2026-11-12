@@ -2,7 +2,7 @@ package io.github.ramshi.session;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
-import io.github.ramshi.screens.ResultsScreen;
+import io.github.ramshi.menus.ResultsScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;

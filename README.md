@@ -84,7 +84,7 @@ Menú principal
    - Lista de todos los juegos con los puntos de cada jugador y quién ganó cada uno.
    - Totales.
    - **Desempate:** 1) más puntos totales; 2) si empatan, más juegos ganados; 3) si también empatan, es empate.
-   - Durante el primer segundo y medio no acepta teclas (para no saltearla sin querer). Después, clic, `ESPACIO`, `ENTER` o `ESC` vuelven al menú.
+   - Abajo hay dos botones: **REVANCHA** (verde, arranca otra partida con la misma cantidad de rondas) y **MENÚ** (vuelve al menú principal). Durante el primer segundo y medio están apagados, para no saltear el resultado sin querer.
 
 ### Endless (práctica)
 
@@ -112,7 +112,7 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 ### 3.1 Cartel de inicio (1,5 s)
 
 - La pantalla se oscurece y se divide en dos mitades, una por jugador.
-- Arriba: el **nombre del juego**.
+- Arriba: el **nombre del juego** y, en partida por rondas, "Juego N de M" con el total de cada jugador.
 - En cada mitad: la **consigna** en grande (por ejemplo **¡ESQUIVÁ!**), "JUGADOR 1" / "JUGADOR 2" y **las teclas que va a usar ese jugador, dibujadas en grande**, con lo que hace cada una.
   - Las teclas de movimiento aparecen con la forma del teclado (`W` arriba, `A S D` abajo; lo mismo con las flechas).
   - En RPS, debajo de cada tecla se ve el dibujo del objeto.
@@ -124,7 +124,7 @@ Todos los minijuegos comparten el mismo "marco", que dibuja la clase base:
 - **Arriba a la derecha:** estado del jugador 2 (celeste).
 - **Corazones** (solo en los juegos con vidas: Quickdraw y Tank Duel): uno por vida, centrados en la mitad de cada jugador. Las vidas perdidas se ven como corazones vacíos.
 - **Barra de abajo:** recordatorio de los controles de cada jugador (tecla en chico + acción).
-- En partida por rondas, debajo del reloj: "Juego N/M" y el total de la partida.
+- Arriba y abajo hay **franjas oscuras semitransparentes** detrás de los textos y de los controles, para que se lean sobre cualquier fondo.
 
 ### 3.3 Al terminar el minijuego (2,5 s)
 
@@ -273,21 +273,20 @@ RAMSHI/
 │       └── logo.png              (futuro) Logo del menú principal
 ├── core/src/main/java/io/github/ramshi/
 │   ├── Main.java                 Arranque del juego y fuentes compartidas
-│   ├── Ajustes.java              Ajustes guardados (pantalla completa)
 │   ├── menus/
 │   │   ├── MenuScreen.java           Base de todos los menús (cámara, botones, VOLVER, textos)
-│   │   ├── Boton.java / Botonera.java   Botones con color y la lista que los dibuja y detecta el clic
+│   │   ├── Botonera.java             Los botones (clase Boton adentro) y la lista que los dibuja y maneja
 │   │   ├── Paginador.java            "3/14" con flechas, en bucle (Guía y Endless)
 │   │   ├── MainMenuScreen.java       Menú principal
 │   │   ├── JugarMenuScreen.java      Elegir Local o En red
 │   │   ├── ModoMenuScreen.java       Rondas y Endless (el mismo para Local y En red)
 │   │   ├── EndlessMenuScreen.java    Selector circular de minijuego
 │   │   ├── GuiaScreen.java           Guía en páginas
-│   │   └── AjustesScreen.java        Pantalla de ajustes
+│   │   ├── AjustesScreen.java        Pantalla de ajustes y guardado de la pantalla completa
+│   │   └── ResultsScreen.java        Resultado final de la partida por rondas
 │   ├── screens/
 │   │   ├── BaseMinigameScreen.java   Base de todos los minijuegos (HUD, reloj, pausa, tablas)
 │   │   ├── Controles.java            Teclas de Kenney: cartel de inicio y barra de abajo
-│   │   ├── ResultsScreen.java        Resultado final de la partida por rondas
 │   │   └── *Screen.java              Un archivo por minijuego (12)
 │   └── session/
 │       ├── GameSession.java          Estado de la partida (modo, cola de juegos, puntos)
@@ -307,11 +306,11 @@ Todo el código (variables, métodos, constantes) está **en español** para que
 Extiende `Game` de libGDX. Al arrancar crea **5 fuentes** (Pixelify Sans en 16, 20, 24, 32 y 56 px) que usan todas las pantallas (`Main.fuenteChica`, `fuenteMediana`, `fuenteGrande`, `fuenteCartel`, `fuenteTitulo`), activa la pantalla completa si estaba guardada y abre el menú. Al cerrar, libera las fuentes y las texturas de las teclas.
 
 ### Menús (`menus/`)
-- **`MenuScreen`** es la base de todos los menús: arma la cámara de 800 × 480, maneja el mouse, dibuja los botones y agrega el botón **VOLVER** (`agregarVolver(...)`, que también responde a `ESC`). Cada menú solo define qué botones tiene y qué dibuja en `dibujar()`.
-- **`Boton`** tiene posición, texto, color (`Boton.VERDE`, `Boton.ROJO`, `Boton.NEUTRO`) y la acción al tocarlo. Con `activo = false` queda gris y no responde (así está el menú En red).
+- **`MenuScreen`** es la base de todos los menús: arma la cámara de 800 × 480, maneja el mouse, dibuja los botones y agrega el botón **VOLVER** (`agregarVolver(...)`, que también responde a `ESC`). Cada menú solo define qué botones tiene y qué dibuja en `dibujar()`. También hereda de ella la pantalla de resultados (`ResultsScreen`), que usa `fundidoEntrada` para aparecer con fundido.
+- **`Boton`** (definido dentro de `Botonera`) tiene posición, texto, color (`Boton.VERDE`, `Boton.ROJO`, `Boton.NEUTRO`) y la acción al tocarlo. Con `activo = false` queda gris y no responde (así está el menú En red).
 - **`Botonera`** es la lista de botones de una pantalla: guarda cuál está **seleccionado**, lo mueve con el teclado buscando el botón más cercano en esa dirección (`mover(dx, dy)`), detecta el mouse, devuelve el botón elegido con clic, `ENTER` o `ESPACIO` (`elegido()`) y los dibuja. Con `navegarHorizontal = false` solo se mueve arriba/abajo (lo usan Endless y la Guía, donde izquierda/derecha cambian de página). Con `enfocar(boton)` se elige cuál arranca seleccionado. **La usa también la pausa de los minijuegos**, así que todos los botones del juego se ven igual.
 - **`Paginador`** guarda en qué página estás, la cambia con flechas o teclas y dibuja el `3/14`. Siempre es un bucle. Lo usan la Guía y el selector de Endless.
-- **`Ajustes`** (fuera de `menus/`) guarda la pantalla completa con las `Preferences` de libGDX (en Windows quedan en la carpeta `.prefs` del usuario, no en el repo).
+- **`AjustesScreen`** además de ser la pantalla, guarda la pantalla completa con las `Preferences` de libGDX (en Windows quedan en la carpeta `.prefs` del usuario, no en el repo).
 
 ### `BaseMinigameScreen`
 Clase abstracta de la que heredan los 12 minijuegos. Se encarga de todo lo común:

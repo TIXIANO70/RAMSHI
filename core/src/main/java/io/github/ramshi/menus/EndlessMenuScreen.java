@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import io.github.ramshi.Main;
+import io.github.ramshi.menus.Botonera.Boton;
 import io.github.ramshi.session.GameSession;
 import io.github.ramshi.session.MinigameType;
 

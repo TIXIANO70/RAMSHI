@@ -17,6 +17,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
+import io.github.ramshi.screens.BaseMinigameScreen;
+import io.github.ramshi.menus.Botonera.Boton;
 
 public abstract class MenuScreen implements Screen {
 
@@ -43,7 +45,8 @@ public abstract class MenuScreen implements Screen {
     protected float mouseX;
     protected float mouseY;
     private final Vector3 mouse = new Vector3();
-    private Runnable volver;
+    protected float fundidoEntrada;
+    private Boton volver;
     private boolean cerrada;
 
     protected MenuScreen(Game juego) {
@@ -52,10 +55,10 @@ public abstract class MenuScreen implements Screen {
         camara.position.set(ANCHO / 2f, ALTO / 2f, 0f);
     }
 
-    protected void agregarVolver(Runnable accion) {
-        volver = accion;
-        botonera.agregar(new Boton(VOLVER_X, VOLVER_Y, VOLVER_ANCHO, VOLVER_ALTO, "VOLVER", Boton.ROJO, accion))
+    protected Boton agregarVolver(Runnable accion) {
+        volver = botonera.agregar(new Boton(VOLVER_X, VOLVER_Y, VOLVER_ANCHO, VOLVER_ALTO, "VOLVER", Boton.ROJO, accion))
             .conFuente(Main.fuenteMediana);
+        return volver;
     }
 
     protected void abrir(Screen siguiente) {
@@ -87,9 +90,13 @@ public abstract class MenuScreen implements Screen {
 
         dibujar();
         botonera.dibujar(formas, batch);
+        if (fundidoEntrada > 0f) {
+            fundidoEntrada -= delta;
+            BaseMinigameScreen.dibujarFundido(formas, fundidoEntrada / BaseMinigameScreen.DURACION_FUNDIDO);
+        }
 
         Boton elegido = botonera.elegido();
-        if (volver != null && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) volver.run();
+        if (volver != null && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) volver.ejecutar();
         else if (elegido != null) elegido.ejecutar();
     }
 

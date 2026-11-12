@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import io.github.ramshi.Main;
+import io.github.ramshi.menus.Botonera.Boton;
 
 public class MainMenuScreen extends MenuScreen {
 

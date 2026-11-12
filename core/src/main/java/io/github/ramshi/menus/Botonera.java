@@ -3,11 +3,14 @@ package io.github.ramshi.menus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import io.github.ramshi.Main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +24,35 @@ public class Botonera {
     private static final Color TEXTO_RESALTADO = Color.WHITE;
     private static final Color TEXTO_NORMAL = new Color(0.85f, 0.85f, 0.88f, 1f);
     private static final Color TEXTO_INACTIVO = new Color(0.45f, 0.45f, 0.5f, 1f);
+
+    public static class Boton {
+        public static final Color VERDE = new Color(0.2f, 0.62f, 0.3f, 1f);
+        public static final Color ROJO = new Color(0.75f, 0.2f, 0.2f, 1f);
+        public static final Color NEUTRO = new Color(0.22f, 0.35f, 0.55f, 1f);
+
+        public final Rectangle rect;
+        public final Color color;
+        public String texto;
+        public BitmapFont fuente = Main.fuenteGrande;
+        public boolean activo = true;
+        private final Runnable accion;
+
+        public Boton(float x, float y, float ancho, float alto, String texto, Color color, Runnable accion) {
+            this.rect = new Rectangle(x, y, ancho, alto);
+            this.texto = texto;
+            this.color = color;
+            this.accion = accion;
+        }
+
+        public Boton conFuente(BitmapFont fuente) {
+            this.fuente = fuente;
+            return this;
+        }
+
+        public void ejecutar() {
+            if (activo && accion != null) accion.run();
+        }
+    }
 
     public boolean navegarHorizontal = true;
 
