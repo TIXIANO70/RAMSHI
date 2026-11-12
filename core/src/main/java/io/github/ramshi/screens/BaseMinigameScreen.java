@@ -220,6 +220,10 @@ public abstract class BaseMinigameScreen implements Screen {
         Red.actualizar(delta);
         String evento;
         while ((evento = Red.siguienteEvento()) != null) {
+            if (evento.startsWith(Red.INICIAR)) {
+                irA(Red.crearSesionRecibida(evento).primeraPantalla(juego));
+                return true;
+            }
             if (evento.equals(Red.VOLVER_A_SALA)) {
                 irA(pantallaDeSala());
                 return true;

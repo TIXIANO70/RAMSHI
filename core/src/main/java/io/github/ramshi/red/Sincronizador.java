@@ -37,8 +37,7 @@ public class Sincronizador {
         return tiempoEsperando > ESPERA_VISIBLE;
     }
 
-    public void actualizar(float delta, Paso paso) {
-        int mascara = EntradaRed.leerTeclado(Gdx.input);
+    private void encolarLocales(int mascara) {
         while (locales.size < tick + RETRASO) {
             int propia = mascara;
             if (pausaPedida) {
@@ -47,6 +46,11 @@ public class Sincronizador {
             }
             locales.add(propia);
         }
+    }
+
+    public void actualizar(float delta, Paso paso) {
+        int mascara = EntradaRed.leerTeclado(Gdx.input);
+        encolarLocales(mascara);
         Red.enviarEntradas(segmento, locales, Math.max(0, locales.size - VENTANA));
 
         acumulado = Math.min(acumulado + delta, TICK * MAX_PASOS_POR_CUADRO);
@@ -67,11 +71,16 @@ public class Sincronizador {
                 Gdx.input = real;
             }
             tick++;
+            encolarLocales(mascara);
             acumulado -= TICK;
             avanzo = true;
             if (tick % LIMPIEZA == 0) Red.olvidarEntradas(segmento, tick - LIMPIEZA);
-            if (!sigue) return;
+            if (!sigue) {
+                Red.enviarEntradas(segmento, locales, Math.max(0, locales.size - VENTANA));
+                return;
+            }
         }
+        if (avanzo) Red.enviarEntradas(segmento, locales, Math.max(0, locales.size - VENTANA));
         tiempoEsperando = avanzo ? 0f : tiempoEsperando + delta;
     }
 }
