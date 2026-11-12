@@ -18,7 +18,7 @@ public class JugarMenuScreen extends MenuScreen {
         botonera.agregar(new Boton(LOCAL_X, TARJETA_Y, TARJETA_ANCHO, TARJETA_ALTO, "LOCAL", Boton.VERDE,
             () -> abrir(new ModoMenuScreen(juego, false)))).conFuente(Main.fuenteCartel);
         botonera.agregar(new Boton(RED_X, TARJETA_Y, TARJETA_ANCHO, TARJETA_ALTO, "EN RED", Boton.NEUTRO,
-            () -> abrir(new ModoMenuScreen(juego, true)))).conFuente(Main.fuenteCartel);
+            () -> abrir(new SalaMenuScreen(juego)))).conFuente(Main.fuenteCartel);
         agregarVolver(() -> abrir(new MainMenuScreen(juego)));
     }
 

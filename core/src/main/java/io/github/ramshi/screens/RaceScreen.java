@@ -119,6 +119,8 @@ public class RaceScreen extends BaseMinigameScreen {
             distanciaP2 += velocidadP2;
             tiempoVelocidad -= INTERVALO_VELOCIDAD;
         }
+        rectP1 = hitbox(autoX1);
+        rectP2 = hitbox(autoX2);
         velocidadP1 = actualizarObstaculos(0, P1_X, obstaculosP1, rectP1, velocidadP1, delta);
         velocidadP2 = actualizarObstaculos(1, P2_X, obstaculosP2, rectP2, velocidadP2, delta);
     }
