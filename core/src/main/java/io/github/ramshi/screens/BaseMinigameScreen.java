@@ -19,8 +19,13 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
 import io.github.ramshi.menus.Botonera.Boton;
 import io.github.ramshi.menus.Botonera;
+import io.github.ramshi.menus.CrearSalaScreen;
 import io.github.ramshi.menus.EndlessMenuScreen;
+import io.github.ramshi.menus.EsperaSalaScreen;
+import io.github.ramshi.menus.SalaMenuScreen;
 import io.github.ramshi.menus.ModoMenuScreen;
+import io.github.ramshi.red.Red;
+import io.github.ramshi.red.Sincronizador;
 import io.github.ramshi.session.GameSession;
 import io.github.ramshi.session.MinigameType;
 
@@ -106,6 +111,8 @@ public abstract class BaseMinigameScreen implements Screen {
     private boolean pausado;
     private int partidasGanadasP1;
     private int partidasGanadasP2;
+    private final Sincronizador sincronizador;
+    private boolean cerrada;
 
     protected BaseMinigameScreen(Game juego) {
         this.juego = juego;
@@ -121,10 +128,25 @@ public abstract class BaseMinigameScreen implements Screen {
 
         this.botonesPausa = new Botonera(vista);
         float x = ANCHO_VIRTUAL / 2f - BOTON_PAUSA_ANCHO - SEPARACION_BOTONES_PAUSA / 2f;
+        this.sincronizador = sesion.esEnRed() ? new Sincronizador(sesion.getIndice()) : null;
         botonesPausa.agregar(new Boton(x, BOTONES_PAUSA_Y, BOTON_PAUSA_ANCHO, BOTON_PAUSA_ALTO, "REANUDAR", Boton.VERDE,
-            () -> pausado = false));
+            this::reanudar));
         botonesPausa.agregar(new Boton(x + BOTON_PAUSA_ANCHO + SEPARACION_BOTONES_PAUSA, BOTONES_PAUSA_Y, BOTON_PAUSA_ANCHO,
-            BOTON_PAUSA_ALTO, "SALIR", Boton.ROJO, () -> irA(pantallaDeSalida())));
+            BOTON_PAUSA_ALTO, "SALIR", Boton.ROJO, this::salir));
+    }
+
+    private void reanudar() {
+        if (sincronizador != null) sincronizador.pedirPausa();
+        else pausado = false;
+    }
+
+    private void salir() {
+        if (sincronizador == null) {
+            irA(pantallaDeSalida());
+            return;
+        }
+        Red.enviarSeguro(Red.VOLVER_A_SALA);
+        irA(pantallaDeSala());
     }
 
     private Screen pantallaDeSalida() {
@@ -157,17 +179,17 @@ public abstract class BaseMinigameScreen implements Screen {
     }
 
     protected void irA(Screen siguiente) {
+        cerrada = true;
         juego.setScreen(siguiente);
         dispose();
     }
 
-    @Override
-    public void render(float delta) {
+    private boolean paso(float delta) {
         boolean puedePausar = !rondaTerminada || !sesion.esModoJugar();
         if (puedePausar && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) pausado = !pausado;
 
         if (pausado) {
-            botonesPausa.actualizar();
+            return true;
         } else if (tiempoIntro > 0f) {
             tiempoIntro -= delta;
         } else if (!rondaTerminada) {
@@ -186,11 +208,53 @@ public abstract class BaseMinigameScreen implements Screen {
                 if (sesion.esModoJugar()) {
                     sesion.registrarResultado(puntosGanadosP1, puntosGanadosP2);
                     irA(sesion.siguientePantalla(juego));
-                    return;
+                    return false;
                 }
                 iniciarNuevaRonda();
             }
         }
+        return true;
+    }
+
+    private boolean atenderRed(float delta) {
+        Red.actualizar(delta);
+        String evento;
+        while ((evento = Red.siguienteEvento()) != null) {
+            if (evento.startsWith(Red.INICIAR)) {
+                irA(Red.crearSesionRecibida(evento).primeraPantalla(juego));
+                return true;
+            }
+            if (evento.equals(Red.VOLVER_A_SALA)) {
+                irA(pantallaDeSala());
+                return true;
+            }
+            if (evento.equals(Red.DESCONECTADO)) {
+                if (Red.esAnfitrion()) {
+                    irA(new CrearSalaScreen(juego));
+                } else {
+                    Red.cerrar();
+                    irA(new SalaMenuScreen(juego));
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Screen pantallaDeSala() {
+        return Red.esAnfitrion() ? new ModoMenuScreen(juego, true) : new EsperaSalaScreen(juego);
+    }
+
+    @Override
+    public void render(float delta) {
+        if (sincronizador != null) {
+            if (atenderRed(delta)) return;
+            sincronizador.actualizar(delta, this::paso);
+        } else {
+            paso(delta);
+        }
+        if (cerrada) return;
+        if (pausado) botonesPausa.actualizar();
 
         ScreenUtils.clear(0.08f, 0.08f, 0.08f, 1f);
         camara.update();
@@ -210,6 +274,7 @@ public abstract class BaseMinigameScreen implements Screen {
             oscuridad = Math.max(oscuridad, (tiempoResultado - SEGUNDOS_RESULTADO + DURACION_FUNDIDO) / DURACION_FUNDIDO);
         }
         dibujarFundido(formas, Math.min(1f, oscuridad));
+        if (sincronizador != null && sincronizador.estaEsperando()) dibujarEsperaRed();
 
         Boton elegido = pausado ? botonesPausa.elegido() : null;
         if (elegido != null) elegido.ejecutar();
@@ -222,6 +287,14 @@ public abstract class BaseMinigameScreen implements Screen {
         formas.setColor(0f, 0f, 0f, oscuridad);
         formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
         formas.end();
+    }
+
+    private void dibujarEsperaRed() {
+        batch.begin();
+        usarFuente(Main.fuenteGrande);
+        fuente.setColor(COLOR_CONSIGNA);
+        dibujarCentrado("Esperando al otro jugador...", ALTO_VIRTUAL / 2f);
+        batch.end();
     }
 
     public void dibujarHUD() {
@@ -334,7 +407,8 @@ public abstract class BaseMinigameScreen implements Screen {
             dibujarCentradoEn(getConsigna(), centroJugador(p), CONSIGNA_Y);
             usarFuente(Main.fuenteMediana);
             fuente.setColor(p == 0 ? COLOR_P1 : COLOR_P2);
-            dibujarCentradoEn("JUGADOR " + (p + 1), centroJugador(p), CONSIGNA_Y - 44f);
+            boolean soyYo = sincronizador != null && p == (Red.esAnfitrion() ? 0 : 1);
+            dibujarCentradoEn("JUGADOR " + (p + 1) + (soyYo ? " (VOS)" : ""), centroJugador(p), CONSIGNA_Y - 44f);
             if (controles.length > 0) Controles.dibujarGrande(batch, controles, p, centroJugador(p), CONTROLES_Y);
         }
         batch.end();
