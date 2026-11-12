@@ -16,7 +16,7 @@ public class RpsScreen extends BaseMinigameScreen {
     private static final int PAPEL  = 1;
     private static final int TIJERA = 2;
     private static final int ELECCION_INICIAL = PAPEL;
-    private static final int   PASOS_CUENTA = 2;
+    private static final int   PASOS_CUENTA = 3;
     private static final float TIEMPO_PASO   = 0.4f;
     private static final float TIEMPO_REVELAR = 0.5f;
     private static final int PUNTOS_MANO       = 1;

@@ -1,5 +1,7 @@
 # RAMSHI
 
+**Versión 1.0** — los 12 minijuegos, partida por rondas, Endless, guía, ajustes y pausa. El modo en red se está desarrollando aparte (rama `feature/red`).
+
 Juego **1 contra 1 local** de **microjuegos de 10 segundos**, al estilo WarioWare, hecho en **Java + libGDX**.
 Los dos jugadores comparten el teclado y la pantalla: cada minijuego dura 10 segundos, el que lo gana suma puntos (de **1 a 3** en casi todos) y al final de la partida gana quien juntó más.
 
@@ -226,7 +228,7 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 - **Chocar** deja la velocidad en 0 y rompe el obstáculo. La parte trasera del auto no cuenta como choque (para que no frene si apenas lo rozás al cambiar de carril).
 
 #### 7. RPS (piedra, papel o tijera) — `RpsScreen`
-- Manos rápidas: cuenta regresiva **2, 1** (0,4 s por número) y se revela durante 0,5 s, así que entran unas **7 manos** en 10 s.
+- Manos rápidas: cuenta regresiva **3, 2, 1** (0,4 s por número) y se revela durante 0,5 s, así que entran unas **6 manos** en 10 s.
 - Durante la cuenta, cada uno elige en secreto (`A` piedra, `S` papel, `D` tijera / `←` piedra, `↓` papel, `→` tijera). Si no elige, queda papel.
 - Gana la ronda quien ganó más manos y suma **1 punto por mano ganada, hasta 5** (`PUNTOS_MAXIMOS`). Es el único juego que puede dar más de 3.
 
@@ -466,7 +468,7 @@ Todos los valores que se pueden ajustar están como **constantes al principio de
 | Quickdraw | `TIEMPO_REACCION` | 0.35 | Ventana para disparar |
 | Race | `SEPARACION_INICIAL` / `SEPARACION_FINAL` | 320 / 260 | Distancia entre obstáculos |
 | Race | `PARTE_TRASERA_LIBRE` / `MARGEN_GOLPE` | 0.35 / 10 | Qué tan permisivo es el choque |
-| RPS | `PASOS_CUENTA` / `TIEMPO_PASO` / `TIEMPO_REVELAR` | 2 / 0.4 / 0.5 | Cuenta regresiva y velocidad de cada mano |
+| RPS | `PASOS_CUENTA` / `TIEMPO_PASO` / `TIEMPO_REVELAR` | 3 / 0.4 / 0.5 | Cuenta regresiva y velocidad de cada mano |
 | RPS | `PUNTOS_MAXIMOS` | 5 | Tope de puntos por ronda |
 | Tank Duel | `TIEMPO_RECARGA` / `VIDA_MAXIMA` | 0.30 / 3 | Cadencia de disparo y vidas |
 | Bomb Tag | `RECARGA_DASH` / `BONUS_PORTADOR` | 2.0 / 1.08 | Dash y ventaja del que tiene la bomba |

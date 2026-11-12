@@ -32,7 +32,7 @@ public enum MinigameType {
         "Recorrer más distancia que el rival.",
         "Por ventaja: 50% más = 3 pts, 20% más = 2, menos = 1."),
     RPS("RPS", RpsScreen::new,
-        "Piedra, papel o tijera rápido: durante la cuenta 2, 1 elegí en secreto. Se juegan unas 7 manos en 10 segundos.",
+        "Piedra, papel o tijera rápido: durante la cuenta 3, 2, 1 elegí en secreto. Se juegan unas 6 manos en 10 segundos.",
         "Ganar más manos que el rival.",
         "1 punto por mano ganada, hasta 5."),
     TANK_DUEL("Tank Duel", TankDuelScreen::new,
