@@ -2,6 +2,7 @@ package io.github.ramshi.session;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.math.MathUtils;
 import io.github.ramshi.menus.ResultsScreen;
 
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ public class GameSession {
 
     public enum Modo { JUGAR, ENDLESS }
 
+    private static final long MEZCLA_SEMILLA = 7919L;
+
     public static class Resultado {
         public final MinigameType tipo;
         public final int puntosP1, puntosP2;
@@ -24,15 +27,15 @@ public class GameSession {
         }
     }
 
-    private static GameSession actual = new GameSession(Modo.ENDLESS, new ArrayList<MinigameType>());
+    private static GameSession actual = new GameSession(Modo.ENDLESS, new ArrayList<MinigameType>(), 0L, false);
 
     public static GameSession actual() { return actual; }
 
     public static GameSession iniciarJugar(int rondas) {
-        return iniciarJugar(rondas, System.nanoTime());
+        return iniciarJugar(rondas, System.nanoTime(), false);
     }
 
-    public static GameSession iniciarJugar(int rondas, long semilla) {
+    public static GameSession iniciarJugar(int rondas, long semilla, boolean enRed) {
         Random azar = new Random(semilla);
         List<MinigameType> cola = new ArrayList<>();
         while (cola.size() < rondas) {
@@ -43,28 +46,37 @@ public class GameSession {
             }
             cola.addAll(bloque);
         }
-        actual = new GameSession(Modo.JUGAR, new ArrayList<>(cola.subList(0, rondas)));
+        actual = new GameSession(Modo.JUGAR, new ArrayList<>(cola.subList(0, rondas)), semilla, enRed);
         return actual;
     }
 
     public static GameSession iniciarEndless(MinigameType tipo) {
+        return iniciarEndless(tipo, System.nanoTime(), false);
+    }
+
+    public static GameSession iniciarEndless(MinigameType tipo, long semilla, boolean enRed) {
         List<MinigameType> cola = new ArrayList<>();
         cola.add(tipo);
-        actual = new GameSession(Modo.ENDLESS, cola);
+        actual = new GameSession(Modo.ENDLESS, cola, semilla, enRed);
         return actual;
     }
 
     private final Modo modo;
     private final List<MinigameType> cola;
     private final List<Resultado> resultados = new ArrayList<>();
+    private final long semilla;
+    private final boolean enRed;
     private int indice = 0;
 
-    private GameSession(Modo modo, List<MinigameType> cola) {
+    private GameSession(Modo modo, List<MinigameType> cola, long semilla, boolean enRed) {
         this.modo = modo;
         this.cola = cola;
+        this.semilla = semilla;
+        this.enRed = enRed;
     }
 
     public boolean esModoJugar() { return modo == Modo.JUGAR; }
+    public boolean esEnRed() { return enRed; }
     public MinigameType tipoActual() { return indice < cola.size() ? cola.get(indice) : null; }
     public int getIndice() { return indice; }
     public int getTotalJuegos() { return cola.size(); }
@@ -77,11 +89,16 @@ public class GameSession {
         resultados.add(new Resultado(tipoActual(), puntosP1, puntosP2));
     }
 
-    public Screen primeraPantalla(Game juego) { return cola.get(indice).crear(juego); }
+    public Screen primeraPantalla(Game juego) { return crearActual(juego); }
 
     public Screen siguientePantalla(Game juego) {
         indice++;
         if (indice >= cola.size()) return new ResultsScreen(juego, this);
+        return crearActual(juego);
+    }
+
+    private Screen crearActual(Game juego) {
+        if (enRed) MathUtils.random.setSeed(semilla + indice * MEZCLA_SEMILLA);
         return cola.get(indice).crear(juego);
     }
 }

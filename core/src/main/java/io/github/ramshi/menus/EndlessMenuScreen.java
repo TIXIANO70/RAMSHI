@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import io.github.ramshi.Main;
 import io.github.ramshi.menus.Botonera.Boton;
+import io.github.ramshi.red.Red;
 import io.github.ramshi.session.GameSession;
 import io.github.ramshi.session.MinigameType;
 
@@ -46,9 +47,15 @@ public class EndlessMenuScreen extends MenuScreen {
     private final Color relleno = new Color(1f, 1f, 1f, 1f);
     private final Color borde = new Color();
     private float desplazamiento;
+    private final boolean enRed;
 
     public EndlessMenuScreen(Game juego) {
+        this(juego, false);
+    }
+
+    public EndlessMenuScreen(Game juego, boolean enRed) {
         super(juego);
+        this.enRed = enRed;
         paginador = new Paginador(tipos.length, seleccion, CENTRO_X, PAGINADOR_Y);
         for (MinigameType t : tipos) {
             if (!Gdx.files.internal(t.getImagen()).exists()) continue;
@@ -58,7 +65,7 @@ public class EndlessMenuScreen extends MenuScreen {
         }
         botonera.agregar(new Boton(CENTRO_X - JUGAR_ANCHO / 2f, JUGAR_Y, JUGAR_ANCHO, JUGAR_ALTO, "JUGAR", Boton.VERDE,
             this::jugar));
-        agregarVolver(() -> abrir(new ModoMenuScreen(juego, false)));
+        agregarVolver(() -> abrir(new ModoMenuScreen(juego, enRed)));
         botonera.navegarHorizontal = false;
     }
 
@@ -67,7 +74,8 @@ public class EndlessMenuScreen extends MenuScreen {
     }
 
     private void jugar() {
-        abrir(GameSession.iniciarEndless(tipos[paginador.actual()]).primeraPantalla(juego));
+        MinigameType tipo = tipos[paginador.actual()];
+        abrir((enRed ? Red.iniciarEndless(tipo) : GameSession.iniciarEndless(tipo)).primeraPantalla(juego));
     }
 
     @Override

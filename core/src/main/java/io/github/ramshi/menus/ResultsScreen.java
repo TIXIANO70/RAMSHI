@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import io.github.ramshi.Main;
 import io.github.ramshi.menus.Botonera.Boton;
+import io.github.ramshi.red.Red;
 import io.github.ramshi.screens.BaseMinigameScreen;
 import io.github.ramshi.session.GameSession;
 
@@ -37,6 +38,7 @@ public class ResultsScreen extends MenuScreen {
     private final int juegosP2;
     private final Boton menu;
     private final Boton revancha;
+    private final boolean enRed;
     private float tiempoBloqueo = BLOQUEO_INICIAL;
 
     public ResultsScreen(Game juego, GameSession sesion) {
@@ -67,20 +69,31 @@ public class ResultsScreen extends MenuScreen {
         }
 
         int rondas = sesion.getTotalJuegos();
+        enRed = sesion.esEnRed();
         revancha = botonera.agregar(new Boton((ANCHO - REVANCHA_ANCHO) / 2f, REVANCHA_Y, REVANCHA_ANCHO, REVANCHA_ALTO,
-            "REVANCHA", Boton.VERDE, () -> abrir(GameSession.iniciarJugar(rondas).primeraPantalla(juego))))
+            "REVANCHA", Boton.VERDE, () -> abrir((enRed ? Red.iniciarRondas(rondas) : GameSession.iniciarJugar(rondas))
+                .primeraPantalla(juego))))
             .conFuente(Main.fuenteMediana);
-        menu = agregarVolver(() -> abrir(new MainMenuScreen(juego)));
-        menu.texto = "MENÚ";
+        menu = agregarVolver(this::salir);
+        menu.texto = enRed ? "SALA" : "MENÚ";
         revancha.activo = false;
         menu.activo = false;
+    }
+
+    private void salir() {
+        if (!enRed) {
+            abrir(new MainMenuScreen(juego));
+            return;
+        }
+        Red.enviarSeguro(Red.VOLVER_A_SALA);
+        abrir(Red.esAnfitrion() ? new ModoMenuScreen(juego, true) : new EsperaSalaScreen(juego));
     }
 
     @Override
     protected void actualizar() {
         tiempoBloqueo -= Gdx.graphics.getDeltaTime();
         boolean listo = tiempoBloqueo <= 0f;
-        revancha.activo = listo;
+        revancha.activo = listo && (!enRed || Red.esAnfitrion());
         menu.activo = listo;
     }
 

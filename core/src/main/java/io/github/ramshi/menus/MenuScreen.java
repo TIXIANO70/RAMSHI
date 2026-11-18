@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
 import io.github.ramshi.screens.BaseMinigameScreen;
 import io.github.ramshi.menus.Botonera.Boton;
+import io.github.ramshi.red.Red;
 
 public abstract class MenuScreen implements Screen {
 
@@ -30,7 +31,9 @@ public abstract class MenuScreen implements Screen {
     protected static final Color COLOR_TEXTO = new Color(0.9f, 0.9f, 0.92f, 1f);
     protected static final Color COLOR_NOTA = new Color(0.6f, 0.6f, 0.65f, 1f);
     private static final Color COLOR_FONDO = new Color(0.06f, 0.06f, 0.08f, 1f);
+    private static final Color COLOR_AVISO = new Color(1f, 0.45f, 0.4f, 1f);
     private static final float TITULO_Y = 445f;
+    private static final float AVISO_Y = 474f;
     private static final float VOLVER_X = 20f;
     private static final float VOLVER_Y = 20f;
     private static final float VOLVER_ANCHO = 150f;
@@ -69,6 +72,21 @@ public abstract class MenuScreen implements Screen {
 
     protected void actualizar() {}
 
+    protected void alEventoRed(String evento) {
+        if (evento.startsWith(Red.INICIAR)) {
+            abrir(Red.crearSesionRecibida(evento).primeraPantalla(juego));
+        } else if (evento.equals(Red.VOLVER_A_SALA)) {
+            abrir(Red.esAnfitrion() ? new ModoMenuScreen(juego, true) : new EsperaSalaScreen(juego));
+        } else if (evento.equals(Red.DESCONECTADO)) {
+            if (Red.esAnfitrion()) {
+                abrir(new CrearSalaScreen(juego));
+            } else {
+                Red.cerrar();
+                abrir(new SalaMenuScreen(juego));
+            }
+        }
+    }
+
     protected abstract void dibujar();
 
     @Override
@@ -85,11 +103,23 @@ public abstract class MenuScreen implements Screen {
         mouseY = mouse.y;
         botonera.actualizar();
 
+        Red.actualizar(delta);
+        String evento;
+        while ((evento = Red.siguienteEvento()) != null) {
+            alEventoRed(evento);
+            if (cerrada) return;
+        }
+
         actualizar();
         if (cerrada) return;
 
         dibujar();
         botonera.dibujar(formas, batch);
+        if (Red.getAviso() != null) {
+            batch.begin();
+            escribir(Main.fuenteChica, COLOR_AVISO, Red.getAviso(), ANCHO / 2f, AVISO_Y);
+            batch.end();
+        }
         if (fundidoEntrada > 0f) {
             fundidoEntrada -= delta;
             BaseMinigameScreen.dibujarFundido(formas, fundidoEntrada / BaseMinigameScreen.DURACION_FUNDIDO);
