@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 
 public class StopItScreen extends BaseMinigameScreen {
 
@@ -105,18 +106,22 @@ public class StopItScreen extends BaseMinigameScreen {
             puntos = PUNTOS_PERFECTO;
             ultimoTexto[p] = "¡PERFECTO! +" + puntos;
             ultimoColor[p] = new Color(1f, 0.85f, 0.2f, 1f);
+            Sonidos.sonar("acierto");
         } else if (d <= mitad) {
             puntos = PUNTOS_BIEN;
             ultimoTexto[p] = "¡BIEN! +" + puntos;
             ultimoColor[p] = new Color(0.3f, 0.9f, 0.3f, 1f);
+            Sonidos.sonar("freno_bien");
         } else if (d <= mitad * PROPORCION_CERCA) {
             puntos = PUNTOS_CERCA;
             ultimoTexto[p] = "CERCA +" + puntos;
             ultimoColor[p] = new Color(1f, 0.6f, 0.2f, 1f);
+            Sonidos.sonar("freno_bien");
         } else {
             puntos = 0;
             ultimoTexto[p] = "FALLASTE";
             ultimoColor[p] = new Color(1f, 0.3f, 0.3f, 1f);
+            Sonidos.sonar("error");
         }
         puntaje[p] += puntos;
         frenado[p] = true;

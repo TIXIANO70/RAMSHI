@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 import io.github.ramshi.screens.BaseMinigameScreen;
 import io.github.ramshi.menus.Botonera.Boton;
 import io.github.ramshi.red.Red;
@@ -56,6 +57,7 @@ public abstract class MenuScreen implements Screen {
         this.juego = juego;
         vista.apply();
         camara.position.set(ANCHO / 2f, ALTO / 2f, 0f);
+        Sonidos.reproducirMusica("menu");
     }
 
     protected Boton agregarVolver(Runnable accion) {

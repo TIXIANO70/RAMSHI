@@ -64,5 +64,6 @@ public class Main extends Game {
         fuenteCartel.dispose();
         fuenteTitulo.dispose();
         Controles.liberar();
+        Sonidos.liberar();
     }
 }

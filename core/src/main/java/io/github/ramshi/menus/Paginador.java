@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 
 public class Paginador {
 
@@ -40,9 +41,15 @@ public class Paginador {
         return ((actual + desplazamiento) % total + total) % total;
     }
 
-    public void siguiente() { actual = vecino(1); }
+    public void siguiente() {
+        actual = vecino(1);
+        Sonidos.sonar("ui_mover");
+    }
 
-    public void anterior() { actual = vecino(-1); }
+    public void anterior() {
+        actual = vecino(-1);
+        Sonidos.sonar("ui_mover");
+    }
 
     public void actualizar(float mouseX, float mouseY, boolean click) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) siguiente();

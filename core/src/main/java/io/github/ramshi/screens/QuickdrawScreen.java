@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Sonidos;
 
 public class QuickdrawScreen extends BaseMinigameScreen {
 
@@ -103,8 +104,10 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     private void disparar(int jugador, int tecla) {
         if (tecla == opcionDisparo && puedeDisparar) {
             puedeDisparar = false;
+            Sonidos.sonar("escopeta");
             quitarVida(jugador == 1 ? 2 : 1);
         } else {
+            if (!yaDisparo) Sonidos.sonar("fallo");
             quitarVida(jugador);
         }
         if (!contarReaccion) {
@@ -119,6 +122,7 @@ public class QuickdrawScreen extends BaseMinigameScreen {
     private void habilitarGatillo() {
         opcionDisparo = MathUtils.random(1, 4);
         puedeDisparar = true;
+        Sonidos.sonar("alerta");
     }
 
     @Override

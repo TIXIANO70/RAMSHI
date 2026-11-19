@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 import io.github.ramshi.menus.Botonera.Boton;
 import io.github.ramshi.red.Red;
 import io.github.ramshi.screens.BaseMinigameScreen;
@@ -43,6 +44,7 @@ public class ResultsScreen extends MenuScreen {
 
     public ResultsScreen(Game juego, GameSession sesion) {
         super(juego);
+        Sonidos.reproducirMusica("resultados");
         this.sesion = sesion;
         fundidoEntrada = BaseMinigameScreen.DURACION_FUNDIDO;
 

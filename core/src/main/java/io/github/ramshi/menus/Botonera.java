@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,10 @@ public class Botonera {
         }
 
         public void ejecutar() {
-            if (activo && accion != null) accion.run();
+            if (activo && accion != null) {
+                Sonidos.sonar("VOLVER".equals(texto) ? "ui_volver" : "ui_click");
+                accion.run();
+            }
         }
     }
 
@@ -130,7 +134,10 @@ public class Botonera {
                 mejor = b;
             }
         }
-        if (mejor != null) enfocado = mejor;
+        if (mejor != null) {
+            enfocado = mejor;
+            Sonidos.sonar("ui_mover");
+        }
     }
 
     public void dibujar(ShapeRenderer formas, SpriteBatch batch) {

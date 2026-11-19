@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import io.github.ramshi.Sonidos;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,6 +148,7 @@ public class TankDuelScreen extends BaseMinigameScreen {
         float bx = posX[p] + centro + dirX[p] * (TANQUE_TAMANO / 2f + 4f);
         float by = posY[p] + centro + dirY[p] * (TANQUE_TAMANO / 2f + 4f);
         balas.add(new Bala(bx, by, dirX[p] * VELOCIDAD_BALA, dirY[p] * VELOCIDAD_BALA, p));
+        Sonidos.sonar("laser");
     }
 
     private void actualizarBalas(float delta) {
@@ -159,12 +161,14 @@ public class TankDuelScreen extends BaseMinigameScreen {
             if (b.x < MARGEN_ARENA || b.x > ANCHO_VIRTUAL - MARGEN_ARENA - BALA_TAMANO ||
                 b.y < MARGEN_ARENA || b.y > ALTO_VIRTUAL - MARGEN_ARENA - BALA_TAMANO ||
                 chocaConMuro(b.rect)) {
+                Sonidos.sonar("rebote_muro", 0.5f);
                 balas.remove(i);
                 continue;
             }
 
             int rival = 1 - b.dueno;
             if (b.rect.overlaps(rectJugador[rival])) {
+                Sonidos.sonar("impacto");
                 balas.remove(i);
                 vida[rival]--;
                 if (vida[rival] <= 0) terminarRonda();

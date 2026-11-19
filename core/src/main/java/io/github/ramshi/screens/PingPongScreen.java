@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Sonidos;
 
 public class PingPongScreen extends BaseMinigameScreen {
 
@@ -90,15 +91,18 @@ public class PingPongScreen extends BaseMinigameScreen {
         if (bombaY - RADIO_BOMBA <= 0f) {
             bombaY = RADIO_BOMBA;
             bombaVelY = Math.abs(bombaVelY);
+            Sonidos.sonar("pared", 0.6f);
         } else if (bombaY + RADIO_BOMBA >= ALTO_VIRTUAL) {
             bombaY = ALTO_VIRTUAL - RADIO_BOMBA;
             bombaVelY = -Math.abs(bombaVelY);
+            Sonidos.sonar("pared", 0.6f);
         }
 
         if (bombaX - RADIO_BOMBA <= P1_X + PALETA_ANCHO && bombaX + RADIO_BOMBA >= P1_X) {
             if (bombaY + RADIO_BOMBA >= p1Y && bombaY - RADIO_BOMBA <= p1Y + PALETA_ALTO && bombaVelX < 0) {
                 bombaVelX = -bombaVelX * ACELERACION_REBOTE;
                 bombaX = P1_X + PALETA_ANCHO + RADIO_BOMBA;
+                Sonidos.sonar("paleta");
             }
         }
 
@@ -106,14 +110,17 @@ public class PingPongScreen extends BaseMinigameScreen {
             if (bombaY + RADIO_BOMBA >= p2Y && bombaY - RADIO_BOMBA <= p2Y + PALETA_ALTO && bombaVelX > 0) {
                 bombaVelX = -bombaVelX * ACELERACION_REBOTE;
                 bombaX = P2_X - RADIO_BOMBA;
+                Sonidos.sonar("paleta");
             }
         }
 
         if (bombaX + RADIO_BOMBA < 0f) {
+            Sonidos.sonar("gol");
             puntajeP2++;
             if (puntajeP2 >= GOLES_PARA_GANAR) terminarRonda();
             else reiniciarPelota(2);
         } else if (bombaX - RADIO_BOMBA > ANCHO_VIRTUAL) {
+            Sonidos.sonar("gol");
             puntajeP1++;
             if (puntajeP1 >= GOLES_PARA_GANAR) terminarRonda();
             else reiniciarPelota(1);

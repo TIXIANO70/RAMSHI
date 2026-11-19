@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 
 import java.util.ArrayList;
 
@@ -104,15 +105,21 @@ public class RaceScreen extends BaseMinigameScreen {
 
     @Override
     protected void actualizarJuego(float delta) {
+        int prevCarrilP1 = carrilP1;
+        int prevCarrilP2 = carrilP2;
         if (Gdx.input.isKeyJustPressed(TECLAS[0][0])) carrilP1 = MathUtils.clamp(carrilP1 - 1, 0, CARRILES - 1);
         if (Gdx.input.isKeyJustPressed(TECLAS[0][1])) carrilP1 = MathUtils.clamp(carrilP1 + 1, 0, CARRILES - 1);
         if (Gdx.input.isKeyJustPressed(TECLAS[1][0])) carrilP2 = MathUtils.clamp(carrilP2 - 1, 0, CARRILES - 1);
         if (Gdx.input.isKeyJustPressed(TECLAS[1][1])) carrilP2 = MathUtils.clamp(carrilP2 + 1, 0, CARRILES - 1);
+        if (carrilP1 != prevCarrilP1 || carrilP2 != prevCarrilP2) {
+            Sonidos.sonar("carril", 0.6f);
+        }
         autoX1 = carrilX(P1_X, carrilP1);
         autoX2 = carrilX(P2_X, carrilP2);
 
         tiempoVelocidad += delta;
         if (tiempoVelocidad >= INTERVALO_VELOCIDAD) {
+            Sonidos.sonar("motor", 0.45f);
             velocidadP1 += ACELERACION;
             velocidadP2 += ACELERACION;
             distanciaP1 += velocidadP1;
@@ -143,6 +150,7 @@ public class RaceScreen extends BaseMinigameScreen {
             obs.y -= caida;
             obs.rect.set(obs.x, obs.y, obs.w, obs.h);
             if (auto.overlaps(obs.rect)) {
+                Sonidos.sonar("choque");
                 velocidad = 0f;
                 lista.remove(i);
             } else if (obs.y + obs.h < 0) {

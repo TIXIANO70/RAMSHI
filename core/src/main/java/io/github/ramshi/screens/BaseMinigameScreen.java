@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 import io.github.ramshi.menus.Botonera.Boton;
 import io.github.ramshi.menus.Botonera;
 import io.github.ramshi.menus.CrearSalaScreen;
@@ -113,6 +114,10 @@ public abstract class BaseMinigameScreen implements Screen {
     private int partidasGanadasP2;
     private final Sincronizador sincronizador;
     private boolean cerrada;
+    private boolean introIniciada = false;
+    private boolean yaSonado = false;
+    private int ultimoSegundoAlerta = 4;
+    private boolean estadoPausaAnterior = false;
 
     protected BaseMinigameScreen(Game juego) {
         this.juego = juego;
@@ -169,13 +174,24 @@ public abstract class BaseMinigameScreen implements Screen {
         if (puntosGanadosP1 > puntosGanadosP2) partidasGanadasP1++;
         if (puntosGanadosP2 > puntosGanadosP1) partidasGanadasP2++;
         tiempoResultado = 0f;
+        Sonidos.detenerMusica();
+        Sonidos.sonar((puntosGanadosP1 == 0 && puntosGanadosP2 == 0) ? "empate" : "victoria");
     }
 
     public void iniciarNuevaRonda() {
         tiempoRestante = getDuracionRonda();
         rondaTerminada = false;
         tiempoResultado = 0f;
+        yaSonado = true;
+        ultimoSegundoAlerta = 4;
+        Sonidos.reproducirMusica(getMusica());
+        Sonidos.sonar("ya");
         reiniciarRonda();
+    }
+
+    protected String getMusica() {
+        MinigameType tipo = sesion.tipoActual();
+        return tipo != null ? tipo.name().toLowerCase() : "snake";
     }
 
     protected void irA(Screen siguiente) {
@@ -185,19 +201,46 @@ public abstract class BaseMinigameScreen implements Screen {
     }
 
     private boolean paso(float delta) {
+        if (!introIniciada) {
+            introIniciada = true;
+            Sonidos.reproducirMusica(getMusica());
+            Sonidos.sonar("intro");
+        }
         boolean puedePausar = !rondaTerminada || !sesion.esModoJugar();
         if (puedePausar && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) pausado = !pausado;
+
+        if (pausado != estadoPausaAnterior) {
+            estadoPausaAnterior = pausado;
+            Sonidos.sonar("pausa");
+            if (pausado) Sonidos.pausarMusica();
+            else if (!rondaTerminada) Sonidos.reanudarMusica();
+        }
 
         if (pausado) {
             return true;
         } else if (tiempoIntro > 0f) {
             tiempoIntro -= delta;
+            if (tiempoIntro <= 0f && !yaSonado) {
+                yaSonado = true;
+                Sonidos.sonar("ya");
+            }
         } else if (!rondaTerminada) {
+            if (!yaSonado) {
+                yaSonado = true;
+                Sonidos.sonar("ya");
+            }
             tiempoRestante -= delta;
             if (tiempoRestante <= 0f) {
                 tiempoRestante = 0f;
                 terminarRonda();
             } else {
+                if (tiempoRestante <= SEGUNDOS_ALERTA) {
+                    int seg = (int) Math.ceil(tiempoRestante);
+                    if (seg < ultimoSegundoAlerta) {
+                        ultimoSegundoAlerta = seg;
+                        Sonidos.sonar("reloj");
+                    }
+                }
                 actualizarJuego(delta);
             }
         } else {

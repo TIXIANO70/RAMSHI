@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import io.github.ramshi.Sonidos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class ShipsScreen extends BaseMinigameScreen {
         BalaCanon(float x, float y, float tamano) { this.x = x; this.y = y; this.tamano = tamano; }
     }
 
-    private final Texture fondo = cargarTextura("ships/ships_bg.png", true);
+    private final Texture fondo = cargarTextura("ships/ships_bg.png", false);
     private final Texture bala = cargarTextura("ships/ships_cannon.png", false);
     private final Texture[] barcos = {
         cargarTextura("ships/ships_p1.png", false), cargarTextura("ships/ships_p2.png", false)
@@ -179,13 +180,16 @@ public class ShipsScreen extends BaseMinigameScreen {
     }
 
     private void lanzarBalas() {
+        boolean lanzo = false;
         while (siguienteEvento < eventos.size() && eventos.get(siguienteEvento).tiempo <= transcurrido) {
             EventoBala e = eventos.get(siguienteEvento++);
             for (int p = 0; p < 2; p++) {
                 float x = zonaIzquierda(p) + e.xNorm * (ANCHO_ZONA - e.tamano);
                 balas.get(p).add(new BalaCanon(x, BALAS_Y, e.tamano));
             }
+            lanzo = true;
         }
+        if (lanzo) Sonidos.sonar("canon", 0.6f);
     }
 
     private void moverBarco(int p, float delta) {
@@ -202,7 +206,10 @@ public class ShipsScreen extends BaseMinigameScreen {
         for (int i = lista.size() - 1; i >= 0; i--) {
             BalaCanon b = lista.get(i);
             b.y -= caida;
-            if (vivo[p] && golpea(p, b)) vivo[p] = false;
+            if (vivo[p] && golpea(p, b)) {
+                vivo[p] = false;
+                Sonidos.sonar("explosion");
+            }
             if (b.y + b.tamano < BARCO_Y) lista.remove(i);
         }
     }

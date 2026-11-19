@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Sonidos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class SnakeScreen extends BaseMinigameScreen {
     private static final String[] SUFIJOS_CUERPO = {"", "_1", "_2", "_3", "_4", "_5"};
 
     private final List<Texture> texturas = new ArrayList<>();
+    private final Texture fondo = cargar("snake/snake_bg.png");
     private final Texture casilla1 = cargar("snake/tiles/Tile1.png");
     private final Texture casilla2 = cargar("snake/tiles/Tile2.png");
     private final Texture manzana = cargar("snake/manzana.png");
@@ -72,6 +74,7 @@ public class SnakeScreen extends BaseMinigameScreen {
 
     private Texture cargar(String ruta) {
         Texture t = new Texture(ruta);
+        t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         texturas.add(t);
         return t;
     }
@@ -114,13 +117,17 @@ public class SnakeScreen extends BaseMinigameScreen {
         else s.remove(0);
 
         if (x == comidaX[p] && y == comidaY[p]) {
+            Sonidos.sonar("comer");
             crecer[p]++;
             puntaje[p]++;
             record[p] = Math.max(record[p], puntaje[p]);
             ubicarComida(p);
         }
         boolean afuera = x < 0 || y < 0 || x >= GRILLA || y >= GRILLA;
-        if (afuera || seChoca(s)) reaparecer(p);
+        if (afuera || seChoca(s)) {
+            Sonidos.sonar("choque");
+            reaparecer(p);
+        }
     }
 
     private boolean seChoca(List<int[]> s) {
@@ -168,6 +175,7 @@ public class SnakeScreen extends BaseMinigameScreen {
     @Override
     protected void dibujarJuego(SpriteBatch batch) {
         batch.begin();
+        batch.draw(fondo, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
         for (int p = 0; p < 2; p++) {
             for (int x = 0; x < GRILLA; x++) {
                 for (int y = 0; y < GRILLA; y++) dibujarCasilla(batch, (x + y) % 2 == 0 ? casilla1 : casilla2, p, x, y);

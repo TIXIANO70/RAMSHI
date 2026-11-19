@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Sonidos;
 
 public class SumoScreen extends BaseMinigameScreen {
 
@@ -139,11 +140,13 @@ public class SumoScreen extends BaseMinigameScreen {
         float movP1 = leerMovimiento(0, delta);
         if (Gdx.input.isKeyJustPressed(TECLAS[0][2]) && Math.abs(p1Y - BASE_Y) < 1.5f) {
             p1VelY = FUERZA_SALTO;
+            Sonidos.sonar("salto");
         }
 
         float movP2 = leerMovimiento(1, delta);
         if (Gdx.input.isKeyJustPressed(TECLAS[1][2]) && Math.abs(p2Y - BASE_Y) < 1.5f) {
             p2VelY = FUERZA_SALTO;
+            Sonidos.sonar("salto");
         }
 
         p1X += movP1;
@@ -181,6 +184,7 @@ public class SumoScreen extends BaseMinigameScreen {
             boolean p2AtacandoHaciaP1 = (p2X > p1X && movP2 < 0f) || (p2X < p1X && movP2 > 0f);
 
             if (p1AtacandoHaciaP2 && p2AtacandoHaciaP1) {
+                Sonidos.sonar("choque_fuerte");
                 ondaActiva = true;
                 ondaX = (p1X + p2X) / 2f;
                 ondaY = (p1Y + p2Y) / 2f;
@@ -195,6 +199,7 @@ public class SumoScreen extends BaseMinigameScreen {
                     p2X -= RETROCESO_CHOQUE;
                 }
             } else if (p1AtacandoHaciaP2) {
+                Sonidos.sonar("empujon");
                 if (p1X < p2X) {
                     p2X += EMPUJE;
                     p1X += ARRASTRE;
@@ -203,6 +208,7 @@ public class SumoScreen extends BaseMinigameScreen {
                     p1X -= ARRASTRE;
                 }
             } else if (p2AtacandoHaciaP1) {
+                Sonidos.sonar("empujon");
                 if (p2X > p1X) {
                     p1X -= EMPUJE;
                     p2X -= ARRASTRE;
@@ -225,16 +231,19 @@ public class SumoScreen extends BaseMinigameScreen {
         boolean p2Fuera = (p2X < platX - RADIO || p2X > platX + platAncho + RADIO);
 
         if (p1Fuera && p2Fuera) {
+            Sonidos.sonar("caida");
             p1Cayo = true;
             p2Cayo = true;
             motivoFinal = "¡AMBOS CAYERON AL MISMO TIEMPO!";
             terminarRonda();
         } else if (p1Fuera) {
+            Sonidos.sonar("caida");
             p1Cayo = true;
             rondasGanadasP2++;
             motivoFinal = "¡RING OUT! JUGADOR 2 EMPUJA AL RIVAL";
             terminarRonda();
         } else if (p2Fuera) {
+            Sonidos.sonar("caida");
             p2Cayo = true;
             rondasGanadasP1++;
             motivoFinal = "¡RING OUT! JUGADOR 1 EMPUJA AL RIVAL";

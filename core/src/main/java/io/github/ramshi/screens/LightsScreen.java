@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 
 import java.util.Arrays;
 
@@ -62,6 +63,7 @@ public class LightsScreen extends BaseMinigameScreen {
     private int ganadorSubronda;
     private Fase fase;
     private float tiempoFase;
+    private int ultimaLuzMostrada = -1;
 
     public LightsScreen(Game juego) {
         super(juego);
@@ -103,8 +105,15 @@ public class LightsScreen extends BaseMinigameScreen {
 
         if (fase == Fase.CUENTA && tiempoFase >= TIEMPO_CUENTA) {
             cambiarFase(Fase.MOSTRANDO);
-        } else if (fase == Fase.MOSTRANDO && tiempoFase >= TIEMPO_MUESTRA) {
-            cambiarFase(Fase.INGRESO);
+        } else if (fase == Fase.MOSTRANDO) {
+            int enc = teclaActual();
+            if (enc != ultimaLuzMostrada) {
+                ultimaLuzMostrada = enc;
+                if (enc >= 0) Sonidos.sonar("luz_" + enc);
+            }
+            if (tiempoFase >= TIEMPO_MUESTRA) {
+                cambiarFase(Fase.INGRESO);
+            }
         } else if (fase == Fase.INGRESO) {
             boolean listoP1 = leerTeclas(0);
             boolean listoP2 = leerTeclas(1);
@@ -210,6 +219,7 @@ public class LightsScreen extends BaseMinigameScreen {
     private void cambiarFase(Fase nuevaFase) {
         fase = nuevaFase;
         tiempoFase = 0f;
+        ultimaLuzMostrada = -1;
     }
 
     private boolean leerTeclas(int jugador) {
@@ -220,10 +230,17 @@ public class LightsScreen extends BaseMinigameScreen {
             tiempoDestello[jugador] = TIEMPO_DESTELLO;
 
             if (i == secuencia[progreso[jugador]]) {
+                Sonidos.sonar("luz_" + i);
                 progreso[jugador]++;
-                if (progreso[jugador] == largoSecuencia()) return true;
-            } else if (REINICIAR_AL_FALLAR) {
-                progreso[jugador] = 0;
+                if (progreso[jugador] == largoSecuencia()) {
+                    Sonidos.sonar("acierto");
+                    return true;
+                }
+            } else {
+                Sonidos.sonar("error");
+                if (REINICIAR_AL_FALLAR) {
+                    progreso[jugador] = 0;
+                }
             }
         }
         return false;

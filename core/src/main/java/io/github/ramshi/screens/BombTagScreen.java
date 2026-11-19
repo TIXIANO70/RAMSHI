@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class BombTagScreen extends BaseMinigameScreen {
     }
 
     private final List<Texture> texturas = new ArrayList<>();
-    private final Texture fondoTex = cargarTextura("bombtag/arena_bg.png", true);
+    private final Texture fondoTex = cargarTextura("bombtag/arena_bg.png", false);
     private final Texture bombaTex = cargarTextura("bombtag/bomb.png", false);
     private final Texture pilarTex = cargarTextura("bombtag/pillar.png", false);
     private final Corredor[] corredores = { new Corredor(), new Corredor() };
@@ -85,7 +86,11 @@ public class BombTagScreen extends BaseMinigameScreen {
 
     private Texture cargarTextura(String ruta, boolean suave) {
         Texture t = new Texture(ruta);
-        if (suave) t.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        if (suave) {
+            t.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        } else {
+            t.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+        }
         texturas.add(t);
         return t;
     }
@@ -127,6 +132,7 @@ public class BombTagScreen extends BaseMinigameScreen {
                 MathUtils.random(-30f, 30f), MathUtils.random(30f, 80f), 0.4f, Color.ORANGE);
         }
         if (tiempoRestante <= TIEMPO_DETONACION) {
+            Sonidos.sonar("explosion");
             chispas(portador.pos.x, portador.pos.y, Color.RED, 60, 300f, 1.2f);
             terminarRonda();
         }
@@ -154,6 +160,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         if (Gdx.input.isKeyJustPressed(r.teclas[4]) && r.recargaDash <= 0f && !r.dir.isZero()) {
             r.tiempoDash = DURACION_DASH;
             r.recargaDash = RECARGA_DASH;
+            Sonidos.sonar("dash");
         }
 
         float velocidad = (r.tiempoDash > 0f) ? VELOCIDAD_DASH : VELOCIDAD_JUGADOR;
@@ -176,6 +183,7 @@ public class BombTagScreen extends BaseMinigameScreen {
         p2.mulAdd(empuje, solapamiento / 2f);
 
         if (inmunidad <= 0f) {
+            Sonidos.sonar("pasar_bomba");
             portador = (portador == corredores[0]) ? corredores[1] : corredores[0];
             inmunidad = INMUNIDAD_PASE;
             chispas((p1.x + p2.x) / 2f, (p1.y + p2.y) / 2f, Color.YELLOW, 18, 140f, 0.45f);

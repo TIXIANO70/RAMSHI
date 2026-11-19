@@ -72,7 +72,7 @@ Menú principal
 │       ├── CREAR SALA ── muestra tu IP y espera ── (se une alguien) ── Rondas / Endless
 │       └── UNIRSE ────── buscar salas o escribir la IP ── esperar al anfitrión
 ├── GUÍA ───────── páginas con la explicación del juego y de cada minijuego
-├── AJUSTES ────── pantalla completa (se guarda)
+├── AJUSTES ────── música, sonidos y pantalla completa (se guardan)
 └── SALIR
 ```
 
@@ -80,7 +80,7 @@ Menú principal
 - **Jugar:** dos tarjetas, **LOCAL** (los dos en el mismo teclado) a la izquierda y **EN RED** (cada uno en su compu) a la derecha.
 - **En red:** cada jugador en su computadora, conectadas a la misma red. Ver la [sección 2.1](#21-modo-en-red).
 - **Guía:** como una presentación. Las primeras dos páginas explican qué es el juego, los controles, los modos, los puntos y la pausa; después hay **una página por minijuego** con *cómo se juega*, *meta* y *puntos*. Abajo se ve la página actual (`3/14`) con flechas; se cambia con las flechas en pantalla, `←` `→` o `A` `D`. **Es un bucle:** después de la última vuelve a la primera.
-- **Ajustes:** botón **PANTALLA COMPLETA: SÍ / NO**. Queda guardado para la próxima vez que se abra el juego.
+- **Ajustes:** botones **MÚSICA: SÍ / NO**, **SONIDOS: SÍ / NO** y **PANTALLA COMPLETA: SÍ / NO**. Quedan guardados para la próxima vez que se abra el juego.
 
 ### 2.1 Modo en red
 
@@ -298,9 +298,12 @@ El detalle de cada juego está en la tabla de la [sección 5](#5-los-12-minijueg
 
 ```
 RAMSHI/
-├── assets/                       Imágenes y fuentes (una carpeta por minijuego)
+├── assets/                       Imágenes, sonidos y fuentes
 │   ├── bombtag/  lights/  pingpong/  quickdraw/  race/  rps/
 │   ├── ships/  snake/  stopit/  sumo/  tanks/  tugofwar/
+│   ├── sonidos/
+│   │   ├── musica/               Pistas en bucle de menús y minijuegos (.ogg)
+│   │   └── sfx/                  Efectos de sonido de UI y jugabilidad (.wav)
 │   ├── menu/minijuegos/          Logos circulares del selector de Endless (170 × 170)
 │   └── ui/
 │       ├── fonts/                Pixelify Sans (+ licencia OFL)
@@ -308,6 +311,7 @@ RAMSHI/
 │       └── logo.png              (futuro) Logo del menú principal
 ├── core/src/main/java/io/github/ramshi/
 │   ├── Main.java                 Arranque del juego y fuentes compartidas
+│   ├── Sonidos.java              Carga y reproducción de efectos (SFX) y música
 │   ├── menus/
 │   │   ├── MenuScreen.java           Base de todos los menús (cámara, botones, VOLVER, textos)
 │   │   ├── Botonera.java             Los botones (clase Boton adentro) y la lista que los dibuja y maneja
@@ -321,7 +325,7 @@ RAMSHI/
 │   │   ├── EsperaSalaScreen.java     El invitado espera que el anfitrión elija
 │   │   ├── EndlessMenuScreen.java    Selector circular de minijuego
 │   │   ├── GuiaScreen.java           Guía en páginas
-│   │   ├── AjustesScreen.java        Pantalla de ajustes y guardado de la pantalla completa
+│   │   ├── AjustesScreen.java        Pantalla de ajustes (música, sonidos y pantalla completa)
 │   │   └── ResultsScreen.java        Resultado final de la partida por rondas
 │   ├── screens/
 │   │   ├── BaseMinigameScreen.java   Base de todos los minijuegos (HUD, reloj, pausa, tablas)
@@ -347,14 +351,20 @@ Todo el código (variables, métodos, constantes) está **en español** para que
 ## 7. Cómo funciona por dentro
 
 ### `Main`
-Extiende `Game` de libGDX. Al arrancar crea **5 fuentes** (Pixelify Sans en 16, 20, 24, 32 y 56 px) que usan todas las pantallas (`Main.fuenteChica`, `fuenteMediana`, `fuenteGrande`, `fuenteCartel`, `fuenteTitulo`), activa la pantalla completa si estaba guardada y abre el menú. Al cerrar, libera las fuentes y las texturas de las teclas.
+Extiende `Game` de libGDX. Al arrancar crea **5 fuentes** (Pixelify Sans en 16, 20, 24, 32 y 56 px) que usan todas las pantallas (`Main.fuenteChica`, `fuenteMediana`, `fuenteGrande`, `fuenteCartel`, `fuenteTitulo`), activa la pantalla completa si estaba guardada y abre el menú. Al cerrar, libera las fuentes, las texturas de las teclas y el audio (`Sonidos.liberar()`).
+
+### `Sonidos`
+Clase utilitaria estática que centraliza todo el audio del juego:
+- **Efectos (`Sonidos.sonar(nombre)` / `Sonidos.sonar(nombre, volumen)`):** se buscan en `assets/sonidos/sfx/` (primero `.wav`, si no `.ogg`), se cargan de forma perezosa en un `Map<String, Sound>` y se reproducen respetando `AjustesScreen.sonidosActivos()`. No usa `MathUtils.random`, por lo que nunca afecta el determinismo del modo en red.
+- **Música (`Sonidos.reproducirMusica(nombre)`):** busca la pista en `assets/sonidos/musica/` (primero `.ogg`, si no `.wav`) y la reproduce en bucle continuo (`setLooping(true)`). Si ya estaba sonando la misma pista (por ejemplo al cambiar entre submenús), continúa sin cortarse. También provee `pausarMusica()`, `reanudarMusica()`, `detenerMusica()` y `actualizarAjustes()`.
+- **Cómo editar o reemplazar un sonido o pista:** basta con reemplazar el archivo con el mismo nombre dentro de `assets/sonidos/sfx/<nombre>.wav` (o `.ogg`) para efectos, o en `assets/sonidos/musica/<nombre>.ogg` (o `.wav`) para la música, sin tocar el código Java. Los volúmenes base se ajustan en las constantes `VOLUMEN_MUSICA` y `VOLUMEN_SFX` arriba de `Sonidos.java`.
 
 ### Menús (`menus/`)
 - **`MenuScreen`** es la base de todos los menús: arma la cámara de 800 × 480, maneja el mouse, dibuja los botones y agrega el botón **VOLVER** (`agregarVolver(...)`, que también responde a `ESC`). Cada menú solo define qué botones tiene y qué dibuja en `dibujar()`. También hereda de ella la pantalla de resultados (`ResultsScreen`), que usa `fundidoEntrada` para aparecer con fundido.
 - **`Boton`** (definido dentro de `Botonera`) tiene posición, texto, color (`Boton.VERDE`, `Boton.ROJO`, `Boton.NEUTRO`) y la acción al tocarlo. Con `activo = false` queda gris y no responde (así está REVANCHA para el invitado en red).
 - **`Botonera`** es la lista de botones de una pantalla: guarda cuál está **seleccionado**, lo mueve con el teclado buscando el botón más cercano en esa dirección (`mover(dx, dy)`), detecta el mouse, devuelve el botón elegido con clic, `ENTER` o `ESPACIO` (`elegido()`) y los dibuja. Con `navegarHorizontal = false` solo se mueve arriba/abajo (lo usan Endless y la Guía, donde izquierda/derecha cambian de página). Con `enfocar(boton)` se elige cuál arranca seleccionado. **La usa también la pausa de los minijuegos**, así que todos los botones del juego se ven igual.
 - **`Paginador`** guarda en qué página estás, la cambia con flechas o teclas y dibuja el `3/14`. Siempre es un bucle. Lo usan la Guía y el selector de Endless.
-- **`AjustesScreen`** además de ser la pantalla, guarda la pantalla completa con las `Preferences` de libGDX (en Windows quedan en la carpeta `.prefs` del usuario, no en el repo).
+- **`AjustesScreen`** además de ser la pantalla, guarda las opciones de **música**, **sonidos** y **pantalla completa** con las `Preferences` de libGDX (en Windows quedan en la carpeta `.prefs` del usuario, no en el repo).
 
 ### `BaseMinigameScreen`
 Clase abstracta de la que heredan los 12 minijuegos. Se encarga de todo lo común:
@@ -560,7 +570,8 @@ Los cortes de puntos también son constantes: `DIFERENCIA_PARA_3` / `DIFERENCIA_
 
 - **Fuente:** [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) (licencia SIL OFL 1.1), cargada con la extensión `gdx-freetype`.
 - **Teclas:** pack *Input Prompts Pixel 1-Bit* de [Kenney](https://kenney.nl) (CC0). Está completo en `assets/ui/kenney/`; el archivo `INDICE.md` de esa carpeta dice qué tecla es cada `tile_XXXX.png` (las teclas rellenas son el número + 272).
-- **Fondos y sprites de los minijuegos:** hechos o conseguidos por el equipo.
+- **Fondos y sprites de los minijuegos:** hechos o generados internamente por el equipo en estilo pixel-art.
+- **Música y efectos de sonido (`assets/sonidos/`):** las 14 pistas chiptune/arcade en bucle (`sonidos/musica/*.ogg`) y los 41 efectos de sonido (`sonidos/sfx/*.wav`) fueron sintetizados y generados internamente para el proyecto.
 
 Todo lo que no sea propio tiene que anotarse en [`CREDITS.md`](CREDITS.md) con autor, licencia y origen.
 

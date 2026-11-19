@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.ramshi.Main;
+import io.github.ramshi.Sonidos;
 
 public class RpsScreen extends BaseMinigameScreen {
 
@@ -45,6 +46,7 @@ public class RpsScreen extends BaseMinigameScreen {
     private float tiempoMano = 0f;
     private boolean revelado = false;
     private String mensajeMano = "";
+    private int ultimoPasoCuenta = -1;
 
     public RpsScreen(Game juego) {
         super(juego);
@@ -71,6 +73,7 @@ public class RpsScreen extends BaseMinigameScreen {
         tiempoMano = 0f;
         revelado = false;
         mensajeMano = "";
+        ultimoPasoCuenta = -1;
     }
 
     @Override protected String getConsigna() { return "¡GANÁ!"; }
@@ -95,15 +98,21 @@ public class RpsScreen extends BaseMinigameScreen {
         float duracionCuenta = PASOS_CUENTA * TIEMPO_PASO;
 
         if (tiempoMano < duracionCuenta) {
-            if (Gdx.input.isKeyJustPressed(TECLA_P1_PIEDRA)) eleccionP1 = PIEDRA;
-            if (Gdx.input.isKeyJustPressed(TECLA_P1_PAPEL))  eleccionP1 = PAPEL;
-            if (Gdx.input.isKeyJustPressed(TECLA_P1_TIJERA)) eleccionP1 = TIJERA;
+            int paso = Math.max(1, PASOS_CUENTA - (int) (tiempoMano / TIEMPO_PASO));
+            if (paso != ultimoPasoCuenta) {
+                ultimoPasoCuenta = paso;
+                Sonidos.sonar("cuenta", 0.6f);
+            }
+            if (Gdx.input.isKeyJustPressed(TECLA_P1_PIEDRA)) { eleccionP1 = PIEDRA; Sonidos.sonar("elegir", 0.5f); }
+            if (Gdx.input.isKeyJustPressed(TECLA_P1_PAPEL))  { eleccionP1 = PAPEL;  Sonidos.sonar("elegir", 0.5f); }
+            if (Gdx.input.isKeyJustPressed(TECLA_P1_TIJERA)) { eleccionP1 = TIJERA; Sonidos.sonar("elegir", 0.5f); }
 
-            if (Gdx.input.isKeyJustPressed(TECLA_P2_PIEDRA)) eleccionP2 = PIEDRA;
-            if (Gdx.input.isKeyJustPressed(TECLA_P2_PAPEL))  eleccionP2 = PAPEL;
-            if (Gdx.input.isKeyJustPressed(TECLA_P2_TIJERA)) eleccionP2 = TIJERA;
+            if (Gdx.input.isKeyJustPressed(TECLA_P2_PIEDRA)) { eleccionP2 = PIEDRA; Sonidos.sonar("elegir", 0.5f); }
+            if (Gdx.input.isKeyJustPressed(TECLA_P2_PAPEL))  { eleccionP2 = PAPEL;  Sonidos.sonar("elegir", 0.5f); }
+            if (Gdx.input.isKeyJustPressed(TECLA_P2_TIJERA)) { eleccionP2 = TIJERA; Sonidos.sonar("elegir", 0.5f); }
         } else if (!revelado) {
             revelado = true;
+            Sonidos.sonar("revelar");
             if (gana(eleccionP1, eleccionP2)) {
                 puntajeP1 += PUNTOS_MANO;
                 mensajeMano = "¡PUNTO P1!";

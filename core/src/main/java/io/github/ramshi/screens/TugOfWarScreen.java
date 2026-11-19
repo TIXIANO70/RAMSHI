@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.MathUtils;
+import io.github.ramshi.Sonidos;
 
 public class TugOfWarScreen extends BaseMinigameScreen {
 
@@ -67,6 +68,7 @@ public class TugOfWarScreen extends BaseMinigameScreen {
                     ultimaTecla[p] = k;
                     sogaObjetivo += (p == 0) ? -PASO_TIRON : PASO_TIRON;
                     tirones[p]++;
+                    Sonidos.sonar("tiron", 0.65f);
                 }
             }
         }
