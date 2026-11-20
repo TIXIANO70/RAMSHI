@@ -33,6 +33,11 @@ public class Sincronizador {
         pausaPedida = true;
     }
 
+    /** Solo tiene sentido dentro de un paso: si ese jugador apretó pausa en este paso (sirve para saber quién aprobó reanudar). */
+    public boolean pausaRecienApretada(int jugador) {
+        return entrada.pausaRecienApretada(jugador);
+    }
+
     public boolean estaEsperando() {
         return tiempoEsperando > ESPERA_VISIBLE;
     }

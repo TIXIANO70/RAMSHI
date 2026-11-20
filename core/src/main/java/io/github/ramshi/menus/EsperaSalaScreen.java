@@ -18,7 +18,7 @@ public class EsperaSalaScreen extends MenuScreen {
     public EsperaSalaScreen(Game juego) {
         super(juego);
         agregarVolver(() -> {
-            Red.cerrar();
+            Red.salirDeSala();
             abrir(new SalaMenuScreen(juego));
         });
     }
@@ -28,10 +28,10 @@ public class EsperaSalaScreen extends MenuScreen {
         tiempo += Gdx.graphics.getDeltaTime();
         dibujarTitulo("SALA DE " + Red.getNombreOtro().toUpperCase());
         batch.begin();
-        escribir(Main.fuenteMediana, COLOR_SUBTITULO, "Conectado a " + Red.getIpOtro(), ANCHO / 2f, CONECTADO_Y);
+        escribir(Main.fuenteMediana, COLOR_SUBTITULO, "Servidor " + Red.getNombreServidor() + " (" + Red.getDireccionServidor() + ")", ANCHO / 2f, CONECTADO_Y);
         escribir(Main.fuenteGrande, COLOR_TEXTO, "Vas a jugar como JUGADOR 2", ANCHO / 2f, JUGADOR_Y);
         int puntos = (int) (tiempo * VELOCIDAD_PUNTOS) % 4;
-        escribir(Main.fuenteMediana, COLOR_TITULO, "Esperando que el anfitrión elija el modo" + "...".substring(0, puntos), ANCHO / 2f, ESPERANDO_Y);
+        escribir(Main.fuenteMediana, COLOR_TITULO, "Esperando que el jugador 1 elija el modo" + "...".substring(0, puntos), ANCHO / 2f, ESPERANDO_Y);
         escribir(Main.fuenteChica, COLOR_NOTA, "Podés jugar con WASD o con las flechas", ANCHO / 2f, NOTA_Y);
         batch.end();
     }

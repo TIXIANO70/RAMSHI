@@ -1,0 +1,73 @@
+buildscript {
+  repositories {
+    gradlePluginPortal()
+  }
+  dependencies {
+    classpath "io.github.fourlastor:construo:2.1.0"
+  }
+}
+plugins {
+  id "application"
+}
+apply plugin: 'io.github.fourlastor.construo'
+
+import io.github.fourlastor.construo.Target
+
+// Servidor dedicado: Java puro, sin libGDX ni gráficos del juego.
+ext.serverName = 'RAMSHI-Servidor'
+application.mainClass = 'io.github.ramshi.servidor.ServidorLauncher'
+application.applicationName = serverName
+eclipse.project.name = appName + '-server'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+java.sourceCompatibility = 8
+java.targetCompatibility = 8
+if (JavaVersion.current().isJava9Compatible()) {
+  compileJava.options.release.set(8)
+}
+
+jar {
+  archiveFileName.set("${serverName}-${projectVersion}.jar")
+  manifest {
+    attributes 'Main-Class': application.mainClass
+  }
+  doLast {
+    file(archiveFile).setExecutable(true, false)
+  }
+}
+
+construo {
+  name.set(serverName)
+  humanName.set(serverName)
+  jlink {
+    guessModulesFromJar.set(false)
+    modules.addAll("java.base", "java.desktop")
+  }
+  targets.configure {
+    register("winX64", Target.Windows) {
+      architecture.set(Target.Architecture.X86_64)
+      icon.set(rootProject.file("lwjgl3/icons/logo.png"))
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_windows_hotspot_21.0.10_7.zip")
+      // Sin consola: el servidor solo muestra su ventanita con la IP y el botón para apagarlo.
+      useConsole.set(false)
+    }
+    register("linuxX64", Target.Linux) {
+      architecture.set(Target.Architecture.X86_64)
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz")
+    }
+  }
+}
+
+tasks.register('dist') {
+  dependsOn 'jar'
+}
+
+// La ventana del servidor usa la misma fuente y el mismo ícono que el juego.
+processResources {
+  from(rootProject.file('assets/ui/fonts')) {
+    include 'PixelifySans-Regular.ttf', 'PixelifySans-Bold.ttf', 'OFL.txt'
+    into 'fuentes'
+  }
+  from(rootProject.file('lwjgl3/icons/logo.png')) {
+    rename { 'icono.png' }
+  }
+}

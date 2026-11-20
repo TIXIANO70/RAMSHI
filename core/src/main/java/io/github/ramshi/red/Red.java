@@ -7,9 +7,7 @@ import io.github.ramshi.session.MinigameType;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -20,13 +18,28 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Cliente de red. El juego nunca hace de servidor: se conecta al servidor dedicado (módulo "server"),
+ * crea una sala o se une a una, y todo lo que manda al otro jugador pasa por el servidor.
+ * El que crea la sala es el jugador 1 (elige el modo) y el que se une es el jugador 2.
+ */
 public final class Red {
 
+    /** Primer puerto de servidor. Si está ocupado, el servidor usa los siguientes; el juego los busca a todos. */
     public static final int PUERTO = 9999;
+    public static final int CANTIDAD_PUERTOS = 10;
+    private static final int PUERTO_MAXIMO = 65535;
+    public static final String CONECTADO_SERVIDOR = "CONECTADO_SERVIDOR";
     public static final String CONECTADO = "CONECTADO";
     public static final String DESCONECTADO = "DESCONECTADO";
+    public static final String SIN_SERVIDOR = "SIN_SERVIDOR";
     public static final String SIN_RESPUESTA = "SIN_RESPUESTA";
     public static final String LLENA = "LLENA";
+    public static final String NO_EXISTE = "NOEXISTE";
+    public static final String OCUPADO = "OCUPADO";
+    public static final String LIBRE = "LIBRE";
+    public static final String ESPERANDO = "ESPERANDO";
+    public static final String JUGANDO = "JUGANDO";
     public static final String VOLVER_A_SALA = "SALA";
     public static final String INICIAR = "INICIAR";
 
@@ -36,8 +49,14 @@ public final class Red {
     private static final String ANUNCIO = "ANUNCIO";
     private static final String CONECTAR = "CONECTAR";
     private static final String BIENVENIDO = "BIENVENIDO";
+    private static final String DESCONECTAR = "DESCONECTAR";
+    private static final String LATIDO = "HOLA";
+    private static final String CREAR = "CREAR";
+    private static final String SALA_CREADA = "CREADA";
+    private static final String ESTADO = "ESTADO";
+    private static final String UNIRSE = "UNIRSE";
+    private static final String UNIDO = "UNIDO";
     private static final String SALIR = "SALIR";
-    private static final String SALUDO = "HOLA";
     private static final String CONTROL = "C";
     private static final String RECIBIDO = "OK";
     private static final String ENTRADAS = "E";
@@ -45,48 +64,67 @@ public final class Red {
     private static final String ENDLESS = "ENDLESS";
     private static final String DIRECCION_DIFUSION = "255.255.255.255";
     private static final String DIRECCION_LOCAL = "127.0.0.1";
-    private static final float INTERVALO_SALUDO = 0.5f;
+    private static final float INTERVALO_LATIDO = 0.5f;
     private static final float INTERVALO_REENVIO = 0.25f;
-    private static final float INTERVALO_CONEXION = 0.5f;
+    private static final float INTERVALO_PEDIDO = 0.5f;
     private static final float TIEMPO_SIN_NOTICIAS = 5f;
-    private static final float TIEMPO_INTENTO_CONEXION = 5f;
+    private static final float TIEMPO_INTENTO = 5f;
+    private static final float GRACIA_AL_UNIRSE = 1f;
     private static final float DURACION_AVISO = 4f;
     private static final int COPIAS_SALIR = 3;
 
+    /** ANFITRION = creó la sala (jugador 1); INVITADO = se unió (jugador 2). Ninguno de los dos es servidor. */
     public enum Rol { NINGUNO, ANFITRION, INVITADO }
+
+    private enum Pedido { NINGUNO, CONECTAR, CREAR, UNIRSE }
 
     private static DatagramSocket socket;
     private static HiloRed hilo;
     private static volatile Rol rol = Rol.NINGUNO;
+    private static volatile boolean enServidor;
     private static volatile boolean conectado;
-    private static volatile boolean intentandoConectar;
+    private static volatile boolean salaCreada;
     private static volatile long ultimoContacto;
-    private static InetAddress ipOtro;
-    private static int puertoOtro;
+    private static InetAddress ipServidor;
+    private static int puertoServidor = PUERTO;
+    private static String nombreServidor = "";
     private static String nombreOtro = "";
     private static String nombrePropio;
+    private static Pedido pedido = Pedido.NINGUNO;
+    private static String textoPedido;
+    private static float tiempoPedido;
+    private static float tiempoIntento;
+    private static float tiempoDesdeUnion;
     private static volatile int sesion;
     private static int ultimoIdEnviado;
     private static int ultimoIdRecibido;
-    private static float tiempoSaludo;
+    private static float tiempoLatido;
     private static float tiempoReenvio;
-    private static float tiempoConexion;
-    private static float tiempoIntento;
     private static String aviso;
     private static float tiempoAviso;
 
     private static final ConcurrentLinkedQueue<String> eventos = new ConcurrentLinkedQueue<>();
     private static final Map<Integer, String> pendientes = new ConcurrentHashMap<>();
     private static final Map<Long, Integer> entradasRemotas = new ConcurrentHashMap<>();
-    private static final Map<String, String> salasEncontradas = Collections.synchronizedMap(new LinkedHashMap<String, String>());
+    private static final Map<String, String> servidoresEncontrados = Collections.synchronizedMap(new LinkedHashMap<String, String>());
+    private static volatile String estadoSala = "";
+    private static volatile String duenioSala = "";
 
     private Red() {}
 
     public static boolean esAnfitrion() { return rol == Rol.ANFITRION; }
     public static boolean esInvitado() { return rol == Rol.INVITADO; }
+    public static boolean estaEnServidor() { return enServidor; }
     public static boolean estaConectado() { return conectado; }
+    public static boolean salaCreada() { return salaCreada; }
     public static String getNombreOtro() { return nombreOtro; }
-    public static String getIpOtro() { return ipOtro != null ? ipOtro.getHostAddress() : ""; }
+    public static String getNombreServidor() { return nombreServidor; }
+    /** "IP" si el servidor usa el puerto 9999, o "IP:puerto" si usa otro. */
+    public static String getDireccionServidor() { return ipServidor != null ? direccion(ipServidor, puertoServidor) : ""; }
+
+    private static String direccion(InetAddress ip, int puerto) {
+        return ip.getHostAddress() + (puerto == PUERTO ? "" : ":" + puerto);
+    }
     public static String siguienteEvento() { return eventos.poll(); }
     public static String getAviso() { return aviso; }
 
@@ -95,93 +133,145 @@ public final class Red {
         tiempoAviso = DURACION_AVISO;
     }
 
-    public static synchronized boolean crearSala() {
-        cerrar();
-        try {
-            socket = new DatagramSocket(PUERTO);
-        } catch (SocketException e) {
-            return false;
-        }
-        rol = Rol.ANFITRION;
-        nombreEquipo();
-        iniciarHilo();
-        return true;
-    }
-
-    public static synchronized boolean prepararInvitado() {
-        cerrar();
+    /** Abre el socket del cliente (puerto libre cualquiera). No escucha conexiones: solo habla con el servidor. */
+    public static synchronized boolean prepararCliente() {
+        if (socket != null) return true;
         try {
             socket = new DatagramSocket();
             socket.setBroadcast(true);
         } catch (SocketException e) {
+            socket = null;
             return false;
         }
-        rol = Rol.INVITADO;
-        iniciarHilo();
+        reiniciarPartida();
+        hilo = new HiloRed(socket);
+        hilo.start();
         return true;
     }
 
-    private static void iniciarHilo() {
-        reiniciarConexion();
-        hilo = new HiloRed(socket);
-        hilo.start();
-    }
-
-    private static void reiniciarConexion() {
-        conectado = false;
-        intentandoConectar = false;
-        ultimoIdEnviado = 0;
-        ultimoIdRecibido = 0;
-        pendientes.clear();
-        entradasRemotas.clear();
-        eventos.clear();
-    }
-
-    public static synchronized void buscarSalas() {
-        if (rol != Rol.INVITADO) return;
-        salasEncontradas.clear();
+    public static synchronized void buscarServidores() {
+        if (!prepararCliente()) return;
+        servidoresEncontrados.clear();
         try {
-            enviar(BUSCAR, InetAddress.getByName(DIRECCION_DIFUSION), PUERTO);
-            enviar(BUSCAR, InetAddress.getByName(DIRECCION_LOCAL), PUERTO);
+            InetAddress difusion = InetAddress.getByName(DIRECCION_DIFUSION);
+            InetAddress local = InetAddress.getByName(DIRECCION_LOCAL);
+            for (int puerto = PUERTO; puerto < PUERTO + CANTIDAD_PUERTOS; puerto++) {
+                enviar(BUSCAR, difusion, puerto);
+                enviar(BUSCAR, local, puerto);
+            }
         } catch (IOException e) {
             avisar("No se pudo buscar en la red");
         }
     }
 
-    public static List<String[]> getSalasEncontradas() {
+    /** Cada servidor es {dirección ("IP" o "IP:puerto"), nombre}. */
+    public static List<String[]> getServidoresEncontrados() {
         List<String[]> lista = new ArrayList<>();
-        synchronized (salasEncontradas) {
-            for (Map.Entry<String, String> sala : salasEncontradas.entrySet()) lista.add(new String[] {sala.getKey(), sala.getValue()});
+        synchronized (servidoresEncontrados) {
+            for (Map.Entry<String, String> s : servidoresEncontrados.entrySet()) {
+                lista.add(new String[] {s.getValue(), s.getKey().substring(0, s.getKey().lastIndexOf(':'))});
+            }
         }
         return lista;
     }
 
-    public static synchronized boolean conectar(String ip) {
-        if (rol != Rol.INVITADO) return false;
+    /** Recibe "IP" (usa el puerto 9999) o "IP:puerto". */
+    public static synchronized boolean conectarServidor(String direccion) {
+        if (!prepararCliente()) return false;
+        String ip = direccion;
+        int puerto = PUERTO;
+        int dosPuntos = direccion.lastIndexOf(':');
+        if (dosPuntos >= 0) {
+            ip = direccion.substring(0, dosPuntos);
+            try {
+                puerto = Integer.parseInt(direccion.substring(dosPuntos + 1));
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            if (puerto <= 0 || puerto > PUERTO_MAXIMO) return false;
+        }
+        if (ip.isEmpty()) return false;
         try {
-            ipOtro = InetAddress.getByName(ip);
+            ipServidor = InetAddress.getByName(ip);
         } catch (IOException e) {
             return false;
         }
-        puertoOtro = PUERTO;
-        reiniciarConexion();
-        intentandoConectar = true;
-        tiempoIntento = 0f;
-        tiempoConexion = INTERVALO_CONEXION;
+        puertoServidor = puerto;
+        enServidor = false;
+        empezarPedido(Pedido.CONECTAR, CONECTAR + SEPARADOR + nombreEquipo());
         return true;
     }
 
+    public static synchronized boolean crearSala() {
+        if (!enServidor) return false;
+        salirDeSala();
+        rol = Rol.ANFITRION;
+        salaCreada = false;
+        empezarPedido(Pedido.CREAR, CREAR);
+        return true;
+    }
+
+    /** El servidor tiene una sola sala. Pide su estado: LIBRE, ESPERANDO (hay jugador 1) o JUGANDO (está llena). */
+    public static synchronized void pedirEstadoSala() {
+        if (enServidor) enviarAlServidor(ESTADO);
+    }
+
+    /** "" mientras no llegó la respuesta del servidor. */
+    public static String getEstadoSala() { return estadoSala; }
+    public static String getDuenioSala() { return duenioSala; }
+
+    public static synchronized boolean unirse() {
+        if (!enServidor) return false;
+        salirDeSala();
+        rol = Rol.INVITADO;
+        empezarPedido(Pedido.UNIRSE, UNIRSE);
+        return true;
+    }
+
+    /** Deja la sala pero sigue conectado al servidor. */
+    public static synchronized void salirDeSala() {
+        if (rol != Rol.NINGUNO && enServidor) {
+            for (int i = 0; i < COPIAS_SALIR; i++) enviarAlServidor(SALIR);
+        }
+        rol = Rol.NINGUNO;
+        salaCreada = false;
+        nombreOtro = "";
+        estadoSala = "";
+        pedido = Pedido.NINGUNO;
+        reiniciarPartida();
+    }
+
+    /** Se desconecta del servidor y libera el socket. */
     public static synchronized void cerrar() {
-        if (conectado) {
-            for (int i = 0; i < COPIAS_SALIR; i++) enviarAlOtro(SALIR);
+        salirDeSala();
+        if (enServidor) {
+            for (int i = 0; i < COPIAS_SALIR; i++) enviarAlServidor(DESCONECTAR);
         }
         if (hilo != null) hilo.terminar();
         hilo = null;
         socket = null;
-        rol = Rol.NINGUNO;
-        ipOtro = null;
-        nombreOtro = "";
-        reiniciarConexion();
+        enServidor = false;
+        ipServidor = null;
+        nombreServidor = "";
+        estadoSala = "";
+        duenioSala = "";
+        servidoresEncontrados.clear();
+        eventos.clear();
+    }
+
+    private static void empezarPedido(Pedido nuevo, String texto) {
+        pedido = nuevo;
+        textoPedido = texto;
+        tiempoIntento = 0f;
+        tiempoPedido = INTERVALO_PEDIDO;
+    }
+
+    private static void reiniciarPartida() {
+        conectado = false;
+        ultimoIdEnviado = 0;
+        ultimoIdRecibido = 0;
+        pendientes.clear();
+        entradasRemotas.clear();
     }
 
     public static synchronized void actualizar(float delta) {
@@ -189,103 +279,149 @@ public final class Red {
             tiempoAviso -= delta;
             if (tiempoAviso <= 0f) aviso = null;
         }
-        if (rol == Rol.NINGUNO) return;
+        if (socket == null || ipServidor == null) return;
 
-        if (intentandoConectar && !conectado) {
+        if (pedido != Pedido.NINGUNO) {
             tiempoIntento += delta;
-            tiempoConexion += delta;
-            if (tiempoConexion >= INTERVALO_CONEXION) {
-                tiempoConexion = 0f;
-                enviarAlOtro(CONECTAR);
+            tiempoPedido += delta;
+            if (tiempoPedido >= INTERVALO_PEDIDO) {
+                tiempoPedido = 0f;
+                enviarAlServidor(textoPedido);
             }
-            if (tiempoIntento >= TIEMPO_INTENTO_CONEXION) {
-                intentandoConectar = false;
+            if (tiempoIntento >= TIEMPO_INTENTO) {
+                if (pedido != Pedido.CONECTAR) rol = Rol.NINGUNO;
+                pedido = Pedido.NINGUNO;
                 eventos.add(SIN_RESPUESTA);
             }
         }
+        if (!enServidor) return;
+
+        tiempoLatido += delta;
+        if (tiempoLatido >= INTERVALO_LATIDO) {
+            tiempoLatido = 0f;
+            enviarAlServidor(LATIDO);
+        }
+        if ((System.nanoTime() - ultimoContacto) / 1e9f > TIEMPO_SIN_NOTICIAS) {
+            perderServidor();
+            return;
+        }
         if (!conectado) return;
 
-        tiempoSaludo += delta;
-        if (tiempoSaludo >= INTERVALO_SALUDO) {
-            tiempoSaludo = 0f;
-            enviarAlOtro(SALUDO);
-        }
+        tiempoDesdeUnion += delta;
         tiempoReenvio += delta;
         if (tiempoReenvio >= INTERVALO_REENVIO) {
             tiempoReenvio = 0f;
             for (Map.Entry<Integer, String> p : pendientes.entrySet()) {
-                enviarAlOtro(CONTROL + SEPARADOR + p.getKey() + SEPARADOR + p.getValue());
+                enviarAlServidor(CONTROL + SEPARADOR + p.getKey() + SEPARADOR + p.getValue());
             }
-        }
-        if ((System.nanoTime() - ultimoContacto) / 1e9f > TIEMPO_SIN_NOTICIAS) {
-            perderConexion("Se perdió la conexión con el otro jugador");
         }
     }
 
-    private static void perderConexion(String motivo) {
+    private static void perderServidor() {
+        boolean estabaJugando = rol != Rol.NINGUNO;
+        enServidor = false;
+        rol = Rol.NINGUNO;
+        salaCreada = false;
+        pedido = Pedido.NINGUNO;
+        reiniciarPartida();
+        avisar(estabaJugando ? "Se perdió la conexión con el servidor" : "El servidor dejó de responder");
+        eventos.add(SIN_SERVIDOR);
+    }
+
+    private static void perderRival(String motivo) {
         conectado = false;
+        nombreOtro = "";
         pendientes.clear();
         entradasRemotas.clear();
         avisar(motivo);
         eventos.add(DESCONECTADO);
-        if (rol == Rol.INVITADO) intentandoConectar = false;
+        if (rol == Rol.INVITADO) rol = Rol.NINGUNO;
+    }
+
+    private static void unirRival(String nombre) {
+        reiniciarPartida();
+        conectado = true;
+        tiempoDesdeUnion = 0f;
+        nombreOtro = nombre;
+        eventos.add(CONECTADO);
     }
 
     public static synchronized void enviarSeguro(String texto) {
         if (!conectado) return;
         int id = ++ultimoIdEnviado;
         pendientes.put(id, texto);
-        enviarAlOtro(CONTROL + SEPARADOR + id + SEPARADOR + texto);
+        enviarAlServidor(CONTROL + SEPARADOR + id + SEPARADOR + texto);
     }
 
     static synchronized void procesarMensaje(String mensaje, InetAddress ip, int puerto) {
         if (socket == null) return;
         String[] partes = mensaje.split(SEPARADOR, -1);
         String tipo = partes[0];
-        boolean delOtro = ipOtro != null && ip.equals(ipOtro) && puerto == puertoOtro;
-        if (delOtro) ultimoContacto = System.nanoTime();
 
-        if (rol == Rol.ANFITRION) {
-            if (tipo.equals(BUSCAR) && !conectado) {
-                enviar(ANUNCIO + SEPARADOR + nombreEquipo(), ip, puerto);
-                return;
+        if (tipo.equals(ANUNCIO)) {
+            // El mismo servidor puede contestar por la red y por 127.0.0.1: se guarda una vez, con la IP de la red.
+            String clave = (partes.length > 1 ? partes[1] : ip.getHostAddress()) + ":" + puerto;
+            String anterior = servidoresEncontrados.get(clave);
+            if (anterior == null || (anterior.startsWith(DIRECCION_LOCAL) && !ip.isLoopbackAddress())) {
+                servidoresEncontrados.put(clave, direccion(ip, puerto));
             }
-            if (tipo.equals(CONECTAR)) {
-                if (!conectado) {
-                    ipOtro = ip;
-                    puertoOtro = puerto;
-                    nombreOtro = ip.getHostAddress();
-                    reiniciarConexion();
-                    conectado = true;
-                    ultimoContacto = System.nanoTime();
-                    eventos.add(CONECTADO);
+            return;
+        }
+        boolean delServidor = ipServidor != null && puerto == puertoServidor
+            && (ip.equals(ipServidor) || (ipServidor.isLoopbackAddress() && ip.isLoopbackAddress()));
+        if (!delServidor) return;
+        ultimoContacto = System.nanoTime();
+
+        switch (tipo) {
+            case BIENVENIDO:
+                if (pedido == Pedido.CONECTAR) {
+                    pedido = Pedido.NINGUNO;
+                    enServidor = true;
+                    nombreServidor = partes.length > 1 ? partes[1] : getDireccionServidor();
+                    eventos.add(CONECTADO_SERVIDOR);
                 }
-                if (ip.equals(ipOtro) && puerto == puertoOtro) enviar(BIENVENIDO + SEPARADOR + nombreEquipo(), ip, puerto);
-                else enviar(LLENA, ip, puerto);
                 return;
-            }
-        } else if (rol == Rol.INVITADO) {
-            if (tipo.equals(ANUNCIO) && partes.length > 1) {
-                salasEncontradas.put(ip.getHostAddress(), partes[1]);
+            case SALA_CREADA:
+                if (pedido == Pedido.CREAR) {
+                    pedido = Pedido.NINGUNO;
+                    salaCreada = true;
+                }
                 return;
-            }
-            if (tipo.equals(BIENVENIDO) && delOtro && intentandoConectar) {
-                intentandoConectar = false;
-                conectado = true;
-                nombreOtro = partes.length > 1 ? partes[1] : ip.getHostAddress();
-                eventos.add(CONECTADO);
+            case OCUPADO:
+                if (pedido == Pedido.CREAR) {
+                    pedido = Pedido.NINGUNO;
+                    rol = Rol.NINGUNO;
+                    eventos.add(OCUPADO);
+                }
                 return;
-            }
-            if (tipo.equals(LLENA) && delOtro && intentandoConectar) {
-                intentandoConectar = false;
-                eventos.add(LLENA);
+            case ESTADO:
+                estadoSala = partes.length > 1 ? partes[1] : "";
+                duenioSala = partes.length > 2 ? partes[2] : "";
                 return;
-            }
+            case UNIDO:
+                if (pedido == Pedido.UNIRSE) {
+                    pedido = Pedido.NINGUNO;
+                    unirRival(partes.length > 1 ? partes[1] : "");
+                }
+                return;
+            case LLENA:
+            case NO_EXISTE:
+                if (pedido == Pedido.UNIRSE) {
+                    pedido = Pedido.NINGUNO;
+                    rol = Rol.NINGUNO;
+                    eventos.add(tipo);
+                }
+                return;
+            case LATIDO:
+                atenderLatido(partes.length > 1 ? partes[1] : "");
+                return;
+            default:
+                break;
         }
 
-        if (!delOtro || !conectado) return;
+        if (!conectado) return;
         if (tipo.equals(SALIR)) {
-            perderConexion(rol == Rol.ANFITRION ? "El otro jugador salió de la sala" : "El anfitrión cerró la sala");
+            perderRival(rol == Rol.ANFITRION ? "El otro jugador salió de la sala" : "El jugador 1 cerró la sala");
         } else if (tipo.equals(RECIBIDO) && partes.length > 1) {
             pendientes.remove(Integer.parseInt(partes[1]));
         } else if (tipo.equals(CONTROL) && partes.length > 2) {
@@ -294,9 +430,18 @@ public final class Red {
                 ultimoIdRecibido = id;
                 eventos.add(mensaje.substring(CONTROL.length() + partes[1].length() + 2));
             }
-            if (id <= ultimoIdRecibido) enviarAlOtro(RECIBIDO + SEPARADOR + id);
+            if (id <= ultimoIdRecibido) enviarAlServidor(RECIBIDO + SEPARADOR + id);
         } else if (tipo.equals(ENTRADAS) && partes.length > 4) {
             guardarEntradas(partes);
+        }
+    }
+
+    /** El servidor contesta cada latido con el nombre del rival (vacío si no hay). Así nadie queda colgado si se pierde un aviso. */
+    private static void atenderLatido(String rival) {
+        if (rol == Rol.ANFITRION && salaCreada && !conectado && !rival.isEmpty()) {
+            unirRival(rival);
+        } else if (conectado && rival.isEmpty() && tiempoDesdeUnion > GRACIA_AL_UNIRSE) {
+            perderRival(rol == Rol.ANFITRION ? "El otro jugador salió de la sala" : "El jugador 1 cerró la sala");
         }
     }
 
@@ -334,7 +479,7 @@ public final class Red {
             if (i > desde) texto.append(SEPARADOR_ENTRADAS);
             texto.append(locales.get(i));
         }
-        enviarAlOtro(texto.toString());
+        enviarAlServidor(texto.toString());
     }
 
     public static synchronized GameSession iniciarRondas(int rondas) {
@@ -365,21 +510,6 @@ public final class Red {
         entradasRemotas.keySet().removeIf(clave -> clave < limite);
     }
 
-    public static List<String> ipsLocales() {
-        List<String> ips = new ArrayList<>();
-        try {
-            for (NetworkInterface interfaz : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-                if (!interfaz.isUp() || interfaz.isLoopback() || interfaz.isVirtual()) continue;
-                for (InetAddress direccion : Collections.list(interfaz.getInetAddresses())) {
-                    if (direccion instanceof Inet4Address) ips.add(direccion.getHostAddress());
-                }
-            }
-        } catch (SocketException e) {
-            return ips;
-        }
-        return ips;
-    }
-
     private static String nombreEquipo() {
         if (nombrePropio == null) {
             try {
@@ -391,8 +521,8 @@ public final class Red {
         return nombrePropio;
     }
 
-    private static void enviarAlOtro(String texto) {
-        if (ipOtro != null) enviar(texto, ipOtro, puertoOtro);
+    private static void enviarAlServidor(String texto) {
+        if (ipServidor != null) enviar(texto, ipServidor, puertoServidor);
     }
 
     private static void enviar(String texto, InetAddress ip, int puerto) {

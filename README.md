@@ -1,13 +1,14 @@
 # RAMSHI
 
-**Versión 1.1**
+**Versión 1.2**
 
 | Versión | Qué trajo |
 |---|---|
 | 1.0 | Los 12 minijuegos, partida por rondas, Endless, guía, ajustes y pausa |
 | 1.1 | Modo en red: crear sala, unirse, partida sincronizada por UDP |
+| 1.2 | Servidor dedicado aparte (`RAMSHI-Servidor`): el juego pasa a ser solo cliente |
 
-Juego **1 contra 1 local** de **microjuegos de 10 segundos**, al estilo WarioWare, hecho en **Java + libGDX**.
+Juego **1 contra 1** (local o en red) de **microjuegos de 10 segundos**, al estilo WarioWare, hecho en **Java + libGDX**.
 Los dos jugadores comparten el teclado y la pantalla: cada minijuego dura 10 segundos, el que lo gana suma puntos (de **1 a 3** en casi todos) y al final de la partida gana quien juntó más.
 
 - **Jugador 1:** `W` `A` `S` `D` (y `ESPACIO` en los juegos que tienen una acción extra).
@@ -43,8 +44,13 @@ Desde la carpeta del proyecto:
 | Jugar | `.\gradlew.bat lwjgl3:run` | `./gradlew lwjgl3:run` |
 | Solo compilar | `.\gradlew.bat core:compileJava` | `./gradlew core:compileJava` |
 | Generar el `.jar` ejecutable | `.\gradlew.bat lwjgl3:jar` | `./gradlew lwjgl3:jar` |
+| Abrir el servidor dedicado | `.\gradlew.bat server:run` (o `Servidor.bat`) | `./gradlew server:run` |
+| Generar el `.jar` del servidor | `.\gradlew.bat server:jar` | `./gradlew server:jar` |
+| Armar la carpeta `Ejecutables` (los dos `.exe` + accesos directos) | `.\gradlew.bat ejecutables` | — |
 
-El `.jar` queda en `lwjgl3/build/libs/` y se abre con `java -jar <archivo>.jar`.
+El `.jar` del juego queda en `lwjgl3/build/libs/` y el del servidor en `server/build/libs/`; los dos se abren con `java -jar <archivo>.jar`.
+
+Con `gradlew ejecutables` se arma la carpeta **`Ejecutables/`** en la raíz del proyecto: adentro están `Juego/` y `Servidor/` (cada `.exe` con su Java incluido, no hace falta instalar nada) y dos accesos directos, **RAMSHI - Juego** y **RAMSHI - Servidor**. Esa carpeta no se sube a git; se puede copiar entera a otra computadora.
 
 La ventana es de **800 × 480** (el mundo del juego mide lo mismo; si se agranda la ventana, la imagen se escala manteniendo la proporción).
 
@@ -69,8 +75,9 @@ Menú principal
 │   ├── LOCAL ──── Partida por rondas (3 a 12)
 │   │              └── ENDLESS ── selector de minijuego
 │   └── EN RED
-│       ├── CREAR SALA ── muestra tu IP y espera ── (se une alguien) ── Rondas / Endless
-│       └── UNIRSE ────── buscar salas o escribir la IP ── esperar al anfitrión
+│       └── CONECTAR AL SERVIDOR ── buscar el servidor o escribir su IP
+│           ├── CREAR SALA ── el servidor crea la sala y espera ── (se une alguien) ── Rondas / Endless
+│           └── UNIRSE ────── entrar a la sala del servidor ── esperar al jugador 1
 ├── GUÍA ───────── páginas con la explicación del juego y de cada minijuego
 ├── AJUSTES ────── música, sonidos y pantalla completa (se guardan)
 └── SALIR
@@ -78,35 +85,44 @@ Menú principal
 
 - **Menú principal:** el título "RAMSHI" (si existe `assets/ui/logo.png`, se muestra el logo en su lugar) y los botones **JUGAR**, **GUÍA**, **AJUSTES** y **SALIR**.
 - **Jugar:** dos tarjetas, **LOCAL** (los dos en el mismo teclado) a la izquierda y **EN RED** (cada uno en su compu) a la derecha.
-- **En red:** cada jugador en su computadora, conectadas a la misma red. Ver la [sección 2.1](#21-modo-en-red).
+- **En red:** cada jugador en su computadora, conectados a un servidor dedicado aparte. Ver la [sección 2.1](#21-modo-en-red).
 - **Guía:** como una presentación. Las primeras dos páginas explican qué es el juego, los controles, los modos, los puntos y la pausa; después hay **una página por minijuego** con *cómo se juega*, *meta* y *puntos*. Abajo se ve la página actual (`3/14`) con flechas; se cambia con las flechas en pantalla, `←` `→` o `A` `D`. **Es un bucle:** después de la última vuelve a la primera.
 - **Ajustes:** botones **MÚSICA: SÍ / NO**, **SONIDOS: SÍ / NO** y **PANTALLA COMPLETA: SÍ / NO**. Quedan guardados para la próxima vez que se abra el juego.
 
 ### 2.1 Modo en red
 
-Para jugar cada uno en su computadora. Las dos tienen que estar **en la misma red** (el mismo Wi-Fi o router).
+Para jugar cada uno en su computadora. Hay **dos programas**:
 
-**El que crea la sala (anfitrión, Jugador 1):**
-1. JUGAR → EN RED → **CREAR SALA**.
-2. Aparece **su IP** (por ejemplo `192.168.0.147`) y "Esperando a otro jugador...".
-3. Cuando el otro se une, pasa a la **SALA EN RED**: el mismo menú que Local (rondas de 3 a 12 o Endless). **El anfitrión elige el modo** y la partida arranca en las dos computadoras a la vez.
+- **El servidor dedicado (`RAMSHI-Servidor`)**: no tiene juego ni gráficos. Solo se abre, muestra su IP y se queda reenviando los mensajes entre los jugadores. Puede estar en una tercera computadora o en la de uno de los jugadores, pero siempre como programa aparte.
+- **El juego (cliente)**: los dos jugadores usan el juego normal. Ninguno de los dos hace de servidor.
 
-**El que se une (invitado, Jugador 2):**
-1. JUGAR → EN RED → **UNIRSE**.
-2. El juego **busca salas en la red solo** y las muestra como botones ("Sala de NOMBRE-PC (IP)"). Se toca una y listo.
-3. Si no aparece, se escribe la IP del anfitrión con el teclado (números y puntos, `Retroceso` borra) y se toca **CONECTAR**. La última IP usada queda guardada.
-4. Queda en "Esperando que el anfitrión elija el modo..." hasta que arranca la partida.
+Las computadoras tienen que estar **en la misma red** (el mismo Wi-Fi o router) que el servidor.
+
+**0. Abrir el servidor:** se abre **RAMSHI - Servidor** (en la carpeta `Ejecutables`), o `java -jar RAMSHI-Servidor-<versión>.jar`, o `Servidor.bat` desde el proyecto. Aparece una ventanita con el estilo del juego que muestra **la IP** y **el puerto** con los que se conectan los jugadores y el botón **APAGAR SERVIDOR** (cerrar la ventana también lo apaga).
+
+**Varios servidores en la misma computadora:** se puede abrir el servidor más de una vez. La IP es la de la computadora, así que es la misma para todos; lo que cambia es el **puerto**: el primero usa el `9999`, el segundo el `10000`, y así hasta 10 servidores (`10008`). Cada servidor tiene su propia sala, así que pueden jugar varias parejas a la vez.
+
+**1. Conectarse al servidor (los dos jugadores):** JUGAR → EN RED. El juego **busca servidores en la red solo** (en los 10 puertos) y los muestra como botones, por ejemplo "Servidor NOMBRE-PC (192.168.0.147:10000)"; si no aparece, se escribe la IP del servidor (números y puntos, `Retroceso` borra) y se toca **CONECTAR**. Si el servidor no usa el puerto `9999`, se agrega `:puerto` al final (los dos puntos se escriben con `Shift` + `.`), por ejemplo `192.168.0.147:10000`. La última dirección usada queda guardada.
+
+**El que crea la sala (Jugador 1):**
+1. **CREAR SALA**: el servidor crea la sala y aparece "Esperando a otro jugador...". **El servidor tiene una sola sala:** si ya hay una (esperando o jugando), el botón CREAR SALA aparece gris. Si los dos tocan CREAR SALA a la vez, el servidor se queda con el primero y al otro le avisa que entre con UNIRSE.
+2. Cuando el otro se une, pasa a la **SALA EN RED**: el mismo menú que Local (rondas de 3 a 12 o Endless). **El Jugador 1 elige el modo** y la partida arranca en las dos computadoras a la vez.
+
+**El que se une (Jugador 2):**
+1. **UNIRSE**: se habilita cuando hay una sala esperando jugador (el menú dice "La sala de NOMBRE-PC espera jugador"). Se toca y se entra directo.
+2. Queda en "Esperando que el jugador 1 elija el modo..." hasta que arranca la partida.
 
 **Durante la partida:**
 - Cada uno juega con **WASD o con las flechas** (los dos sirven), y `ESPACIO` o `ENTER` para la acción. En el cartel de inicio dice cuál es tu jugador: "JUGADOR 1 (VOS)".
-- **La pausa es compartida:** si cualquiera aprieta `ESC` (o REANUDAR), se pausa o se reanuda en las dos computadoras.
-- **SALIR** en la pausa (o **SALA** en los resultados) lleva a los dos de vuelta a la sala, sin desconectarse. **REVANCHA** solo la puede tocar el anfitrión.
-- Si la conexión se corta más de 5 segundos (o alguien cierra el juego), aparece el aviso arriba: el anfitrión queda esperando a otro jugador y el invitado vuelve al menú EN RED.
+- **La pausa es compartida:** si cualquiera aprieta `ESC`, se pausa en las dos computadoras. **Para reanudar tienen que aprobar los dos:** cada uno aprieta REANUDAR (o `ESC`) y la pantalla muestra "JUGADOR 1: LISTO / JUGADOR 2: esperando...". Volver a apretar retira la aprobación (el botón pasa a decir CANCELAR). Cuando los dos aprobaron arranca la cuenta 3, 2, 1 en las dos computadoras a la vez.
+- **SALIR** en la pausa (o **SALA** en los resultados) lleva a los dos de vuelta a la sala, sin desconectarse. **REVANCHA** solo la puede tocar el Jugador 1.
+- Si un jugador se va o deja de responder 5 segundos, el servidor avisa al otro: el Jugador 1 queda esperando a otro jugador en la misma sala y el Jugador 2 vuelve al menú EN RED.
+- Si el que deja de responder es el servidor, los dos ven "Se perdió la conexión con el servidor" y vuelven a la pantalla de conexión.
 - Si por un momento no llegan datos del otro, el juego se frena y muestra "Esperando al otro jugador...".
 
-**Para probarlo en una sola computadora:** se abren dos ventanas del juego (por ejemplo `java -jar` dos veces, ver la [sección 1](#1-cómo-ejecutarlo)); una crea la sala y la otra se une a `127.0.0.1`.
+**Para probarlo en una sola computadora:** se abre el servidor y dos ventanas del juego (por ejemplo `java -jar` dos veces, ver la [sección 1](#1-cómo-ejecutarlo)); las dos se conectan al servidor `127.0.0.1`, una crea la sala y la otra se une.
 
-**Firewall de Windows:** la primera vez que alguien crea una sala, Windows pregunta si deja que Java use la red. Hay que tocar **Permitir acceso** (en redes privadas); si no, la otra computadora no se puede conectar.
+**Firewall de Windows:** la primera vez que se abre el servidor, Windows pregunta si deja que use la red. Hay que tocar **Permitir acceso** (en redes privadas); si no, los jugadores no se pueden conectar.
 
 ### Partida por rondas
 
@@ -135,6 +151,10 @@ Para jugar cada uno en su computadora. Las dos tienen que estar **en la misma re
 ### Pausa (`ESC` en medio de un minijuego)
 
 - El juego se congela (también el reloj) y aparece la pantalla de **PAUSA** con dos botones: **REANUDAR** (verde) y **SALIR** (rojo). Se eligen con el mouse o con `A` `D` / flechas y `ENTER` / `ESPACIO`. `ESC` también reanuda.
+- **Cuenta 3, 2, 1 al reanudar:** el juego no arranca de golpe. Aparece un número grande (3, 2, 1) sobre el juego congelado, con un sonido por número, y recién después sigue la partida, así los dos vuelven con el ritmo de juego. Apretar `ESC` durante la cuenta vuelve a la pausa.
+- **5 minutos como máximo:** la pausa muestra cuánto falta ("Si no se reanuda, la partida termina en 4:32", en rojo el último minuto). Si pasan 5 minutos sin reanudar, la partida termina y se vuelve al menú (en red, a la sala) con el aviso "La pausa duró más de 5 minutos: la partida terminó".
+- **En red** hace falta que **los dos jugadores aprueben** para reanudar (ver la [sección 2.1](#21-modo-en-red)).
+- Las reglas de la pausa están en `ControlPausa` (sin gráficos), y en red se aplican dentro de cada paso sincronizado, con las teclas de los dos jugadores; por eso las dos computadoras deciden siempre lo mismo sin mandar mensajes extra.
 - **En partida por rondas:** muestra en qué juego van (`Juego 3 de 8: Race`), la **tabla de los juegos ya jugados** y el **total** de cada uno. *SALIR* vuelve al menú Local. No se puede pausar durante los 2,5 s de la tabla entre juegos.
 - **En Endless:** muestra el **marcador de partidas ganadas** (`P1 3 - 2 P2`). *SALIR* vuelve al selector de Endless con ese mismo minijuego elegido.
 
@@ -319,10 +339,11 @@ RAMSHI/
 │   │   ├── MainMenuScreen.java       Menú principal
 │   │   ├── JugarMenuScreen.java      Elegir Local o En red
 │   │   ├── ModoMenuScreen.java       Rondas y Endless (el mismo para Local y para la sala en red)
+│   │   ├── ServidorScreen.java       En red: buscar el servidor o escribir su IP
 │   │   ├── SalaMenuScreen.java       En red: crear sala o unirse
-│   │   ├── CrearSalaScreen.java      El anfitrión ve su IP y espera
-│   │   ├── UnirseSalaScreen.java     Buscar salas o escribir la IP
-│   │   ├── EsperaSalaScreen.java     El invitado espera que el anfitrión elija
+│   │   ├── CrearSalaScreen.java      El jugador 1 crea la sala en el servidor y espera
+│   │   ├── UnirseSalaScreen.java     Entra a la sala del servidor como jugador 2
+│   │   ├── EsperaSalaScreen.java     El jugador 2 espera que el jugador 1 elija
 │   │   ├── EndlessMenuScreen.java    Selector circular de minijuego
 │   │   ├── GuiaScreen.java           Guía en páginas
 │   │   ├── AjustesScreen.java        Pantalla de ajustes (música, sonidos y pantalla completa)
@@ -332,14 +353,18 @@ RAMSHI/
 │   │   ├── Controles.java            Teclas de Kenney: cartel de inicio y barra de abajo
 │   │   └── *Screen.java              Un archivo por minijuego (12)
 │   ├── red/
-│   │   ├── Red.java                  Conexión UDP, salas y mensajes
+│   │   ├── Red.java                  Cliente UDP: conexión al servidor, la sala y mensajes
 │   │   ├── HiloRed.java              Hilo que recibe los paquetes
 │   │   ├── Sincronizador.java        Lockstep: pasos fijos con las teclas de los dos
 │   │   └── EntradaRed.java           Teclado falso que ven los minijuegos en red
 │   └── session/
 │       ├── GameSession.java          Estado de la partida (modo, cola de juegos, puntos)
 │       └── MinigameType.java         Catálogo de minijuegos (nombre, clase y textos de la Guía)
-├── lwjgl3/                       Lanzador de escritorio (ventana 800 × 480)
+├── lwjgl3/                       Lanzador de escritorio del juego (cliente, ventana 800 × 480)
+├── server/src/main/java/io/github/ramshi/servidor/
+│   ├── Servidor.java             Servidor dedicado: clientes, la única sala y reenvío de mensajes
+│   ├── ServidorLauncher.java     Abre el servidor y su ventana
+│   └── VentanaServidor.java      La ventanita: IP y botón APAGAR SERVIDOR, con la fuente y colores del juego
 ├── CREDITS.md                    Créditos de assets y fuentes
 └── README.md
 ```
@@ -371,7 +396,7 @@ Clase abstracta de la que heredan los 12 minijuegos. Se encarga de todo lo comú
 
 - Cámara y mundo virtual de **800 × 480** (`ANCHO_VIRTUAL`, `ALTO_VIRTUAL`).
 - **Cronómetro** de la ronda, cartel de inicio, HUD, barra de controles, corazones y pantallas de fin de ronda.
-- **Pausa** con `ESC` (tabla de la partida o marcador de Endless, con REANUDAR y SALIR).
+- **Pausa** con `ESC` (tabla de la partida o marcador de Endless, con REANUDAR y SALIR), cuenta 3, 2, 1 al reanudar y límite de 5 minutos (reglas en `ControlPausa`).
 - Pasar al siguiente juego (partida por rondas) o reiniciar la ronda (modo Endless).
 - Calcular cuántos puntos sumó cada jugador en ese juego.
 
@@ -423,7 +448,9 @@ Controles.una("piedra", Controles.A, Controles.IZQUIERDA).conIcono("rps/piedra.p
 
 ### Red (`red/`)
 
-Se usa **UDP** con `DatagramSocket`, igual que en los ejemplos de clase: un hilo (`HiloRed`, que extiende `Thread`) se queda esperando paquetes con `receive()` y cada mensaje es un texto separado por `;`. El anfitrión escucha en el **puerto 9999** y el invitado usa un puerto que elige el sistema.
+Se usa **UDP** con `DatagramSocket`, igual que en los ejemplos de clase: un hilo (`HiloRed`, que extiende `Thread`) se queda esperando paquetes con `receive()` y cada mensaje es un texto separado por `;`.
+
+**Servidor dedicado aparte.** El servidor es otro programa (módulo `server`, sin libGDX): escucha en el **puerto 9999** (o en el primero libre hasta el `10008`, si ya hay otros servidores abiertos en esa computadora; también se puede forzar uno con `java -jar RAMSHI-Servidor.jar <puerto>`), registra a los clientes, tiene **una sola sala** (un jugador la crea y otro se une; mientras exista nadie más puede crear otra) y **reenvía** los mensajes de la partida de un jugador al otro. No ejecuta minijuegos. Los dos jugadores son clientes iguales que usan un puerto que elige el sistema y solo le hablan al servidor; el que crea la sala es el Jugador 1 (elige el modo) y el que se une es el Jugador 2. El servidor contesta cada `HOLA` con el nombre del rival (o vacío), así cada cliente sabe si su rival sigue en la sala aunque se pierda algún aviso, y si un cliente no da noticias en 5 segundos lo saca y avisa al otro con `SALIR`.
 
 **La idea principal (*lockstep*): no se manda el juego, se mandan las teclas.**
 Las dos computadoras ejecutan el mismo minijuego al mismo tiempo. Lo único que viaja por la red es qué botones aprieta cada jugador, 60 veces por segundo. Si las dos arrancan igual y reciben las mismas teclas en el mismo momento, el juego queda idéntico en las dos. Para que eso se cumpla:
@@ -431,11 +458,12 @@ Las dos computadoras ejecutan el mismo minijuego al mismo tiempo. Lo único que 
 - **Mismo azar:** al empezar cada minijuego, `MathUtils.random` arranca con la **misma semilla** en las dos (`GameSession`), así los obstáculos, balas y manzanas salen iguales.
 - **Retraso de 4 pasos:** lo que apretás se aplica 4 pasos después (unos 67 ms), para darle tiempo a llegar a la otra computadora sin que el juego se frene.
 
-**Los minijuegos no saben que están en red.** Siguen preguntando `Gdx.input.isKeyPressed(Input.Keys.W)` como siempre. Durante cada paso en red, `Gdx.input` se reemplaza por un "teclado falso" (`EntradaRed`) que responde con las teclas sincronizadas de los dos jugadores: el anfitrión maneja las teclas del Jugador 1 (WASD + ESPACIO) y el invitado las del Jugador 2 (flechas + ENTER).
+**Los minijuegos no saben que están en red.** Siguen preguntando `Gdx.input.isKeyPressed(Input.Keys.W)` como siempre. Durante cada paso en red, `Gdx.input` se reemplaza por un "teclado falso" (`EntradaRed`) que responde con las teclas sincronizadas de los dos jugadores: el que creó la sala maneja las teclas del Jugador 1 (WASD + ESPACIO) y el que se unió las del Jugador 2 (flechas + ENTER).
 
 | Clase | Qué hace |
 |---|---|
-| `Red` | La conexión: crear sala, buscar salas (difusión a `255.255.255.255`), conectar, mensajes, saludos para detectar cortes y avisos. |
+| `Red` | El cliente: buscar el servidor (difusión a `255.255.255.255`), conectarse, consultar el estado de la sala, crear sala, unirse, mensajes, latidos para detectar cortes y avisos. |
+| `Servidor` (módulo `server`) | El servidor dedicado: clientes, la única sala y reenvío de mensajes entre sus dos jugadores. |
 | `HiloRed` | El hilo que recibe los paquetes (como `HiloServidor`/`HiloCliente` de los ejemplos). |
 | `Sincronizador` | El *lockstep*: junta las teclas propias, las manda, espera las del otro y ejecuta los pasos. |
 | `EntradaRed` | El "teclado falso" que ven los minijuegos durante cada paso. |
@@ -444,14 +472,18 @@ Las dos computadoras ejecutan el mismo minijuego al mismo tiempo. Lo único que 
 
 | Mensaje | De quién | Para qué |
 |---|---|---|
-| `BUSCAR` / `ANUNCIO;nombre` | invitado / anfitrión | Encontrar salas en la red sin escribir la IP |
-| `CONECTAR` / `BIENVENIDO;nombre` / `LLENA` | invitado / anfitrión | Unirse a la sala (solo entra un invitado) |
-| `E;sesión;juego;desde;teclas` | los dos | Las teclas de los últimos 30 pasos (se repiten por si se pierde algún paquete) |
-| `C;id;texto` / `OK;id` | los dos | Mensajes importantes que **no se pueden perder**: se reenvían hasta que llega el `OK` |
-| `INICIAR;RONDAS;n;semilla;sesión` | anfitrión | Arrancar una partida (también `INICIAR;ENDLESS;JUEGO;...`) |
+| `BUSCAR` / `ANUNCIO;nombre` | cliente / servidor | Encontrar el servidor en la red sin escribir la IP |
+| `CONECTAR;nombre` / `BIENVENIDO;nombre` | cliente / servidor | Registrarse en el servidor |
+| `ESTADO` / `ESTADO;estado;nombre` (estado: `LIBRE`, `ESPERANDO` o `JUGANDO`) | cliente / servidor | Saber si se puede crear la sala o unirse (el menú lo pregunta cada segundo) |
+| `CREAR` / `CREADA` / `OCUPADO` | cliente / servidor | Crear la sala (quien la crea es el Jugador 1); `OCUPADO` si ya existe |
+| `UNIRSE` / `UNIDO;nombre` / `LLENA` / `NOEXISTE` | cliente / servidor | Entrar a la sala como Jugador 2 |
+| `HOLA` / `HOLA;rival` | cliente / servidor | Latido cada medio segundo; 5 segundos sin noticias = conexión perdida |
+| `SALIR` | cliente → servidor → el otro cliente | Dejar la sala; el servidor avisa al otro jugador |
+| `DESCONECTAR` | cliente | Desconectarse del servidor |
+| `E;sesión;juego;desde;teclas` | los dos (reenviado por el servidor) | Las teclas de los últimos 30 pasos (se repiten por si se pierde algún paquete) |
+| `C;id;texto` / `OK;id` | los dos (reenviado por el servidor) | Mensajes importantes que **no se pueden perder**: se reenvían hasta que llega el `OK` |
+| `INICIAR;RONDAS;n;semilla;sesión` | Jugador 1 | Arrancar una partida (también `INICIAR;ENDLESS;JUEGO;...`) |
 | `SALA` | los dos | Volver a la sala |
-| `HOLA` | los dos | Saludo cada medio segundo; 5 segundos sin noticias = conexión perdida |
-| `SALIR` | los dos | Me voy |
 
 UDP no asegura que los paquetes lleguen, por eso las teclas se mandan repetidas y los mensajes importantes (`C;...`) se reenvían hasta recibir confirmación.
 
@@ -587,9 +619,9 @@ Todo lo que no sea propio tiene que anotarse en [`CREDITS.md`](CREDITS.md) con a
 | Un minijuego termina apenas empieza | `DURACION_RONDA` no es `static final` | Ver las reglas de la [sección 8](#8-cómo-agregar-un-minijuego) |
 | Falta una imagen (`File not found`) | La ruta no coincide con la carpeta de `assets/` | Revisar mayúsculas y nombre exacto del PNG |
 | Dos teclas a la vez no responden | Algunos teclados no registran ciertas combinaciones | Es del hardware (*ghosting*); probar con otro teclado |
-| En red, "No hubo respuesta" | El firewall de Windows bloquea Java en la PC del anfitrión, o no están en la misma red | En el anfitrión, permitir Java en el aviso del firewall (o en *Firewall de Windows → Permitir una aplicación*); revisar que estén en el mismo Wi-Fi |
-| "No se pudo abrir la sala en el puerto 9999" | Ya hay una sala abierta en esa computadora (u otro programa usa el puerto) | Cerrar la otra ventana del juego |
-| La sala no aparece en BUSCAR SALAS | Algunas redes (por ejemplo la del colegio) bloquean la difusión | Escribir la IP del anfitrión a mano |
+| En red, "El servidor no respondió" | El servidor no está abierto, el firewall de Windows lo bloquea en su PC, o no están en la misma red | Abrir `RAMSHI-Servidor`; en la PC del servidor, permitirlo en el aviso del firewall (o en *Firewall de Windows → Permitir una aplicación*); revisar que estén en el mismo Wi-Fi |
+| El servidor dice "No hay puertos libres entre 9999 y 10008" | Ya hay 10 servidores abiertos en esa computadora (u otros programas usan esos puertos) | Cerrar alguno de los servidores |
+| El servidor no aparece en BUSCAR SERVIDOR | Algunas redes (por ejemplo la del colegio) bloquean la difusión | Escribir a mano la IP que muestra el servidor |
 
 ---
 

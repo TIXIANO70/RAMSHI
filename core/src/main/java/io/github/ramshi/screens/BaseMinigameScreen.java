@@ -24,6 +24,7 @@ import io.github.ramshi.menus.CrearSalaScreen;
 import io.github.ramshi.menus.EndlessMenuScreen;
 import io.github.ramshi.menus.EsperaSalaScreen;
 import io.github.ramshi.menus.SalaMenuScreen;
+import io.github.ramshi.menus.ServidorScreen;
 import io.github.ramshi.menus.ModoMenuScreen;
 import io.github.ramshi.red.Red;
 import io.github.ramshi.red.Sincronizador;
@@ -57,6 +58,10 @@ public abstract class BaseMinigameScreen implements Screen {
     private static final float BOTON_PAUSA_ALTO = 50f;
     private static final float BOTONES_PAUSA_Y = 35f;
     private static final float SEPARACION_BOTONES_PAUSA = 20f;
+    private static final float ESTADO_PAUSA_Y = 392f;
+    private static final float CUENTA_Y = 300f;
+    private static final float LEYENDA_CUENTA_Y = 150f;
+    private static final float ESCALA_CUENTA = 3f;
     private static final float MARCADOR_Y = 260f;
     private static final float MARGEN_HUD = 16f;
     private static final float ALTURA_HUD = 462f;
@@ -109,7 +114,7 @@ public abstract class BaseMinigameScreen implements Screen {
     private Texture corazonVacio;
     private final Color colorBarra = new Color();
     private final Botonera botonesPausa;
-    private boolean pausado;
+    private final ControlPausa pausa;
     private int partidasGanadasP1;
     private int partidasGanadasP2;
     private final Sincronizador sincronizador;
@@ -117,7 +122,7 @@ public abstract class BaseMinigameScreen implements Screen {
     private boolean introIniciada = false;
     private boolean yaSonado = false;
     private int ultimoSegundoAlerta = 4;
-    private boolean estadoPausaAnterior = false;
+    private Boton botonReanudar;
 
     protected BaseMinigameScreen(Game juego) {
         this.juego = juego;
@@ -134,15 +139,58 @@ public abstract class BaseMinigameScreen implements Screen {
         this.botonesPausa = new Botonera(vista);
         float x = ANCHO_VIRTUAL / 2f - BOTON_PAUSA_ANCHO - SEPARACION_BOTONES_PAUSA / 2f;
         this.sincronizador = sesion.esEnRed() ? new Sincronizador(sesion.getIndice()) : null;
-        botonesPausa.agregar(new Boton(x, BOTONES_PAUSA_Y, BOTON_PAUSA_ANCHO, BOTON_PAUSA_ALTO, "REANUDAR", Boton.VERDE,
+        this.pausa = new ControlPausa(sincronizador != null);
+        botonReanudar = botonesPausa.agregar(new Boton(x, BOTONES_PAUSA_Y, BOTON_PAUSA_ANCHO, BOTON_PAUSA_ALTO, "REANUDAR", Boton.VERDE,
             this::reanudar));
         botonesPausa.agregar(new Boton(x + BOTON_PAUSA_ANCHO + SEPARACION_BOTONES_PAUSA, BOTONES_PAUSA_Y, BOTON_PAUSA_ANCHO,
             BOTON_PAUSA_ALTO, "SALIR", Boton.ROJO, this::salir));
     }
 
+    /**
+     * Botón REANUDAR. En red no reanuda directo: manda "pausa" como una tecla más, así los dos juegos
+     * registran en el mismo paso que este jugador aprobó (o retiró su aprobación). En local arranca la cuenta.
+     */
     private void reanudar() {
         if (sincronizador != null) sincronizador.pedirPausa();
-        else pausado = false;
+        else sonarPausa(pausa.reanudarLocal());
+    }
+
+    /** Lee quién apretó pausa en este paso (en red, con las teclas sincronizadas de los dos) y aplica las reglas. */
+    private void atenderPausa() {
+        boolean pausaP1;
+        boolean pausaP2;
+        if (sincronizador != null) {
+            pausaP1 = sincronizador.pausaRecienApretada(0);
+            pausaP2 = sincronizador.pausaRecienApretada(1);
+        } else {
+            pausaP1 = Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE);
+            pausaP2 = false;
+        }
+        sonarPausa(pausa.apretar(pausaP1, pausaP2));
+    }
+
+    private void sonarPausa(ControlPausa.Evento evento) {
+        switch (evento) {
+            case PAUSO:
+                Sonidos.sonar("pausa");
+                Sonidos.pausarMusica();
+                break;
+            case NUMERO_CUENTA:
+                Sonidos.sonar("cuenta");
+                break;
+            case TERMINO_CUENTA:
+                Sonidos.sonar("ya");
+                if (!rondaTerminada) Sonidos.reanudarMusica();
+                break;
+            default:
+                break;
+        }
+    }
+
+    /** Pasaron 5 minutos en pausa sin que se reanude: termina la partida y se vuelve al menú (o a la sala en red). */
+    private void terminarPorPausa() {
+        Red.avisar("La pausa duró más de 5 minutos: la partida terminó");
+        irA(sincronizador != null ? pantallaDeSala() : pantallaDeSalida());
     }
 
     private void salir() {
@@ -207,16 +255,15 @@ public abstract class BaseMinigameScreen implements Screen {
             Sonidos.sonar("intro");
         }
         boolean puedePausar = !rondaTerminada || !sesion.esModoJugar();
-        if (puedePausar && Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) pausado = !pausado;
+        if (puedePausar) atenderPausa();
 
-        if (pausado != estadoPausaAnterior) {
-            estadoPausaAnterior = pausado;
-            Sonidos.sonar("pausa");
-            if (pausado) Sonidos.pausarMusica();
-            else if (!rondaTerminada) Sonidos.reanudarMusica();
-        }
-
-        if (pausado) {
+        if (pausa.estaPausado() || pausa.enCuenta()) {
+            ControlPausa.Evento evento = pausa.avanzar(delta);
+            if (evento == ControlPausa.Evento.TIEMPO_AGOTADO) {
+                terminarPorPausa();
+                return false;
+            }
+            sonarPausa(evento);
             return true;
         } else if (tiempoIntro > 0f) {
             tiempoIntro -= delta;
@@ -275,9 +322,14 @@ public abstract class BaseMinigameScreen implements Screen {
                 if (Red.esAnfitrion()) {
                     irA(new CrearSalaScreen(juego));
                 } else {
-                    Red.cerrar();
+                    Red.salirDeSala();
                     irA(new SalaMenuScreen(juego));
                 }
+                return true;
+            }
+            if (evento.equals(Red.SIN_SERVIDOR)) {
+                Red.cerrar();
+                irA(new ServidorScreen(juego));
                 return true;
             }
         }
@@ -297,7 +349,11 @@ public abstract class BaseMinigameScreen implements Screen {
             paso(delta);
         }
         if (cerrada) return;
-        if (pausado) botonesPausa.actualizar();
+        if (pausa.estaPausado()) {
+            boolean yoListo = sincronizador != null && pausa.estaListo(Red.esAnfitrion() ? 0 : 1);
+            botonReanudar.texto = yoListo ? "CANCELAR" : "REANUDAR";
+            botonesPausa.actualizar();
+        }
 
         ScreenUtils.clear(0.08f, 0.08f, 0.08f, 1f);
         camara.update();
@@ -307,7 +363,8 @@ public abstract class BaseMinigameScreen implements Screen {
         dibujarJuego(batch);
         dibujarHUD();
 
-        if (pausado) dibujarPausa();
+        if (pausa.estaPausado()) dibujarPausa();
+        else if (pausa.enCuenta()) dibujarCuentaReanudar();
         else if (tiempoIntro > 0f) dibujarIntro();
         else if (rondaTerminada) dibujarFinDeRonda();
 
@@ -319,7 +376,7 @@ public abstract class BaseMinigameScreen implements Screen {
         dibujarFundido(formas, Math.min(1f, oscuridad));
         if (sincronizador != null && sincronizador.estaEsperando()) dibujarEsperaRed();
 
-        Boton elegido = pausado ? botonesPausa.elegido() : null;
+        Boton elegido = pausa.estaPausado() ? botonesPausa.elegido() : null;
         if (elegido != null) elegido.ejecutar();
     }
 
@@ -566,9 +623,59 @@ public abstract class BaseMinigameScreen implements Screen {
             fuente.setColor(Color.WHITE);
             dibujarCentrado("-", MARCADOR_Y);
         }
+        dibujarEstadoPausa();
         batch.end();
 
         botonesPausa.dibujar(formas, batch);
+    }
+
+    /** Quién aprobó reanudar (en red) y cuánto falta para que la partida termine por la pausa. */
+    private void dibujarEstadoPausa() {
+        usarFuente(Main.fuenteChica);
+        float restante = pausa.getTiempoRestante();
+        int minutos = (int) restante / 60;
+        int segundos = (int) restante % 60;
+        String reloj = minutos + ":" + (segundos < 10 ? "0" : "") + segundos;
+        float y = ESTADO_PAUSA_Y;
+        if (sincronizador != null) {
+            fuente.setColor(Color.WHITE);
+            dibujarCentrado("Para reanudar tienen que aceptar los dos (REANUDAR o ESC)", y);
+            y -= ALTO_FILA + 3f;
+            fuente.setColor(COLOR_P1);
+            dibujarCentradoEn("JUGADOR 1: " + (pausa.estaListo(0) ? "LISTO" : "esperando..."), centroJugador(0) + 80f, y);
+            fuente.setColor(COLOR_P2);
+            dibujarCentradoEn("JUGADOR 2: " + (pausa.estaListo(1) ? "LISTO" : "esperando..."), centroJugador(1) - 80f, y);
+            y -= ALTO_FILA + 3f;
+        }
+        fuente.setColor(restante <= 60f ? COLOR_ROJO : Color.LIGHT_GRAY);
+        dibujarCentrado("Si no se reanuda, la partida termina en " + reloj, y);
+    }
+
+    /** Cuenta 3, 2, 1 sobre el juego congelado antes de volver a jugar. */
+    private void dibujarCuentaReanudar() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        formas.begin(ShapeRenderer.ShapeType.Filled);
+        formas.setColor(0f, 0f, 0f, 0.6f);
+        formas.rect(0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+        formas.end();
+
+        float cuentaReanudar = pausa.getCuenta();
+        int numero = Math.max(1, (int) Math.ceil(cuentaReanudar));
+        float dentroDelSegundo = cuentaReanudar - (numero - 1);
+        batch.begin();
+        usarFuente(Main.fuenteTitulo);
+        float escalaX = fuente.getData().scaleX;
+        float escalaY = fuente.getData().scaleY;
+        // Cada número arranca grande y se achica un poco durante su segundo, como en los ritmos de osu!.
+        float escala = ESCALA_CUENTA * (0.85f + 0.15f * dentroDelSegundo);
+        fuente.getData().setScale(escalaX * escala, escalaY * escala);
+        fuente.setColor(COLOR_CONSIGNA.r, COLOR_CONSIGNA.g, COLOR_CONSIGNA.b, Math.min(1f, 0.35f + dentroDelSegundo));
+        dibujarCentrado(String.valueOf(numero), CUENTA_Y);
+        fuente.getData().setScale(escalaX, escalaY);
+        usarFuente(Main.fuenteMediana);
+        fuente.setColor(Color.WHITE);
+        dibujarCentrado("¡PREPARADOS!", LEYENDA_CUENTA_Y);
+        batch.end();
     }
 
     private void dibujarExplicacion(float y) {

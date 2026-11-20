@@ -57,7 +57,7 @@ configure(subprojects) {
 
 subprojects {
   version = "$projectVersion"
-  ext.appName = 'Waste Games'
+  ext.appName = 'RAMSHI'
   repositories {
     mavenCentral()
     // You may want to remove the following line if you have errors downloading dependencies.
@@ -67,4 +67,51 @@ subprojects {
   }
 }
 
-eclipse.project.name = 'Waste Games' + '-parent'
+eclipse.project.name = 'RAMSHI' + '-parent'
+
+// ---------------------------------------------------------------------------
+// Carpeta "Ejecutables": deja a mano el .exe del juego y el del servidor (con Java incluido)
+// y, en Windows, un acceso directo a cada uno. Se arma con: gradlew ejecutables
+// ---------------------------------------------------------------------------
+def carpetaEjecutables = file('Ejecutables')
+
+tasks.register('ejecutableJuego', Sync) {
+  group = 'build'
+  dependsOn ':lwjgl3:packageWinX64'
+  from { zipTree(file('lwjgl3/build/construo/dist/RAMSHI-winX64.zip')) }
+  into new File(carpetaEjecutables, 'Juego')
+}
+
+tasks.register('ejecutableServidor', Sync) {
+  group = 'build'
+  dependsOn ':server:packageWinX64'
+  from { zipTree(file('server/build/construo/dist/RAMSHI-Servidor-winX64.zip')) }
+  into new File(carpetaEjecutables, 'Servidor')
+}
+
+tasks.register('ejecutables') {
+  group = 'build'
+  description = 'Arma la carpeta Ejecutables con el juego, el servidor y sus accesos directos.'
+  dependsOn 'ejecutableJuego', 'ejecutableServidor'
+  def carpeta = carpetaEjecutables
+  doLast {
+    if (!System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) return
+    def accesos = [
+      'RAMSHI - Juego'   : new File(carpeta, 'Juego/RAMSHI.exe'),
+      'RAMSHI - Servidor': new File(carpeta, 'Servidor/RAMSHI-Servidor.exe'),
+    ]
+    def script = new StringBuilder('$s = New-Object -ComObject WScript.Shell; ')
+    accesos.each { nombre, exe ->
+      def lnk = new File(carpeta, nombre + '.lnk').absolutePath.replace("'", "''")
+      def destino = exe.absolutePath.replace("'", "''")
+      def dir = exe.parentFile.absolutePath.replace("'", "''")
+      script.append("\$a = \$s.CreateShortcut('${lnk}'); \$a.TargetPath = '${destino}'; ")
+        .append("\$a.WorkingDirectory = '${dir}'; \$a.IconLocation = '${destino},0'; \$a.Save(); ")
+    }
+    def proceso = new ProcessBuilder('powershell', '-NoProfile', '-NonInteractive', '-Command', script.toString())
+      .redirectErrorStream(true).start()
+    def salida = proceso.inputStream.text
+    if (proceso.waitFor() != 0) throw new GradleException('No se pudieron crear los accesos directos: ' + salida)
+    println "Listo: ${carpeta.absolutePath}"
+  }
+}
