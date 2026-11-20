@@ -114,7 +114,7 @@ Las computadoras tienen que estar **en la misma red** (el mismo Wi-Fi o router) 
 
 **Durante la partida:**
 - Cada uno juega con **WASD o con las flechas** (los dos sirven), y `ESPACIO` o `ENTER` para la acción. En el cartel de inicio dice cuál es tu jugador: "JUGADOR 1 (VOS)".
-- **La pausa es compartida:** si cualquiera aprieta `ESC` (o REANUDAR), se pausa o se reanuda en las dos computadoras.
+- **La pausa es compartida:** si cualquiera aprieta `ESC`, se pausa en las dos computadoras. **Para reanudar tienen que aprobar los dos:** cada uno aprieta REANUDAR (o `ESC`) y la pantalla muestra "JUGADOR 1: LISTO / JUGADOR 2: esperando...". Volver a apretar retira la aprobación (el botón pasa a decir CANCELAR). Cuando los dos aprobaron arranca la cuenta 3, 2, 1 en las dos computadoras a la vez.
 - **SALIR** en la pausa (o **SALA** en los resultados) lleva a los dos de vuelta a la sala, sin desconectarse. **REVANCHA** solo la puede tocar el Jugador 1.
 - Si un jugador se va o deja de responder 5 segundos, el servidor avisa al otro: el Jugador 1 queda esperando a otro jugador en la misma sala y el Jugador 2 vuelve al menú EN RED.
 - Si el que deja de responder es el servidor, los dos ven "Se perdió la conexión con el servidor" y vuelven a la pantalla de conexión.
@@ -151,6 +151,10 @@ Las computadoras tienen que estar **en la misma red** (el mismo Wi-Fi o router) 
 ### Pausa (`ESC` en medio de un minijuego)
 
 - El juego se congela (también el reloj) y aparece la pantalla de **PAUSA** con dos botones: **REANUDAR** (verde) y **SALIR** (rojo). Se eligen con el mouse o con `A` `D` / flechas y `ENTER` / `ESPACIO`. `ESC` también reanuda.
+- **Cuenta 3, 2, 1 al reanudar:** el juego no arranca de golpe. Aparece un número grande (3, 2, 1) sobre el juego congelado, con un sonido por número, y recién después sigue la partida, así los dos vuelven con el ritmo de juego. Apretar `ESC` durante la cuenta vuelve a la pausa.
+- **5 minutos como máximo:** la pausa muestra cuánto falta ("Si no se reanuda, la partida termina en 4:32", en rojo el último minuto). Si pasan 5 minutos sin reanudar, la partida termina y se vuelve al menú (en red, a la sala) con el aviso "La pausa duró más de 5 minutos: la partida terminó".
+- **En red** hace falta que **los dos jugadores aprueben** para reanudar (ver la [sección 2.1](#21-modo-en-red)).
+- Las reglas de la pausa están en `ControlPausa` (sin gráficos), y en red se aplican dentro de cada paso sincronizado, con las teclas de los dos jugadores; por eso las dos computadoras deciden siempre lo mismo sin mandar mensajes extra.
 - **En partida por rondas:** muestra en qué juego van (`Juego 3 de 8: Race`), la **tabla de los juegos ya jugados** y el **total** de cada uno. *SALIR* vuelve al menú Local. No se puede pausar durante los 2,5 s de la tabla entre juegos.
 - **En Endless:** muestra el **marcador de partidas ganadas** (`P1 3 - 2 P2`). *SALIR* vuelve al selector de Endless con ese mismo minijuego elegido.
 
@@ -392,7 +396,7 @@ Clase abstracta de la que heredan los 12 minijuegos. Se encarga de todo lo comú
 
 - Cámara y mundo virtual de **800 × 480** (`ANCHO_VIRTUAL`, `ALTO_VIRTUAL`).
 - **Cronómetro** de la ronda, cartel de inicio, HUD, barra de controles, corazones y pantallas de fin de ronda.
-- **Pausa** con `ESC` (tabla de la partida o marcador de Endless, con REANUDAR y SALIR).
+- **Pausa** con `ESC` (tabla de la partida o marcador de Endless, con REANUDAR y SALIR), cuenta 3, 2, 1 al reanudar y límite de 5 minutos (reglas en `ControlPausa`).
 - Pasar al siguiente juego (partida por rondas) o reiniciar la ronda (modo Endless).
 - Calcular cuántos puntos sumó cada jugador en ese juego.
 

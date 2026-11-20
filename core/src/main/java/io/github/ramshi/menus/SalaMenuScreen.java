@@ -25,6 +25,7 @@ public class SalaMenuScreen extends MenuScreen {
     private final Boton crear;
     private final Boton unirse;
     private float tiempoEstado;
+    private String estadoAnterior;
 
     public SalaMenuScreen(Game juego) {
         super(juego);
@@ -42,8 +43,13 @@ public class SalaMenuScreen extends MenuScreen {
 
     private void actualizarBotones() {
         String estado = Red.getEstadoSala();
+        if (estado.equals(estadoAnterior)) return;
+        estadoAnterior = estado;
         crear.activo = estado.equals(Red.LIBRE);
         unirse.activo = estado.equals(Red.ESPERANDO);
+        // Para jugar con teclado: cuando se habilita un botón, queda seleccionado (si no, ENTER tocaría VOLVER).
+        if (crear.activo) botonera.enfocar(crear);
+        else if (unirse.activo) botonera.enfocar(unirse);
     }
 
     @Override

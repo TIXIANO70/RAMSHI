@@ -41,6 +41,11 @@ public class EntradaRed implements InvocationHandler {
         actual[1] = mascaraP2;
     }
 
+    /** true en el paso en que ese jugador (0 = jugador 1, 1 = jugador 2) apretó pausa / REANUDAR. */
+    public boolean pausaRecienApretada(int jugador) {
+        return (actual[jugador] & PAUSA) != 0 && (anterior[jugador] & PAUSA) == 0;
+    }
+
     public static int leerTeclado(Input teclado) {
         int mascara = 0;
         for (int i = 0; i < BOTONES.length; i++) {
