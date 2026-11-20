@@ -48,7 +48,7 @@ public class ModoMenuScreen extends MenuScreen {
 
     private void volver() {
         if (enRed) {
-            Red.cerrar();
+            Red.salirDeSala();
             abrir(new SalaMenuScreen(juego));
         } else {
             abrir(new JugarMenuScreen(juego));
@@ -63,7 +63,7 @@ public class ModoMenuScreen extends MenuScreen {
         escribir(Main.fuenteGrande, COLOR_TEXTO, rondas + " RONDAS", CENTRO_X, SELECTOR_Y + 32f);
         escribir(Main.fuenteChica, COLOR_NOTA, "Mínimo " + MIN_RONDAS + ", máximo " + MAX_RONDAS, CENTRO_X, LIMITES_Y);
         escribir(Main.fuenteChica, COLOR_NOTA, "Elegí un minijuego y jugalo sin parar", CENTRO_X, DESCRIPCION_ENDLESS_Y);
-        if (enRed) escribir(Main.fuenteChica, COLOR_SUBTITULO, "Jugador 2 conectado: " + Red.getIpOtro(), CENTRO_X + 80f, CONECTADO_Y);
+        if (enRed) escribir(Main.fuenteChica, COLOR_SUBTITULO, "Jugador 2 conectado: " + Red.getNombreOtro(), CENTRO_X + 80f, CONECTADO_Y);
         batch.end();
     }
 }

@@ -24,6 +24,7 @@ import io.github.ramshi.menus.CrearSalaScreen;
 import io.github.ramshi.menus.EndlessMenuScreen;
 import io.github.ramshi.menus.EsperaSalaScreen;
 import io.github.ramshi.menus.SalaMenuScreen;
+import io.github.ramshi.menus.ServidorScreen;
 import io.github.ramshi.menus.ModoMenuScreen;
 import io.github.ramshi.red.Red;
 import io.github.ramshi.red.Sincronizador;
@@ -275,9 +276,14 @@ public abstract class BaseMinigameScreen implements Screen {
                 if (Red.esAnfitrion()) {
                     irA(new CrearSalaScreen(juego));
                 } else {
-                    Red.cerrar();
+                    Red.salirDeSala();
                     irA(new SalaMenuScreen(juego));
                 }
+                return true;
+            }
+            if (evento.equals(Red.SIN_SERVIDOR)) {
+                Red.cerrar();
+                irA(new ServidorScreen(juego));
                 return true;
             }
         }

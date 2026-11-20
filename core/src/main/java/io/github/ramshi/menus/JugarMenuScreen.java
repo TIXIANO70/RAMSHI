@@ -18,7 +18,7 @@ public class JugarMenuScreen extends MenuScreen {
         botonera.agregar(new Boton(LOCAL_X, TARJETA_Y, TARJETA_ANCHO, TARJETA_ALTO, "LOCAL", Boton.VERDE,
             () -> abrir(new ModoMenuScreen(juego, false)))).conFuente(Main.fuenteCartel);
         botonera.agregar(new Boton(RED_X, TARJETA_Y, TARJETA_ANCHO, TARJETA_ALTO, "EN RED", Boton.NEUTRO,
-            () -> abrir(new SalaMenuScreen(juego)))).conFuente(Main.fuenteCartel);
+            () -> abrir(new ServidorScreen(juego)))).conFuente(Main.fuenteCartel);
         agregarVolver(() -> abrir(new MainMenuScreen(juego)));
     }
 
@@ -27,7 +27,7 @@ public class JugarMenuScreen extends MenuScreen {
         dibujarTitulo("JUGAR");
         batch.begin();
         escribir(Main.fuenteChica, COLOR_NOTA, "Dos jugadores en el mismo teclado", LOCAL_X + TARJETA_ANCHO / 2f, DESCRIPCION_Y);
-        escribir(Main.fuenteChica, COLOR_NOTA, "Cada jugador en su computadora", RED_X + TARJETA_ANCHO / 2f, DESCRIPCION_Y);
+        escribir(Main.fuenteChica, COLOR_NOTA, "Cada jugador en su compu, por un servidor", RED_X + TARJETA_ANCHO / 2f, DESCRIPCION_Y);
         batch.end();
     }
 }

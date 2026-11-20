@@ -83,9 +83,12 @@ public abstract class MenuScreen implements Screen {
             if (Red.esAnfitrion()) {
                 abrir(new CrearSalaScreen(juego));
             } else {
-                Red.cerrar();
+                Red.salirDeSala();
                 abrir(new SalaMenuScreen(juego));
             }
+        } else if (evento.equals(Red.SIN_SERVIDOR)) {
+            Red.cerrar();
+            abrir(new ServidorScreen(juego));
         }
     }
 
